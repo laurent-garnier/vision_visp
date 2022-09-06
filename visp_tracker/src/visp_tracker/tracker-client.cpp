@@ -6,9 +6,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/param.h>
 #include <rclcpp/package.h>
-#include <dynamic_reconfigure/server.h>
+//#include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.h>
-# include <visp_tracker/srv/init.hpp>
+#include <visp_tracker/srv/init.hpp>
 #include <visp_tracker/msg/model_based_settings_config.hpp>
 
 #include <visp3/me/vpMe.h>
@@ -31,8 +31,8 @@
 
 namespace visp_tracker
 {
-  TrackerClient::TrackerClient(ros::NodeHandle& nh,
-                               ros::NodeHandle& privateNh,
+  TrackerClient::TrackerClient(rclcpp::Node& nh,
+                               rclcpp::Node& privateNh,
                                volatile bool& exiting,
                                unsigned queueSize)
     : exiting_ (exiting),
@@ -316,12 +316,12 @@ namespace visp_tracker
   TrackerClient::sendcMo(const vpHomogeneousMatrix& cMo)
   {
     ros::ServiceClient client =
-        nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service);
+        nodeHandle_.serviceClient<visp_tracker::srv::Init>(visp_tracker::srv::Init_service);
 
 
     ros::ServiceClient clientViewer =
-        nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service_viewer);
-    visp_tracker::Init srv;
+        nodeHandle_.serviceClient<visp_tracker::srv::Init>(visp_tracker::srv::Init_service_viewer);
+    visp_tracker::srv::Init srv;
 
     // Load the model and send it to the parameter server.
     std::string modelDescription = fetchResource(modelPathAndExt_);

@@ -26,8 +26,8 @@ namespace visp_tracker
   // Callback to fix ROS bug when /model_description (not properly cleared) doesn't contain the right model of the object to track.
   // Bug only occurs when viewer is started too early and with a different model than the previous call.
   bool
-  TrackerViewer::initCallback(visp_tracker::Init::Request& req,
-                              visp_tracker::Init::Response& res)
+  TrackerViewer::initCallback(visp_tracker::srv::Init::Request& req,
+                              visp_tracker::srv::Init::Response& res)
   {
     boost::filesystem::ofstream modelStream;
     std::string path;
@@ -48,8 +48,8 @@ namespace visp_tracker
   }
 
   bool
-  TrackerViewer::reconfigureCallback(visp_tracker::Init::Request& req,
-                                     visp_tracker::Init::Response& res)
+  TrackerViewer::reconfigureCallback(visp_tracker::srv::Init::Request& req,
+                                     visp_tracker::srv::Init::Response& res)
   {
     // Common parameters
     ROS_INFO_STREAM("Reconfiguring Tracker Viewer.");
@@ -59,8 +59,8 @@ namespace visp_tracker
     return true;
   }
 
-  TrackerViewer::TrackerViewer(ros::NodeHandle& nh,
-                               ros::NodeHandle& privateNh,
+  TrackerViewer::TrackerViewer(rclcpp::Node& nh,
+                               rclcpp::Node& privateNh,
                                volatile bool& exiting,
                                unsigned queueSize)
     : exiting_ (exiting),
@@ -135,7 +135,7 @@ namespace visp_tracker
         boost::bind(&TrackerViewer::reconfigureCallback, this, _1, _2);
 
     initService_ = nodeHandle_.advertiseService
-        (visp_tracker::init_service_viewer, initCallback);
+        (visp_tracker::srv::Init_service_viewer, initCallback);
 
     reconfigureService_ = nodeHandle_.advertiseService
         (visp_tracker::reconfigure_service_viewer, reconfigureCallback);
@@ -392,7 +392,7 @@ namespace visp_tracker
   void
   TrackerViewer::callback
   (const sensor_msgs::msg::imageConstPtr& image,
-   const sensor_msgs::CameraInfoConstPtr& info,
+   const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
    const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
    const visp_tracker::MovingEdgeSites::ConstPtr& sites,
    const visp_tracker::KltPoints::ConstPtr& klt)

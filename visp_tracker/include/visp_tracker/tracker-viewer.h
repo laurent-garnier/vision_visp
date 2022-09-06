@@ -3,23 +3,23 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.h>
 
-# include <image_transport/image_transport.h>
-# include <image_transport/subscriber_filter.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber_filter.h>
 
-# include <message_filters/subscriber.h>
-# include <message_filters/sync_policies/approximate_time.h>
-# include <message_filters/synchronizer.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/synchronizer.h>
 
-# include <sensor_msgs/msg/image.hpp>
-# include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 
-# include <visp_tracker/srv/init.hpp>
-# include <visp_tracker/msg/moving_edge_sites.hpp>
-# include <visp_tracker/msg/klt_points.hpp>
+#include <visp_tracker/srv/init.hpp>
+#include <visp_tracker/msg/moving_edge_sites.hpp>
+#include <visp_tracker/msg/klt_points.hpp>
 
-# include <visp3/core/vpCameraParameters.h>
-# include <visp3/core/vpImage.h>
-# include <visp3/mbt/vpMbGenericTracker.h>
+#include <visp3/core/vpCameraParameters.h>
+#include <visp3/core/vpImage.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
 
 namespace visp_tracker
 {
@@ -31,12 +31,12 @@ namespace visp_tracker
     typedef vpImage<unsigned char> image_t;
 
 
-    typedef boost::function<bool (visp_tracker::Init::Request&,
-                                  visp_tracker::Init::Response& res)>
+    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
+                                  visp_tracker::srv::Init::Response& res)>
     initCallback_t;
 
-    typedef boost::function<bool (visp_tracker::Init::Request&,
-                                  visp_tracker::Init::Response& res)>
+    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
+                                  visp_tracker::srv::Init::Response& res)>
     reconfigureCallback_t;
 
     /// \brief Synchronization policy
@@ -47,15 +47,15 @@ namespace visp_tracker
     /// The approximate time allows light differences in timestamps
     /// which are not critical as this is only a viewer.
     typedef message_filters::sync_policies::ApproximateTime<
-    sensor_msgs::msg::mage, sensor_msgs::CameraInfo,
+    sensor_msgs::msg::mage, sensor_msgs::msg::CameraInfo,
     geometry_msgs::PoseWithCovarianceStamped,
     visp_tracker::MovingEdgeSites,
     visp_tracker::KltPoints
     > syncPolicy_t;
 
     /// \brief Constructor.
-    TrackerViewer(ros::NodeHandle& nh,
-                  ros::NodeHandle& privateNh,
+    TrackerViewer(rclcpp::Node& nh,
+                  rclcpp::Node& privateNh,
                   volatile bool& exiting,
                   unsigned queueSize = 5u);
 
@@ -75,17 +75,17 @@ namespace visp_tracker
     /// \brief Hang until the first image is received.
     void waitForImage();
 
-    bool initCallback(visp_tracker::Init::Request& req,
-                      visp_tracker::Init::Response& res);
+    bool initCallback(visp_tracker::srv::Init::Request& req,
+                      visp_tracker::srv::Init::Response& res);
 
-    bool reconfigureCallback(visp_tracker::Init::Request& req,
-                             visp_tracker::Init::Response& res);
+    bool reconfigureCallback(visp_tracker::srv::Init::Request& req,
+                             visp_tracker::srv::Init::Response& res);
 
     /// \brief Callback used to received synchronized data.
     void
     callback
     (const sensor_msgs::msg::imageConstPtr& imageConst,
-     const sensor_msgs::CameraInfoConstPtr& infoConst,
+     const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst,
      const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
      const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst,
      const visp_tracker::KltPoints::ConstPtr& kltConst);
@@ -108,8 +108,8 @@ namespace visp_tracker
     /// \brief Queue size for all subscribers.
     unsigned queueSize_;
 
-    ros::NodeHandle& nodeHandle_;
-    ros::NodeHandle& nodeHandlePrivate_;
+    rclcpp::Node& nodeHandle_;
+    rclcpp::Node& nodeHandlePrivate_;
 
     /// \brief Image transport used to receive images.
     image_transport::ImageTransport imageTransport_;
@@ -146,7 +146,7 @@ namespace visp_tracker
     image_t image_;
 
     /// \brief Shared pointer to latest received camera information.
-    sensor_msgs::CameraInfoConstPtr info_;
+    sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
     /// \brief Last tracked object position, set to none if tracking failed.
     boost::optional<vpHomogeneousMatrix> cMo_;
     /// \brief Shared pointer to latest received moving edge sites.
@@ -159,7 +159,7 @@ namespace visp_tracker
     /// \brief Subscriber to image topic.
     image_transport::SubscriberFilter imageSubscriber_;
     /// \brief Subscriber to camera information topic.
-    message_filters::Subscriber<sensor_msgs::CameraInfo> cameraInfoSubscriber_;
+    message_filters::Subscriber<sensor_msgs::msg::CameraInfo> cameraInfoSubscriber_;
     /// \brief Subscriber to tracking result topic.
     message_filters::Subscriber<geometry_msgs::PoseWithCovarianceStamped>
     trackingResultSubscriber_;

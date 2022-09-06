@@ -1,6 +1,6 @@
 #ifndef VISP_TRACKER_NAMES_HH
 # define VISP_TRACKER_NAMES_HH
-# include <string>
+#include <string>
 
 namespace visp_tracker
 {

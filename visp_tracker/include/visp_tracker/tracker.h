@@ -1,30 +1,30 @@
 #ifndef VISP_TRACKER_TRACKER_HH
 # define VISP_TRACKER_TRACKER_HH
 
-# include <image_transport/image_transport.h>
+#include <image_transport/image_transport.h>
 
-# include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/twist_stamped.hpp>
 
-# include <sensor_msgs/msg/image.hpp>
-# include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 
-# include <tf2_ros/transform_broadcaster.h>
-# include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 
-# include <visp_tracker/srv/init.hpp>
-# include <visp_tracker/msg/model_based_settings_config.hpp>
-# include <visp_tracker/ModelBasedSettingsKltConfig.h>
-# include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
-# include <visp_tracker/MovingEdgeSites.h>
-# include <visp_tracker/KltPoints.h>
+#include <visp_tracker/srv/init.hpp>
+#include <visp_tracker/msg/model_based_settings_config.hpp>
+#include <visp_tracker/ModelBasedSettingsKltConfig.h>
+#include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
+#include <visp_tracker/MovingEdgeSites.h>
+#include <visp_tracker/KltPoints.h>
 
-# include <visp3/core/vpCameraParameters.h>
-# include <visp3/core/vpHomogeneousMatrix.h>
-# include <visp3/core/vpImage.h>
-# include <visp3/mbt/vpMbGenericTracker.h>
-# include <visp3/me/vpMe.h>
+#include <visp3/core/vpCameraParameters.h>
+#include <visp3/core/vpHomogeneousMatrix.h>
+#include <visp3/core/vpImage.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
+#include <visp3/me/vpMe.h>
 
-# include <string>
+#include <string>
 
 namespace visp_tracker
 {
@@ -33,13 +33,14 @@ namespace visp_tracker
   public:
     typedef vpImage<unsigned char> image_t;
 
-    typedef boost::function<bool (visp_tracker::Init::Request&,
-                                  visp_tracker::Init::Response& res)>
+    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
+                                  visp_tracker::srv::Init::Response& res)>
     initCallback_t;
 
     template<class ConfigType>
     struct reconfigureSrvStruct{
-      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
+// FIX TODO
+//      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
     };
 
     enum State
@@ -50,8 +51,8 @@ namespace visp_tracker
     };
 
 
-    Tracker (ros::NodeHandle& nh,
-             ros::NodeHandle& privateNh,
+    Tracker (rclcpp::Node& nh,
+             rclcpp::Node& privateNh,
              volatile bool& exiting,
              unsigned queueSize = 5u);
     
@@ -59,8 +60,8 @@ namespace visp_tracker
     
     void spin();
   protected:
-    bool initCallback(visp_tracker::Init::Request& req,
-                      visp_tracker::Init::Response& res);
+    bool initCallback(visp_tracker::srv::Init::Request& req,
+                      visp_tracker::srv::Init::Response& res);
 
     void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
     void updateKltPoints(visp_tracker::KltPointsPtr klt);
@@ -86,8 +87,8 @@ namespace visp_tracker
 
     unsigned queueSize_;
 
-    ros::NodeHandle& nodeHandle_;
-    ros::NodeHandle& nodeHandlePrivate_;
+    rclcpp::Node& nodeHandle_;
+    rclcpp::Node& nodeHandlePrivate_;
     image_transport::ImageTransport imageTransport_;
 
     State state_;
@@ -103,7 +104,7 @@ namespace visp_tracker
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
-    boost::recursive_mutex mutex_;
+    std::recursive_mutex mutex_;
 
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t *reconfigureSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
@@ -116,8 +117,8 @@ namespace visp_tracker
     ros::Publisher kltPointsPublisher_;
 
     ros::ServiceServer initService_;
-    std_msgs::Header header_;
-    sensor_msgs::CameraInfoConstPtr info_;
+    std_msgs::msg::Header header_;
+    sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
 
     vpKltOpencv kltTracker_;
     vpMe movingEdge_;

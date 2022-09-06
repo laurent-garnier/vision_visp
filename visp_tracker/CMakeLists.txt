@@ -84,7 +84,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 ament_export_dependencies(VISP)
 
-add_library(${PROJECT_NAME}_trackerlib
+add_library(${PROJECT_NAME}_common
   src/${PROJECT_NAME}/callbacks.cpp
   src/${PROJECT_NAME}/conversion.cpp
 #  src/${PROJECT_NAME}/file.cpp
@@ -93,7 +93,7 @@ add_library(${PROJECT_NAME}_trackerlib
 #  src/${PROJECT_NAME}/tracker-viewer.cpp
 #  src/${PROJECT_NAME}/tracker.cpp
 )
-ament_target_dependencies(${PROJECT_NAME}_trackerlib
+ament_target_dependencies(${PROJECT_NAME}_common
 #  dynamic_reconfigure
   geometry_msgs
   image_transport
@@ -111,13 +111,13 @@ ament_target_dependencies(${PROJECT_NAME}_trackerlib
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
 
-target_include_directories(${PROJECT_NAME}_trackerlib PUBLIC
+target_include_directories(${PROJECT_NAME}_common PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
 
-target_link_libraries(${PROJECT_NAME}_trackerlib
+target_link_libraries(${PROJECT_NAME}_common
   ${VISP_LIBRARIES}
   "${cpp_typesupport_target}"
   )

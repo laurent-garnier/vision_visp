@@ -3,10 +3,11 @@
 
 #include <tf2/transform_datatypes.h>
 
-# include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/image_encodings.hpp>
-# include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/distortion_models.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 
 #include <visp3/core/vpImage.h>
 #include <visp3/core/vpTranslationVector.h>
@@ -143,7 +144,7 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const geometry_msgs::Pose& src)
+                                    const geometry_msgs::msg::Pose& src)
 {
   vpQuaternionVector quaternion
       (src.orientation.x, src.orientation.y, src.orientation.z,
@@ -176,13 +177,13 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
-                                     visp_tracker::Init& srv)
+                                     visp_tracker::srv::Init& srv)
 {
   srv.request.tracker_param.angle_appear = vpMath::deg(tracker.getAngleAppear());
   srv.request.tracker_param.angle_disappear = vpMath::deg(tracker.getAngleDisappear());
 }
 
-void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
+void convertInitRequestToVpMbTracker(const visp_tracker::srv::Init::Request& req,
                                      vpMbGenericTracker &tracker)
 {
   tracker.setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
@@ -191,7 +192,7 @@ void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
                               const vpMbGenericTracker &tracker,
-                              visp_tracker::Init& srv)
+                              visp_tracker::srv::Init& srv)
 {
   srv.request.moving_edge.first_threshold = tracker.getGoodMovingEdgesRatioThreshold();
   srv.request.moving_edge.mask_size = moving_edge.getMaskSize();
@@ -203,7 +204,7 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
   srv.request.moving_edge.strip = moving_edge.getStrip();
 }
 
-void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
+void convertInitRequestToVpMe(const visp_tracker::srv::Init::Request& req,
                               vpMbGenericTracker &tracker,
                               vpMe& moving_edge)
 {
@@ -224,7 +225,7 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
 
 void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
                                      const vpMbGenericTracker &tracker,
-                                     visp_tracker::Init& srv)
+                                     visp_tracker::srv::Init& srv)
 {  
   srv.request.klt_param.max_features = klt.getMaxFeatures();
   srv.request.klt_param.window_size = klt.getWindowSize();
@@ -236,7 +237,7 @@ void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
   srv.request.klt_param.mask_border = tracker.getKltMaskBorder();
 }
 
-void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
+void convertInitRequestToVpKltOpencv(const visp_tracker::srv::Init::Request& req,
                                      vpMbGenericTracker &tracker,
                                      vpKltOpencv& klt)
 {  
@@ -253,7 +254,7 @@ void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
 }
 
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
-                                      sensor_msgs::CameraInfoConstPtr info)
+                                      sensor_msgs::msg::CameraInfo::ConstSharedPtr info)
 {
   if (!info)
     throw std::runtime_error ("missing camera calibration data");

@@ -1,9 +1,9 @@
 #include <stdexcept>
 #include <image_transport/image_transport.hpp>
-# include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/image.hpp>
 #include <visp3/core/vpImage.h>
 
-# include <visp_tracker/srv/init.hpp>
+#include <visp_tracker/srv/init.hpp>
 
 #include "visp_tracker/names.h"
 #include "visp_tracker/conversion.h"
@@ -13,7 +13,7 @@
 
 void imageCallback(vpImage<unsigned char>& image,
                    const sensor_msgs::msg::Image::ConstPtr& msg,
-                   const sensor_msgs::CameraInfoConstPtr& info)
+                   const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info)
 {
   try
   {
@@ -26,10 +26,10 @@ void imageCallback(vpImage<unsigned char>& image,
 }
 
 void imageCallback(vpImage<unsigned char>& image,
-                   std_msgs::Header& header,
-                   sensor_msgs::CameraInfoConstPtr& info,
+                   std_msgs::msg::Header& header,
+                   sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
                    const sensor_msgs::msg::Image::ConstPtr& msg,
-                   const sensor_msgs::CameraInfoConstPtr& infoConst)
+                   const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst)
 {
   imageCallback(image, msg, info);
   header = msg->header;
@@ -44,19 +44,19 @@ bindImageCallback(vpImage<unsigned char>& image)
 
 image_transport::CameraSubscriber::Callback
 bindImageCallback(vpImage<unsigned char>& image,
-                  std_msgs::Header& header,
-                  sensor_msgs::CameraInfoConstPtr& info)
+                  std_msgs::msg::Header& header,
+                  sensor_msgs::msg::CameraInfo::ConstSharedPtr& info)
 {
   return boost::bind
       (imageCallback,
        boost::ref(image), boost::ref(header), boost::ref(info), _1, _2);
 }
-
+/* FIX TODO
 void reconfigureCallback(vpMbGenericTracker &tracker,
                          vpImage<unsigned char>& I,
                          vpMe& moving_edge,
                          vpKltOpencv& kltTracker,
-                         boost::recursive_mutex& mutex,
+                         std::recursive_mutex& mutex,
                          visp_tracker::ModelBasedSettingsConfig& config,
                          uint32_t level)
 {
@@ -91,7 +91,7 @@ void reconfigureCallback(vpMbGenericTracker &tracker,
 void reconfigureEdgeCallback(vpMbGenericTracker &tracker,
                              vpImage<unsigned char>& I,
                              vpMe& moving_edge,
-                             boost::recursive_mutex& mutex,
+                             std::recursive_mutex& mutex,
                              visp_tracker::ModelBasedSettingsEdgeConfig& config,
                              uint32_t level)
 {
@@ -126,7 +126,7 @@ void reconfigureEdgeCallback(vpMbGenericTracker &tracker,
 void reconfigureKltCallback(vpMbGenericTracker &tracker,
                             vpImage<unsigned char>& I,
                             vpKltOpencv& kltTracker,
-                            boost::recursive_mutex& mutex,
+                            std::recursive_mutex& mutex,
                             visp_tracker::ModelBasedSettingsKltConfig& config,
                             uint32_t level)
 {
@@ -152,13 +152,14 @@ void reconfigureKltCallback(vpMbGenericTracker &tracker,
   }
   mutex.unlock ();
 }
+*/
 
-void reInitViewerCommonParameters(ros::NodeHandle& nh,
+void reInitViewerCommonParameters(rclcpp::Node& nh,
                                   vpMbGenericTracker &tracker)
 {
   ros::ServiceClient clientViewer =
-      nh.serviceClient<visp_tracker::Init>(visp_tracker::reconfigure_service_viewer);
-  visp_tracker::Init srv;
+      nh.serviceClient<visp_tracker::srv::Init>(visp_tracker::reconfigure_service_viewer);
+  visp_tracker::srv::Init srv;
   convertVpMbTrackerToInitRequest(tracker, srv);
   if (clientViewer.call(srv))
   {
@@ -168,13 +169,13 @@ void reInitViewerCommonParameters(ros::NodeHandle& nh,
       throw std::runtime_error("failed to initialize tracker viewer.");
   }
 }
-
-void reconfigureCallbackAndInitViewer(ros::NodeHandle& nh,
+/* FIX TODO
+void reconfigureCallbackAndInitViewer(rclcpp::Node& nh,
                                       vpMbGenericTracker &tracker,
                                       vpImage<unsigned char>& I,
                                       vpMe& moving_edge,
                                       vpKltOpencv& kltTracker,
-                                      boost::recursive_mutex& mutex,
+                                      std::recursive_mutex& mutex,
                                       visp_tracker::ModelBasedSettingsConfig& config,
                                       uint32_t level)
 {
@@ -182,11 +183,11 @@ void reconfigureCallbackAndInitViewer(ros::NodeHandle& nh,
   reInitViewerCommonParameters(nh,tracker);
 }
 
-void reconfigureEdgeCallbackAndInitViewer(ros::NodeHandle& nh,
+void reconfigureEdgeCallbackAndInitViewer(rclcpp::Node& nh,
                                           vpMbGenericTracker &tracker,
                                           vpImage<unsigned char>& I,
                                           vpMe& moving_edge,
-                                          boost::recursive_mutex& mutex,
+                                          std::recursive_mutex& mutex,
                                           visp_tracker::ModelBasedSettingsEdgeConfig& config,
                                           uint32_t level)
 {
@@ -194,14 +195,15 @@ void reconfigureEdgeCallbackAndInitViewer(ros::NodeHandle& nh,
   reInitViewerCommonParameters(nh,tracker);
 }
 
-void reconfigureKltCallbackAndInitViewer(ros::NodeHandle& nh,
+void reconfigureKltCallbackAndInitViewer(rclcpp::Node& nh,
                                          vpMbGenericTracker &tracker,
                                          vpImage<unsigned char>& I,
                                          vpKltOpencv& kltTracker,
-                                         boost::recursive_mutex& mutex,
+                                         std::recursive_mutex& mutex,
                                          visp_tracker::ModelBasedSettingsKltConfig& config,
                                          uint32_t level)
 {
   reconfigureKltCallback(tracker,I,kltTracker,mutex,config,level);
   reInitViewerCommonParameters(nh,tracker);
 }
+*/

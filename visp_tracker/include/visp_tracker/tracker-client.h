@@ -1,33 +1,33 @@
 #ifndef VISP_TRACKER_TRACKER_CLIENT_HH
 # define VISP_TRACKER_TRACKER_CLIENT_HH
 
-# include <dynamic_reconfigure/server.h>
+//#include <dynamic_reconfigure/server.h>
 
 
-# include <image_transport/image_transport.h>
-# include <image_transport/subscriber_filter.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber_filter.h>
 
-# include <message_filters/subscriber.h>
-# include <message_filters/sync_policies/approximate_time.h>
-# include <message_filters/synchronizer.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/synchronizer.h>
 
-# include <sensor_msgs/msg/image.hpp>
-# include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 
-# include <resource_retriever/retriever.h>
+#include <resource_retriever/retriever.h>
 
-# include <visp_tracker/msg/model_based_settings_config.hpp>
-# include <visp_tracker/ModelBasedSettingsKltConfig.h>
-# include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
-# include <visp_tracker/MovingEdgeSites.h>
+#include <visp_tracker/msg/model_based_settings_config.hpp>
+#include <visp_tracker/ModelBasedSettingsKltConfig.h>
+#include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
+#include <visp_tracker/MovingEdgeSites.h>
 
-# include <visp3/core/vpCameraParameters.h>
-# include <visp3/core/vpHomogeneousMatrix.h>
-# include <visp3/core/vpImage.h>
-# include <visp3/mbt/vpMbGenericTracker.h>
-# include <visp3/me/vpMe.h>
-# include <visp3/klt/vpKltOpencv.h>
-# include <visp3/vision/vpPose.h>
+#include <visp3/core/vpCameraParameters.h>
+#include <visp3/core/vpHomogeneousMatrix.h>
+#include <visp3/core/vpImage.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
+#include <visp3/me/vpMe.h>
+#include <visp3/klt/vpKltOpencv.h>
+#include <visp3/vision/vpPose.h>
 
 
 namespace visp_tracker
@@ -41,11 +41,12 @@ namespace visp_tracker
 
     template<class ConfigType>
     struct reconfigureSrvStruct{
-      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
+// FIX TODO
+//      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
     };
 
-    TrackerClient(ros::NodeHandle& nh,
-                  ros::NodeHandle& privateNh,
+    TrackerClient(rclcpp::Node& nh,
+                  rclcpp::Node& privateNh,
                   volatile bool& exiting,
                   unsigned queueSize = 5u);
     
@@ -90,8 +91,8 @@ namespace visp_tracker
 
     unsigned queueSize_;
 
-    ros::NodeHandle& nodeHandle_;
-    ros::NodeHandle& nodeHandlePrivate_;
+    rclcpp::Node& nodeHandle_;
+    rclcpp::Node& nodeHandlePrivate_;
 
     image_transport::ImageTransport imageTransport_;
 
@@ -112,13 +113,13 @@ namespace visp_tracker
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
-    boost::recursive_mutex mutex_;
+    std::recursive_mutex mutex_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t *reconfigureSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
 
-    std_msgs::Header header_;
-    sensor_msgs::CameraInfoConstPtr info_;
+    std_msgs::msg::Header header_;
+    sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
 
     vpMe movingEdge_;
     vpKltOpencv kltTracker_;

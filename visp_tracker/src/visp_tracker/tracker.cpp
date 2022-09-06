@@ -1,6 +1,6 @@
 /*#include <stdexcept>
 
-#include <dynamic_reconfigure/server.h>
+//#include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.h>
 #include <image_transport/image_transport.h>
 #include <rclcpp/param.h>
@@ -29,8 +29,8 @@
 namespace visp_tracker
 {
   bool
-  Tracker::initCallback(visp_tracker::Init::Request& req,
-                        visp_tracker::Init::Response& res)
+  Tracker::initCallback(visp_tracker::srv::Init::Request& req,
+                        visp_tracker::srv::Init::Response& res)
   {
     ROS_INFO("Initialization request received.");
 
@@ -278,8 +278,8 @@ void Tracker::checkInputs()
   checkInputs_.start(topics, 60.0);
 }
 
-Tracker::Tracker(ros::NodeHandle& nh,
-                 ros::NodeHandle& privateNh,
+Tracker::Tracker(rclcpp::Node& nh,
+                 rclcpp::Node& privateNh,
                  volatile bool& exiting,
                  unsigned queueSize)
   : exiting_ (exiting),
@@ -463,7 +463,7 @@ Tracker::Tracker(ros::NodeHandle& nh,
       boost::bind(&Tracker::initCallback, this, _1, _2);
 
   initService_ = nodeHandle_.advertiseService
-      (visp_tracker::init_service, initCallback);
+      (visp_tracker::srv::Init_service, initCallback);
 }
 
 Tracker::~Tracker()
@@ -482,7 +482,7 @@ void Tracker::spin()
 {
   ros::Rate loopRateTracking(100);
   tf2_ros::Transform transform;
-  std_msgs::Header lastHeader;
+  std_msgs::msg::Header lastHeader;
 
   while (!exiting())
   {
