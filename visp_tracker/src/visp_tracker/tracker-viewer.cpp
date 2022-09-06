@@ -391,7 +391,7 @@ namespace visp_tracker
 
   void
   TrackerViewer::callback
-  (const sensor_msgs::ImageConstPtr& image,
+  (const sensor_msgs::msg::imageConstPtr& image,
    const sensor_msgs::CameraInfoConstPtr& info,
    const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
    const visp_tracker::MovingEdgeSites::ConstPtr& sites,

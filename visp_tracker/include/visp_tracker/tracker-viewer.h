@@ -47,7 +47,7 @@ namespace visp_tracker
     /// The approximate time allows light differences in timestamps
     /// which are not critical as this is only a viewer.
     typedef message_filters::sync_policies::ApproximateTime<
-    sensor_msgs::Image, sensor_msgs::CameraInfo,
+    sensor_msgs::msg::mage, sensor_msgs::CameraInfo,
     geometry_msgs::PoseWithCovarianceStamped,
     visp_tracker::MovingEdgeSites,
     visp_tracker::KltPoints
@@ -84,7 +84,7 @@ namespace visp_tracker
     /// \brief Callback used to received synchronized data.
     void
     callback
-    (const sensor_msgs::ImageConstPtr& imageConst,
+    (const sensor_msgs::msg::imageConstPtr& imageConst,
      const sensor_msgs::CameraInfoConstPtr& infoConst,
      const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
      const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst,

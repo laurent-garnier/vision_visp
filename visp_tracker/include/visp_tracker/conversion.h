@@ -29,7 +29,7 @@
 /// \param dst ViSP destination image
 /// \param src ROS source image
 void rosImageToVisp(vpImage<unsigned char>& dst,
-                    const sensor_msgs::Image::ConstPtr& src);
+                    const sensor_msgs::msg::Image::ConstPtr& src);
 
 /// \brief Convert a ViSP image into a ROS one.
 ///
@@ -41,7 +41,7 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 ///
 /// \param dst ROS destination image
 /// \param src ViSP source image
-void vispImageToRos(sensor_msgs::Image& dst,
+void vispImageToRos(sensor_msgs::msg::Image& dst,
                     const vpImage<unsigned char>& src);
 
 std::string convertVpMbTrackerToRosMessage(const vpMbGenericTracker &tracker);
@@ -50,14 +50,14 @@ std::string convertVpMeToRosMessage(const vpMbGenericTracker &tracker, const vpM
 
 std::string convertVpKltOpencvToRosMessage(const vpMbGenericTracker &tracker, const vpKltOpencv& klt);
 
-void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
+void vpHomogeneousMatrixToTransform(geometry_msgs::msg::Transform& dst,
                                     const vpHomogeneousMatrix& src);
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const geometry_msgs::Transform& src);
+                                    const geometry_msgs::msg::Transform& src);
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const tf::Transform& src);
+                                    const tf2::Transform::Transform& src);
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
                                     const geometry_msgs::Pose& src);

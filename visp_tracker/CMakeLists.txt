@@ -87,11 +87,11 @@ ament_export_dependencies(VISP)
 add_library(${PROJECT_NAME}_trackerlib
   src/${PROJECT_NAME}/callbacks.cpp
   src/${PROJECT_NAME}/conversion.cpp
-  src/${PROJECT_NAME}/file.cpp
-  src/${PROJECT_NAME}/names.cpp
-  src/${PROJECT_NAME}/tracker-client.cpp
-  src/${PROJECT_NAME}/tracker-viewer.cpp
-  src/${PROJECT_NAME}/tracker.cpp
+#  src/${PROJECT_NAME}/file.cpp
+#  src/${PROJECT_NAME}/names.cpp
+#  src/${PROJECT_NAME}/tracker-client.cpp
+#  src/${PROJECT_NAME}/tracker-viewer.cpp
+#  src/${PROJECT_NAME}/tracker.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}_trackerlib
 #  dynamic_reconfigure

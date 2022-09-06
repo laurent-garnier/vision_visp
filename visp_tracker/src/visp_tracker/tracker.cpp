@@ -365,7 +365,7 @@ Tracker::Tracker(ros::NodeHandle& nh,
       (visp_tracker::object_position_covariance_topic, queueSize_);
 
   transformationPublisher_ =
-      nodeHandle_.advertise<geometry_msgs::TransformStamped>
+      nodeHandle_.advertise<geometry_msgs::msg::TransformStamped>
       (visp_tracker::object_position_topic, queueSize_);
 
   // Moving edge sites_ publisher.
@@ -386,12 +386,12 @@ Tracker::Tracker(ros::NodeHandle& nh,
 
   // Object position hint subscriber.
   typedef boost::function<
-      void (const geometry_msgs::TransformStampedConstPtr&)>
+      void (const geometry_msgs::msg::TransformStampedConstPtr&)>
       objectPositionHintCallback_t;
   objectPositionHintCallback_t callback =
       boost::bind (&Tracker::objectPositionHintCallback, this, _1);
   objectPositionHintSubscriber_ =
-      nodeHandle_.subscribe<geometry_msgs::TransformStamped>
+      nodeHandle_.subscribe<geometry_msgs::msg::TransformStamped>
       ("object_position_hint", queueSize_, callback);
 
   // Dynamic reconfigure.
@@ -481,7 +481,7 @@ Tracker::~Tracker()
 void Tracker::spin()
 {
   ros::Rate loopRateTracking(100);
-  tf::Transform transform;
+  tf2_ros::Transform transform;
   std_msgs::Header lastHeader;
 
   while (!exiting())
@@ -501,7 +501,7 @@ void Tracker::spin()
       if (compensateRobotMotion_)
         try
       {
-        tf::StampedTransform stampedTransform;
+       _ tf2_ros::StampedTransform stampedTransform;
         listener_.lookupTransform
             (header_.frame_id, // camera frame name
              header_.stamp,    // current image time
@@ -518,7 +518,7 @@ void Tracker::spin()
         tracker_.setPose(image_, cMo_);
         mutex_.unlock();
       }
-      catch(tf::TransformException& e)
+      catch(tf2_ros::TransformException& e)
       {
         mutex_.unlock();
       }
@@ -560,14 +560,14 @@ void Tracker::spin()
       // Publish the tracking result.
       if (state_ == TRACKING)
       {
-        geometry_msgs::Transform transformMsg;
+        geometry_msgs::msg::Transform transformMsg;
         vpHomogeneousMatrixToTransform(transformMsg, cMo_);
 
         // Publish position.
         if (transformationPublisher_.getNumSubscribers	() > 0)
         {
-          geometry_msgs::TransformStampedPtr objectPosition
-              (new geometry_msgs::TransformStamped);
+          geometry_msgs::msg::TransformStampedPtr objectPosition
+              (new geometry_msgs::msg::TransformStamped);
           objectPosition->header = header_;
           objectPosition->child_frame_id = childFrameId_;
           objectPosition->transform = transformMsg;
@@ -629,17 +629,17 @@ void Tracker::spin()
 
         // Publish to tf.
         transform.setOrigin
-            (tf::Vector3(transformMsg.translation.x,
+            (tf2_ros::Vector3(transformMsg.translation.x,
                          transformMsg.translation.y,
                          transformMsg.translation.z));
         transform.setRotation
-            (tf::Quaternion
+            (tf2_ros::Quaternion
              (transformMsg.rotation.x,
               transformMsg.rotation.y,
               transformMsg.rotation.z,
               transformMsg.rotation.w));
         transformBroadcaster_.sendTransform
-            (tf::StampedTransform
+            (tf2_ros::StampedTransform
              (transform,
               header_.stamp,
               header_.frame_id,
@@ -672,7 +672,7 @@ Tracker::waitForImage()
 
 void
 Tracker::objectPositionHintCallback
-(const geometry_msgs::TransformStampedConstPtr& transform)
+(const geometry_msgs::msg::TransformStampedConstPtr& transform)
 {
   objectPositionHint_ = *transform;
 }

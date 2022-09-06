@@ -69,7 +69,7 @@ namespace visp_tracker
     void waitForImage();
 
     void objectPositionHintCallback
-    (const geometry_msgs::TransformStampedConstPtr&);
+    (const geometry_msgs::msg::TransformStampedConstPtr&);
   private:
     bool exiting ()
     {
@@ -111,7 +111,7 @@ namespace visp_tracker
 
     ros::Publisher resultPublisher_;
     ros::Publisher transformationPublisher_;
-    tf::TransformBroadcaster tfBroadcaster_;
+    tf2_::TransformBroadcaster tfBroadcaster_;
     ros::Publisher movingEdgeSitesPublisher_;
     ros::Publisher kltPointsPublisher_;
 
@@ -128,15 +128,15 @@ namespace visp_tracker
 
     vpHomogeneousMatrix cMo_;
 
-    tf::TransformListener listener_;
+    tf2_ros::TransformListener listener_;
     std::string worldFrameId_;
     bool compensateRobotMotion_;
 
-    tf::TransformBroadcaster transformBroadcaster_;
+    tf2_ros::TransformBroadcaster transformBroadcaster_;
     std::string childFrameId_;
 
     ros::Subscriber objectPositionHintSubscriber_;
-    geometry_msgs::TransformStamped objectPositionHint_;
+    geometry_msgs::msg::TransformStamped objectPositionHint_;
   };
 } // end of namespace visp_tracker.
 

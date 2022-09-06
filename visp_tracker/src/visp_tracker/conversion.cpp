@@ -4,9 +4,9 @@
 #include <tf2/transform_datatypes.h>
 
 # include <sensor_msgs/msg/image.hpp>
-# include <sensor_msgs/msg/image_encodings.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 # include <sensor_msgs/msg/camera_info.hpp>
-#include <sensor_msgs/distortion_models.h>
+#include <sensor_msgs/distortion_models.hpp>
 
 #include <visp3/core/vpImage.h>
 #include <visp3/core/vpTranslationVector.h>
@@ -18,15 +18,15 @@
 #include "visp_tracker/conversion.h"
 
 void rosImageToVisp(vpImage<unsigned char>& dst,
-                    const sensor_msgs::Image::ConstPtr& src)
+                    const sensor_msgs::msg::image::ConstPtr& src)
 {
-  using sensor_msgs::image_encodings::RGB8;
-  using sensor_msgs::image_encodings::RGBA8;
-  using sensor_msgs::image_encodings::BGR8;
-  using sensor_msgs::image_encodings::BGRA8;
-  using sensor_msgs::image_encodings::MONO8;
-  using sensor_msgs::image_encodings::MONO16;
-  using sensor_msgs::image_encodings::numChannels;
+  using sensor_msgs::msg::image_encodings::RGB8;
+  using sensor_msgs::msg::image_encodings::RGBA8;
+  using sensor_msgs::msg::image_encodings::BGR8;
+  using sensor_msgs::msg::image_encodings::BGRA8;
+  using sensor_msgs::msg::image_encodings::MONO8;
+  using sensor_msgs::msg::image_encodings::MONO16;
+  using sensor_msgs::msg::image_encodings::numChannels;
 
   // Resize the image if necessary.
   if (src->width != dst.getWidth() || src->height != dst.getHeight())
@@ -63,12 +63,12 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
   }
 }
 
-void vispImageToRos(sensor_msgs::Image& dst,
+void vispImageToRos(sensor_msgs::msg::Image& dst,
                     const vpImage<unsigned char>& src)
 {
   dst.width = src.getWidth();
   dst.height = src.getHeight();
-  dst.encoding = sensor_msgs::image_encodings::MONO8;
+  dst.encoding = sensor_msgs::msg::image_encodings::MONO8;
   dst.step = src.getWidth();
   dst.data.resize(dst.height * dst.step);
   for(unsigned i = 0; i < src.getWidth (); ++i)
@@ -118,7 +118,7 @@ std::string convertVpKltOpencvToRosMessage(const vpMbGenericTracker &tracker, co
   return stream.str();
 }
 
-void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
+void vpHomogeneousMatrixToTransform(geometry_msgs::msg::Transform& dst,
                                     const vpHomogeneousMatrix& src)
 {
   vpQuaternionVector quaternion;
@@ -135,7 +135,7 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const geometry_msgs::Transform& src)
+                                    const geometry_msgs::msg::Transform& src)
 {
   vpTranslationVector translation(src.translation.x,src.translation.y,src.translation.z);
   vpQuaternionVector quaternion(src.rotation.x,src.rotation.y,src.rotation.z,src.rotation.w);
@@ -162,7 +162,7 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const tf::Transform& src)
+                                    const tf2_ros::Transform& src)
 {
   // Copy the rotation component.
   for(unsigned i = 0; i < 3; ++i)

@@ -20,14 +20,14 @@
 
 void
 imageCallback(vpImage<unsigned char>& image,
-              const sensor_msgs::Image::ConstPtr& msg,
+              const sensor_msgs::msg::Image::ConstPtr& msg,
               const sensor_msgs::CameraInfoConstPtr& info);
 
 void
 imageCallback(vpImage<unsigned char>& image,
               std_msgs::Header& header,
               sensor_msgs::CameraInfoConstPtr& info,
-              const sensor_msgs::Image::ConstPtr& msg,
+              const sensor_msgs::msg::Image::ConstPtr& msg,
               const sensor_msgs::CameraInfoConstPtr& infoConst);
 
 image_transport::CameraSubscriber::Callback

@@ -1,5 +1,5 @@
 #include <stdexcept>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 # include <sensor_msgs/msg/image.hpp>
 #include <visp3/core/vpImage.h>
 
@@ -12,7 +12,7 @@
 #include <visp3/mbt/vpMbGenericTracker.h>
 
 void imageCallback(vpImage<unsigned char>& image,
-                   const sensor_msgs::Image::ConstPtr& msg,
+                   const sensor_msgs::msg::Image::ConstPtr& msg,
                    const sensor_msgs::CameraInfoConstPtr& info)
 {
   try
@@ -28,7 +28,7 @@ void imageCallback(vpImage<unsigned char>& image,
 void imageCallback(vpImage<unsigned char>& image,
                    std_msgs::Header& header,
                    sensor_msgs::CameraInfoConstPtr& info,
-                   const sensor_msgs::Image::ConstPtr& msg,
+                   const sensor_msgs::msg::Image::ConstPtr& msg,
                    const sensor_msgs::CameraInfoConstPtr& infoConst)
 {
   imageCallback(image, msg, info);
