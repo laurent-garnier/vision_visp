@@ -2,25 +2,16 @@
 #include <fstream>
 #include <sstream>
 
-#include <boost/bind.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/format.hpp>
-#include <boost/optional.hpp>
-
-#include <ros/ros.h>
-#include <ros/param.h>
+#include <rclcpp/rclcpp.hpp>
 #include <image_transport/image_transport.h>
-
 #include <visp3/gui/vpDisplayX.h>
 
-#include "conversion.hh"
-#include "callbacks.hh"
-#include "file.hh"
-#include "names.hh"
+#include "visp_tracker/conversion.h"
+#include "visp_tracker/callbacks.h"
+#include "visp_tracker/file.h"
+#include "visp_tracker/names.h"
 
-#include "tracker-viewer.hh"
+#include "visp_tracker/tracker-viewer.h"
 
 namespace visp_tracker
 {

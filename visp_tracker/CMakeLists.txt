@@ -8,7 +8,6 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-#find_package(dynamic_reconfigure REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 #find_package(nodelet REQUIRED)
@@ -16,12 +15,9 @@ find_package(resource_retriever REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-
-# Internal packages
-find_package(VISP REQUIRED)
-
+find_package(VISP REQUIRED COMPONENTS visp_core visp_vision)
 
 
 # messages and services interface generation
@@ -37,13 +33,11 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES std_msgs sensor_msgs geometry_msgs
  )
 
-rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
-
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
 
 
 # ???
@@ -73,13 +67,13 @@ endforeach()
 #    VISP
 #  )
 
-include_directories(SYSTEM
-  ${VISP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-  )
+#include_directories(SYSTEM
+#  ${VISP_INCLUDE_DIRS}
+#  ${catkin_INCLUDE_DIRS}
+#  )
 
-include_directories(
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}")
+#include_directories(
+#  "${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}")
 
 #############
 # Libraries #
@@ -87,12 +81,10 @@ include_directories(
 
 # Library gathering libvisp_tracker used by all nodes.
 
-rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
+ament_export_dependencies(VISP)
 
-
-
-add_library(${PROJECT_NAME}_lib
+add_library(${PROJECT_NAME}_trackerlib
   src/${PROJECT_NAME}/callbacks.cpp
   src/${PROJECT_NAME}/conversion.cpp
   src/${PROJECT_NAME}/file.cpp
@@ -101,30 +93,39 @@ add_library(${PROJECT_NAME}_lib
   src/${PROJECT_NAME}/tracker-viewer.cpp
   src/${PROJECT_NAME}/tracker.cpp
 )
-ament_target_dependencies(${PROJECT_NAME}_lib
+ament_target_dependencies(${PROJECT_NAME}_trackerlib
 #  dynamic_reconfigure
   geometry_msgs
   image_transport
 #  message_generation
 #  nodelet
-  resource_retriever
+#  resource_retriever
   rclcpp
   sensor_msgs
   std_msgs
-  tf2
+  tf2_ros
+  rclcpp
+  VISP
   )
 
-target_include_directories(${PROJECT_NAME}_lib PUBLIC
+rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+
+
+target_include_directories(${PROJECT_NAME}_trackerlib PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
 
-target_link_libraries(${PROJECT_NAME}_lib
+target_link_libraries(${PROJECT_NAME}_trackerlib
   ${VISP_LIBRARIES}
   "${cpp_typesupport_target}"
   )
 
-install(DIRECTORY models
-  DESTINATION share/${PROJECT_NAME}
-)
+#install(DIRECTORY models
+#  DESTINATION share/${PROJECT_NAME}
+#)
+ament_export_dependencies(rosidl_default_runtime)
+
+ament_package()
+

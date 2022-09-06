@@ -1,9 +1,8 @@
 #ifndef VISP_TRACKER_CALLBACKS_HH
 # define VISP_TRACKER_CALLBACKS_HH
-# include <boost/thread/recursive_mutex.hpp>
 # include <image_transport/image_transport.h>
-# include <sensor_msgs/Image.h>
-# include <std_msgs/Header.h>
+# include <sensor_msgs/msg/image.hpp>
+# include <std_msgs/msg/header.hpp>
 
 # include <string>
 
@@ -12,9 +11,12 @@
 # include <visp3/me/vpMe.h>
 # include <visp3/klt/vpKltOpencv.h>
 
-# include <visp_tracker/ModelBasedSettingsConfig.h>
+/* TODO FIX:
+# include <visp_tracker/msg/model_based_settings_config.hpp>
+
 # include <visp_tracker/ModelBasedSettingsKltConfig.h>
 # include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
+*/
 
 void
 imageCallback(vpImage<unsigned char>& image,

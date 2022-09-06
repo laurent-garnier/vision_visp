@@ -1,12 +1,8 @@
 #ifndef VISP_TRACKER_TRACKER_CLIENT_HH
 # define VISP_TRACKER_TRACKER_CLIENT_HH
-# include <boost/filesystem/fstream.hpp>
-# include <boost/filesystem/path.hpp>
-# include <boost/thread/recursive_mutex.hpp>
 
 # include <dynamic_reconfigure/server.h>
 
-# include <image_proc/advertisement_checker.h>
 
 # include <image_transport/image_transport.h>
 # include <image_transport/subscriber_filter.h>
@@ -15,12 +11,12 @@
 # include <message_filters/sync_policies/approximate_time.h>
 # include <message_filters/synchronizer.h>
 
-# include <sensor_msgs/Image.h>
-# include <sensor_msgs/CameraInfo.h>
+# include <sensor_msgs/msg/image.hpp>
+# include <sensor_msgs/msg/camera_info.hpp>
 
 # include <resource_retriever/retriever.h>
 
-# include <visp_tracker/ModelBasedSettingsConfig.h>
+# include <visp_tracker/msg/model_based_settings_config.hpp>
 # include <visp_tracker/ModelBasedSettingsKltConfig.h>
 # include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
@@ -131,9 +127,6 @@ namespace visp_tracker
 
     bool startFromSavedPose_;
     bool confirmInit_;
-
-    /// \brief Helper used to check that subscribed topics exist.
-    image_proc::AdvertisementChecker checkInputs_;
 
     resource_retriever::Retriever resourceRetriever_;
   };

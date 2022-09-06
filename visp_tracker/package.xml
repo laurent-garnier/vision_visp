@@ -26,19 +26,19 @@
   <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>
 
 
-  <buildtool_depend>ament_cmake_ros</buildtool_depend>
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+   <buildtool_depend>ament_cmake_ros</buildtool_depend>
+   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <build_depend>message_generation</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
+  <build_depend>rclcpp</build_depend>
+<!--  <build_depend>rospy</build_depend> -->
   <build_depend>std_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
 <!--  <build_depend>image_proc</build_depend> -->
   <build_depend>image_transport</build_depend>
   <build_depend>resource_retriever</build_depend>
-  <build_depend>tf2</build_depend>
+  <build_depend>tf2_ros</build_depend>
   <!-- catkin_lint produce an error arround build_depend visp. -->
   <!-- This error shouldn't be considered. If build_depend visp is removed, -->
   <!-- the package is not able to build on ros buildfarm. -->
@@ -55,7 +55,7 @@
 <!--  <exec_depend>image_proc</exec_depend>-->
   <exec_depend>image_transport</exec_depend>
   <exec_depend>resource_retriever</exec_depend>
-  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>visp</exec_depend>
 
     <exec_depend>rosidl_default_runtime</exec_depend>

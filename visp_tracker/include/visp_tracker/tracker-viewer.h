@@ -1,11 +1,7 @@
 #ifndef VISP_TRACKER_TRACKER_VIEWER_HH
 # define VISP_TRACKER_TRACKER_VIEWER_HH
-# include <boost/filesystem/path.hpp>
-# include <boost/optional.hpp>
 
-# include <geometry_msgs/PoseWithCovarianceStamped.h>
-
-# include <image_proc/advertisement_checker.h>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.h>
 
 # include <image_transport/image_transport.h>
 # include <image_transport/subscriber_filter.h>
@@ -14,12 +10,12 @@
 # include <message_filters/sync_policies/approximate_time.h>
 # include <message_filters/synchronizer.h>
 
-# include <sensor_msgs/Image.h>
-# include <sensor_msgs/CameraInfo.h>
+# include <sensor_msgs/msg/image.hpp>
+# include <sensor_msgs/msg/camera_info.hpp>
 
-# include <visp_tracker/Init.h>
-# include <visp_tracker/MovingEdgeSites.h>
-# include <visp_tracker/KltPoints.h>
+# include <visp_tracker/srv/init.hpp>
+# include <visp_tracker/msg/moving_edge_sites.hpp>
+# include <visp_tracker/msg/klt_points.hpp>
 
 # include <visp3/core/vpCameraParameters.h>
 # include <visp3/core/vpImage.h>
@@ -141,9 +137,6 @@ namespace visp_tracker
 
     /// \brief Model path.
     boost::filesystem::path modelPath_;
-
-    /// \brief Helper used to check that subscribed topics exist.
-    image_proc::AdvertisementChecker checkInputs_;
 
     /// \brief ViSP edge tracker.
     vpMbGenericTracker tracker_;

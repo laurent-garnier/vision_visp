@@ -3,21 +3,13 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/fstream.hpp>
-#include <boost/format.hpp>
-#include <boost/optional.hpp>
-#include <boost/version.hpp>
-
-#include <ros/ros.h>
-#include <ros/param.h>
-#include <ros/package.h>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/param.h>
+#include <rclcpp/package.h>
 #include <dynamic_reconfigure/server.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <image_proc/advertisement_checker.h>
-#include <image_transport/image_transport.h>
-#include <visp_tracker/Init.h>
-#include <visp_tracker/ModelBasedSettingsConfig.h>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.h>
+# include <visp_tracker/srv/init.hpp>
+#include <visp_tracker/msg/model_based_settings_config.hpp>
 
 #include <visp3/me/vpMe.h>
 #include <visp3/core/vpPixelMeterConversion.h>
@@ -29,12 +21,12 @@
 #include <visp3/io/vpImageIo.h>
 #include <visp3/core/vpIoTools.h>
 
-#include "conversion.hh"
-#include "callbacks.hh"
-#include "file.hh"
-#include "names.hh"
+#include "visp_tracker/conversion.h"
+#include "visp_tracker/callbacks.h"
+#include "visp_tracker/file.h"
+#include "visp_tracker/names.h"
 
-#include "tracker-client.hh"
+#include "visp_tracker/tracker-client.h"
 
 
 namespace visp_tracker

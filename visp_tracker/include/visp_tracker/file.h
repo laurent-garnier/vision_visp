@@ -2,7 +2,7 @@
 # define VISP_TRACKER_FILE_HH
 # include <string>
 
-# include "names.hh"
+# include "visp_tracker/names.h"
 
 std::string
 getInitFileFromModelName(const std::string& modelName,

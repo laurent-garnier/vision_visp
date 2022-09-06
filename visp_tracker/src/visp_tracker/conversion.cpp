@@ -1,12 +1,11 @@
 #include <cstring>
 #include <stdexcept>
 
-#include <boost/format.hpp>
+#include <tf2/transform_datatypes.h>
 
-#include <tf/transform_datatypes.h>
-
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/image_encodings.h>
+# include <sensor_msgs/msg/image.hpp>
+# include <sensor_msgs/msg/image_encodings.hpp>
+# include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/distortion_models.h>
 
 #include <visp3/core/vpImage.h>
@@ -16,7 +15,7 @@
 #include <visp3/mbt/vpMbGenericTracker.h>
 
 
-#include "conversion.hh"
+#include "visp_tracker/conversion.h"
 
 void rosImageToVisp(vpImage<unsigned char>& dst,
                     const sensor_msgs::Image::ConstPtr& src)

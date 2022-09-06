@@ -1,33 +1,26 @@
-#include <stdexcept>
-
-#include <boost/filesystem/fstream.hpp>
-#include <boost/format.hpp>
-#include <boost/scope_exit.hpp>
-#include <boost/version.hpp>
+/*#include <stdexcept>
 
 #include <dynamic_reconfigure/server.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <image_proc/advertisement_checker.h>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.h>
 #include <image_transport/image_transport.h>
-#include <ros/param.h>
-#include <ros/ros.h>
-#include <ros/transport_hints.h>
+#include <rclcpp/param.h>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/transport_hints.h>
 #include <sensor_msgs/Image.h>
-#include <std_msgs/String.h>
+#include <std_msgs/msg/string.hpp>
 #include <tf/transform_broadcaster.h>
 
-#include <boost/bind.hpp>
 #include <visp3/core/vpExponentialMap.h>
 #include <visp3/core/vpImage.h>
 #include <visp3/core/vpImageConvert.h>
 #include <visp3/core/vpCameraParameters.h>
+*/
+#include "visp_tracker/tracker.h"
 
-#include "tracker.hh"
-
-#include "conversion.hh"
-#include "callbacks.hh"
-#include "file.hh"
-#include "names.hh"
+#include "visp_tracker/conversion.h"
+#include "visp_tracker/callbacks.h"
+#include "visp_tracker/file.h"
+#include "visp_tracker/names.h"
 
 // TODO:
 // - add a topic allowing to suggest an estimation of the cMo

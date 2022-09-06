@@ -3,14 +3,10 @@
 #include <iostream>
 #include <string>
 
-#include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/format.hpp>
+#include <rclcpp/rclcpp.hpp>
 
-#include <ros/ros.h>
-
-#include "file.hh"
-#include "names.hh"
+#include "visp_tracker/file.h"
+#include "visp_tracker/names.h"
 
 
 std::string

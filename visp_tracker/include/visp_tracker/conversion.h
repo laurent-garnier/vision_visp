@@ -1,15 +1,14 @@
 #ifndef VISP_TRACKER_CONVERSION_HH
 # define VISP_TRACKER_CONVERSION_HH
-# include <boost/optional.hpp>
 
-# include <ros/ros.h>
+# include <rclcpp/rclcpp.hpp>
 
-# include <geometry_msgs/Transform.h>
-# include <sensor_msgs/Image.h>
-# include <sensor_msgs/CameraInfo.h>
-# include <tf/transform_datatypes.h>
+# include <geometry_msgs/msg/transform.h>
+# include <sensor_msgs/msg/image.hpp>
+# include <sensor_msgs/msg/camera_info.hpp>
+# include <tf2/transform_datatypes.h>
 
-# include <visp_tracker/Init.h>
+# include <visp_tracker/srv/init.hpp>
 
 # include <visp3/core/vpConfig.h>
 # include <visp3/mbt/vpMbGenericTracker.h>

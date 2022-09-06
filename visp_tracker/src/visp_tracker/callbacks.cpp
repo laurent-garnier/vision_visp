@@ -1,14 +1,13 @@
 #include <stdexcept>
-#include <boost/bind.hpp>
 #include <image_transport/image_transport.h>
-#include <sensor_msgs/Image.h>
+# include <sensor_msgs/msg/image.hpp>
 #include <visp3/core/vpImage.h>
 
-#include <visp_tracker/Init.h>
+# include <visp_tracker/srv/init.hpp>
 
-#include "names.hh"
-#include "conversion.hh"
-#include "callbacks.hh"
+#include "visp_tracker/names.h"
+#include "visp_tracker/conversion.h"
+#include "visp_tracker/callbacks.h"
 
 #include <visp3/mbt/vpMbGenericTracker.h>
 
