@@ -110,11 +110,11 @@ namespace visp_tracker
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
 
-    ros::Publisher resultPublisher_;
-    ros::Publisher transformationPublisher_;
+    rclcpp::Publisher<geometry_msgs::PoseWithCovarianceStamped>::SharedPtr resultPublisher_;
+    rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transformationPublisher_;
     tf2_::TransformBroadcaster tfBroadcaster_;
-    ros::Publisher movingEdgeSitesPublisher_;
-    ros::Publisher kltPointsPublisher_;
+    rclcpp::Publisher<visp_tracker::MovingEdgeSites>::SharedPtr  movingEdgeSitesPublisher_;
+    rclcpp::Publisher<visp_tracker::KltPoints>::SharedPtr  kltPointsPublisher_;
 
     ros::ServiceServer initService_;
     std_msgs::msg::Header header_;

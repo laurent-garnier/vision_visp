@@ -32,7 +32,7 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
   // Resize the image if necessary.
   if (src->width != dst.getWidth() || src->height != dst.getHeight())
   {
-    ROS_INFO("dst is %dx%d but src size is %dx%d, resizing.",
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"dst is %dx%d but src size is %dx%d, resizing.",
              dst.getWidth (), dst.getHeight (), src->width, src->height);
     dst.resize (src->height, src->width);
   }

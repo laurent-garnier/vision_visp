@@ -32,7 +32,7 @@ namespace visp_tracker
   Tracker::initCallback(visp_tracker::srv::Init::Request& req,
                         visp_tracker::srv::Init::Response& res)
   {
-    ROS_INFO("Initialization request received.");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Initialization request received.");
 
     res.initialization_succeed = false;
 
@@ -105,10 +105,10 @@ namespace visp_tracker
     }
     catch(...)
     {
-      ROS_ERROR_STREAM("Failed to load the model: " << fullModelPath);
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Failed to load the model: " << fullModelPath);
       return true;
     }
-    ROS_DEBUG("Model has been successfully loaded.");
+    RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"),"Model has been successfully loaded.");
 
     // Load the initial cMo.
     transformToVpHomogeneousMatrix(cMo_, req.initial_cMo);
@@ -117,25 +117,25 @@ namespace visp_tracker
     tracker_.setCovarianceComputation(true);
 
     // Try to initialize the tracker.
-    ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo_);
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Initializing tracker with cMo:\n" << cMo_);
     try
     {
       // Bug between setPose() and initFromPose() not present here due to previous call to resetTracker()
       tracker_.initFromPose(image_, cMo_);
-      ROS_INFO("Tracker successfully initialized.");
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Tracker successfully initialized.");
 
       //movingEdge.print();
-      ROS_INFO_STREAM(convertVpMbTrackerToRosMessage(tracker_));
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpMbTrackerToRosMessage(tracker_));
       // - Moving edges.
       if(trackerType_!="klt")
-        ROS_INFO_STREAM(convertVpMeToRosMessage(tracker_, movingEdge_));
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpMeToRosMessage(tracker_, movingEdge_));
 
       if(trackerType_!="mbt")
-        ROS_INFO_STREAM(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
     }
     catch(const std::string& str)
     {
-      ROS_ERROR_STREAM("Tracker initialization has failed: " << str);
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Tracker initialization has failed: " << str);
     }
 
     // Initialization is valid.
@@ -382,7 +382,9 @@ Tracker::Tracker(rclcpp::Node& nh,
   cameraSubscriber_ =
       imageTransport_.subscribeCamera
       (rectifiedImageTopic_, queueSize_,
-       bindImageCallback(image_, header_, info_));
+      boost::bind
+      (imageCallback,
+       boost::ref(image), boost::ref(header_), boost::ref(info_), _1, _2));
 
   // Object position hint subscriber.
   typedef boost::function<
@@ -456,7 +458,7 @@ Tracker::Tracker(rclcpp::Node& nh,
   tracker_.setCameraParameters(cameraParameters_);
   tracker_.setDisplayFeatures(false);
 
-  ROS_INFO_STREAM(cameraParameters_);
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(cameraParameters_);
 
   // Service declaration.
   initCallback_t initCallback =

@@ -21,7 +21,7 @@ void imageCallback(vpImage<unsigned char>& image,
   }
   catch(std::exception& e)
   {
-    ROS_ERROR_STREAM("dropping frame: " << e.what());
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"dropping frame: " << e.what());
   }
 }
 
@@ -36,21 +36,6 @@ void imageCallback(vpImage<unsigned char>& image,
   info = infoConst;
 }
 
-image_transport::CameraSubscriber::Callback
-bindImageCallback(vpImage<unsigned char>& image)
-{
-  return boost::bind(imageCallback, boost::ref(image), _1, _2);
-}
-
-image_transport::CameraSubscriber::Callback
-bindImageCallback(vpImage<unsigned char>& image,
-                  std_msgs::msg::Header& header,
-                  sensor_msgs::msg::CameraInfo::ConstSharedPtr& info)
-{
-  return boost::bind
-      (imageCallback,
-       boost::ref(image), boost::ref(header), boost::ref(info), _1, _2);
-}
 /* FIX TODO
 void reconfigureCallback(vpMbGenericTracker &tracker,
                          vpImage<unsigned char>& I,
@@ -63,7 +48,7 @@ void reconfigureCallback(vpMbGenericTracker &tracker,
   mutex.lock ();
   try
   {
-    ROS_INFO("Reconfigure Model Based Hybrid Tracker request received.");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Reconfigure Model Based Hybrid Tracker request received.");
 
     convertModelBasedSettingsConfigToVpMbTracker<visp_tracker::ModelBasedSettingsConfig>(config, tracker);
 
@@ -99,7 +84,7 @@ void reconfigureEdgeCallback(vpMbGenericTracker &tracker,
   mutex.lock ();
   try
   {
-    ROS_INFO("Reconfigure Model Based Edge Tracker request received.");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Reconfigure Model Based Edge Tracker request received.");
 
     convertModelBasedSettingsConfigToVpMbTracker<visp_tracker::ModelBasedSettingsEdgeConfig>(config, tracker);
     convertModelBasedSettingsConfigToVpMe<visp_tracker::ModelBasedSettingsEdgeConfig>(config, moving_edge, tracker);
@@ -133,7 +118,7 @@ void reconfigureKltCallback(vpMbGenericTracker &tracker,
   mutex.lock ();
   try
   {
-    ROS_INFO("Reconfigure Model Based KLT Tracker request received.");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Reconfigure Model Based KLT Tracker request received.");
 
     convertModelBasedSettingsConfigToVpMbTracker<visp_tracker::ModelBasedSettingsKltConfig>(config, tracker);
     convertModelBasedSettingsConfigToVpKltOpencv<visp_tracker::ModelBasedSettingsKltConfig>(config, kltTracker, tracker);
@@ -156,15 +141,16 @@ void reconfigureKltCallback(vpMbGenericTracker &tracker,
 
 void reInitViewerCommonParameters(rclcpp::Node& nh,
                                   vpMbGenericTracker &tracker)
-{
-  ros::ServiceClient clientViewer =
-      nh.serviceClient<visp_tracker::srv::Init>(visp_tracker::reconfigure_service_viewer);
+{  
+  rclcpp::Client<visp_tracker::srv::Init>::SharedPtr clientViewer =
+      nh.create_client<visp_tracker::srv::Init>(visp_tracker::reconfigure_service_viewer);
+      
   visp_tracker::srv::Init srv;
   convertVpMbTrackerToInitRequest(tracker, srv);
   if (clientViewer.call(srv))
   {
     if (srv.response.initialization_succeed)
-      ROS_INFO("Tracker Viewer initialized with success.");
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Tracker Viewer initialized with success.");
     else
       throw std::runtime_error("failed to initialize tracker viewer.");
   }

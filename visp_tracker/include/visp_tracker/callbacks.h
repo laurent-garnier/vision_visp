@@ -30,14 +30,6 @@ imageCallback(vpImage<unsigned char>& image,
               const sensor_msgs::msg::Image::ConstPtr& msg,
               const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst);
 
-image_transport::CameraSubscriber::Callback
-bindImageCallback(vpImage<unsigned char>& image);
-
-image_transport::CameraSubscriber::Callback
-bindImageCallback(vpImage<unsigned char>& image,
-                  std_msgs::msg::Header& header,
-                  sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
-
 /*
 void reconfigureCallback(vpMbGenericTracker &tracker,
                          vpImage<unsigned char>& I,

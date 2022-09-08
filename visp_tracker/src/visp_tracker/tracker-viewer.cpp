@@ -35,7 +35,7 @@ namespace visp_tracker
     if (!makeModelFile(modelStream, path))
       throw std::runtime_error("failed to load the model from the callback");
     //ROS_WARN_STREAM("Make model Viewer: " << path.c_str());
-    ROS_INFO_STREAM("Model loaded from the service.");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Model loaded from the service.");
     modelPath_ = path;
     tracker_.resetTracker();
     initializeTracker();
@@ -52,7 +52,7 @@ namespace visp_tracker
                                      visp_tracker::srv::Init::Response& res)
   {
     // Common parameters
-    ROS_INFO_STREAM("Reconfiguring Tracker Viewer.");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Reconfiguring Tracker Viewer.");
     convertInitRequestToVpMbTracker(req, tracker_);
 
     res.initialization_succeed = true;
@@ -170,7 +170,7 @@ namespace visp_tracker
       throw std::runtime_error
         ("failed to load the model from the parameter server");
 
-    ROS_INFO_STREAM("Model loaded from the parameter server.");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Model loaded from the parameter server.");
     //ROS_WARN_STREAM("Make model Viewer: " << path.c_str());
     modelPath_ = path;
 
@@ -404,7 +404,7 @@ namespace visp_tracker
     }
     catch(std::exception& e)
     {
-      ROS_ERROR_STREAM("dropping frame: " << e.what());
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"dropping frame: " << e.what());
     }
 
     // Copy moving camera infos, edges sites and optional KLT points.
