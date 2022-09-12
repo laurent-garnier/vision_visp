@@ -138,7 +138,7 @@ void reconfigureKltCallback(vpMbGenericTracker &tracker,
   mutex.unlock ();
 }
 */
-
+/*
 void reInitViewerCommonParameters(rclcpp::Node& nh,
                                   vpMbGenericTracker &tracker)
 {  
@@ -147,14 +147,24 @@ void reInitViewerCommonParameters(rclcpp::Node& nh,
       
   visp_tracker::srv::Init srv;
   convertVpMbTrackerToInitRequest(tracker, srv);
-  if (clientViewer.call(srv))
+  
+  // Call service
+  auto srv_request = std::make_shared<visp_tracker::srv::Init::Request>();
+
+   auto result = clientViewer->async_send_request(srv_request);
+   // Wait for the result.
+ //  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("add_two_ints_client");
+ 
+  //   if (srv.Response.initialization_succeed)
+   if (rclcpp::spin_until_future_complete(nh, result) ==
+    rclcpp::FutureReturnCode::SUCCESS)  // FIX ?
   {
-    if (srv.response.initialization_succeed)
-      RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Tracker Viewer initialized with success.");
-    else
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Tracker Viewer initialized with success.");
+  } else {
       throw std::runtime_error("failed to initialize tracker viewer.");
   }
 }
+*/
 /* FIX TODO
 void reconfigureCallbackAndInitViewer(rclcpp::Node& nh,
                                       vpMbGenericTracker &tracker,

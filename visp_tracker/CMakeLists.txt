@@ -82,13 +82,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 # Library gathering libvisp_tracker used by all nodes.
 
 
-ament_export_dependencies(VISP)
+#ament_export_dependencies(VISP)
 
 add_library(${PROJECT_NAME}_common
   src/${PROJECT_NAME}/callbacks.cpp
   src/${PROJECT_NAME}/conversion.cpp
-#  src/${PROJECT_NAME}/file.cpp
-#  src/${PROJECT_NAME}/names.cpp
+  src/${PROJECT_NAME}/file.cpp
+  src/${PROJECT_NAME}/names.cpp
 #  src/${PROJECT_NAME}/tracker-client.cpp
 #  src/${PROJECT_NAME}/tracker-viewer.cpp
 #  src/${PROJECT_NAME}/tracker.cpp

@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 #include <tf2/transform_datatypes.h>
-
+#include <tf2/LinearMath/Transform.h>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -19,15 +19,15 @@
 #include "visp_tracker/conversion.h"
 
 void rosImageToVisp(vpImage<unsigned char>& dst,
-                    const sensor_msgs::msg::image::ConstPtr& src)
+                    const sensor_msgs::msg::Image::ConstPtr& src)
 {
-  using sensor_msgs::msg::image_encodings::RGB8;
-  using sensor_msgs::msg::image_encodings::RGBA8;
-  using sensor_msgs::msg::image_encodings::BGR8;
-  using sensor_msgs::msg::image_encodings::BGRA8;
-  using sensor_msgs::msg::image_encodings::MONO8;
-  using sensor_msgs::msg::image_encodings::MONO16;
-  using sensor_msgs::msg::image_encodings::numChannels;
+  using sensor_msgs::image_encodings::RGB8;
+  using sensor_msgs::image_encodings::RGBA8;
+  using sensor_msgs::image_encodings::BGR8;
+  using sensor_msgs::image_encodings::BGRA8;
+  using sensor_msgs::image_encodings::MONO8;
+  using sensor_msgs::image_encodings::MONO16;
+  using sensor_msgs::image_encodings::numChannels;
 
   // Resize the image if necessary.
   if (src->width != dst.getWidth() || src->height != dst.getHeight())
@@ -37,15 +37,15 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
     dst.resize (src->height, src->width);
   }
 
-  if(src->encoding == MONO8) {
+  if(src->encoding == sensor_msgs::image_encodings::MONO8) {
     memcpy(dst.bitmap, &src->data[0], dst.getHeight () * src->step * sizeof(unsigned char));
   }
-  else if(src->encoding == RGB8 || src->encoding == RGBA8
-          || src->encoding == BGR8 || src->encoding == BGRA8)
+  else if(src->encoding == sensor_msgs::image_encodings::RGB8 || src->encoding == RGBA8
+          || src->encoding == sensor_msgs::image_encodings::BGR8 || src->encoding == sensor_msgs::image_encodings::BGRA8)
   {
-    unsigned nc = numChannels(src->encoding);
+    unsigned nc = sensor_msgs::image_encodings::numChannels(src->encoding);
     unsigned cEnd =
-        (src->encoding == RGBA8 || src->encoding == BGRA8) ? nc - 1 : nc;
+        (src->encoding == RGBA8 || src->encoding == sensor_msgs::image_encodings::BGRA8) ? nc - 1 : nc;
 
     for(unsigned i = 0; i < dst.getWidth (); ++i)
       for(unsigned j = 0; j < dst.getHeight (); ++j)
@@ -58,9 +58,7 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
   }
   else
   {
-    boost::format fmt("bad encoding '%1'");
-    fmt % src->encoding;
-    throw std::runtime_error(fmt.str());
+    throw std::runtime_error("bad encoding "+src->encoding);
   }
 }
 
@@ -69,7 +67,7 @@ void vispImageToRos(sensor_msgs::msg::Image& dst,
 {
   dst.width = src.getWidth();
   dst.height = src.getHeight();
-  dst.encoding = sensor_msgs::msg::image_encodings::MONO8;
+  dst.encoding = sensor_msgs::image_encodings::MONO8;
   dst.step = src.getWidth();
   dst.data.resize(dst.height * dst.step);
   for(unsigned i = 0; i < src.getWidth (); ++i)
@@ -163,11 +161,12 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const tf2_ros::Transform& src)
+                                    const tf2::Transform& src)
 {
   // Copy the rotation component.
   for(unsigned i = 0; i < 3; ++i)
     for(unsigned j = 0; j < 3; ++j)
+    // FIX TODO
       dst[i][j] = src.getBasis ()[i][j];
 
   // Copy the translation component.
@@ -179,8 +178,8 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
                                      visp_tracker::srv::Init& srv)
 {
-  srv.request.tracker_param.angle_appear = vpMath::deg(tracker.getAngleAppear());
-  srv.request.tracker_param.angle_disappear = vpMath::deg(tracker.getAngleDisappear());
+  srv.Request.tracker_param.angle_appear = vpMath::deg(tracker.getAngleAppear());
+  srv.Request.tracker_param.angle_disappear = vpMath::deg(tracker.getAngleDisappear());
 }
 
 void convertInitRequestToVpMbTracker(const visp_tracker::srv::Init::Request& req,
@@ -194,14 +193,14 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
                               const vpMbGenericTracker &tracker,
                               visp_tracker::srv::Init& srv)
 {
-  srv.request.moving_edge.first_threshold = tracker.getGoodMovingEdgesRatioThreshold();
-  srv.request.moving_edge.mask_size = moving_edge.getMaskSize();
-  srv.request.moving_edge.range = moving_edge.getRange();
-  srv.request.moving_edge.threshold = moving_edge.getThreshold();
-  srv.request.moving_edge.mu1 = moving_edge.getMu1();
-  srv.request.moving_edge.mu2 = moving_edge.getMu2();
-  srv.request.moving_edge.sample_step = moving_edge.getSampleStep();
-  srv.request.moving_edge.strip = moving_edge.getStrip();
+  srv.Request.moving_edge.first_threshold = tracker.getGoodMovingEdgesRatioThreshold();
+  srv.Request.moving_edge.mask_size = moving_edge.getMaskSize();
+  srv.Request.moving_edge.range = moving_edge.getRange();
+  srv.Request.moving_edge.threshold = moving_edge.getThreshold();
+  srv.Request.moving_edge.mu1 = moving_edge.getMu1();
+  srv.Request.moving_edge.mu2 = moving_edge.getMu2();
+  srv.Request.moving_edge.sample_step = moving_edge.getSampleStep();
+  srv.Request.moving_edge.strip = moving_edge.getStrip();
 }
 
 void convertInitRequestToVpMe(const visp_tracker::srv::Init::Request& req,
@@ -227,14 +226,14 @@ void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
                                      const vpMbGenericTracker &tracker,
                                      visp_tracker::srv::Init& srv)
 {  
-  srv.request.klt_param.max_features = klt.getMaxFeatures();
-  srv.request.klt_param.window_size = klt.getWindowSize();
-  srv.request.klt_param.quality = klt.getQuality();
-  srv.request.klt_param.min_distance = klt.getMinDistance();
-  srv.request.klt_param.harris = klt.getHarrisFreeParameter();
-  srv.request.klt_param.size_block = klt.getBlockSize();
-  srv.request.klt_param.pyramid_lvl = klt.getPyramidLevels();
-  srv.request.klt_param.mask_border = tracker.getKltMaskBorder();
+  srv.Request.klt_param.max_features = klt.getMaxFeatures();
+  srv.Request.klt_param.window_size = klt.getWindowSize();
+  srv.Request.klt_param.quality = klt.getQuality();
+  srv.Request.klt_param.min_distance = klt.getMinDistance();
+  srv.Request.klt_param.harris = klt.getHarrisFreeParameter();
+  srv.Request.klt_param.size_block = klt.getBlockSize();
+  srv.Request.klt_param.pyramid_lvl = klt.getPyramidLevels();
+  srv.Request.klt_param.mask_border = tracker.getKltMaskBorder();
 }
 
 void convertInitRequestToVpKltOpencv(const visp_tracker::srv::Init::Request& req,
@@ -261,30 +260,30 @@ void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
 
   // Check that the camera is calibrated, as specified in the
   // sensor_msgs/CameraInfo message documentation.
-  if (info->K.size() != 3 * 3 || info->K[0] == 0.)
+  if (info->k.size() != 3 * 3 || info->k[0] == 0.)
     throw std::runtime_error ("uncalibrated camera");
 
   // Check matrix size.
-  if (!info || info->P.size() != 3 * 4)
+  if (!info || info->p.size() != 3 * 4)
     throw std::runtime_error
       ("camera calibration P matrix has an incorrect size");
 
   if (info->distortion_model.empty ())
   {
-    const double& px = info->K[0 * 3 + 0];
-    const double& py = info->K[1 * 3 + 1];
-    const double& u0 = info->K[0 * 3 + 2];
-    const double& v0 = info->K[1 * 3 + 2];
+    const double& px = info->k[0 * 3 + 0];
+    const double& py = info->k[1 * 3 + 1];
+    const double& u0 = info->k[0 * 3 + 2];
+    const double& v0 = info->k[1 * 3 + 2];
     cam.initPersProjWithoutDistortion(px, py, u0, v0);
     return;
   }
 
   if (info->distortion_model == sensor_msgs::distortion_models::PLUMB_BOB)
   {
-    const double& px = info->P[0 * 4 + 0];
-    const double& py = info->P[1 * 4 + 1];
-    const double& u0 = info->P[0 * 4 + 2];
-    const double& v0 = info->P[1 * 4 + 2];
+    const double& px = info->p[0 * 4 + 0];
+    const double& py = info->p[1 * 4 + 1];
+    const double& u0 = info->p[0 * 4 + 2];
+    const double& v0 = info->p[1 * 4 + 2];
     cam.initPersProjWithoutDistortion(px, py, u0, v0);
     return;
   }

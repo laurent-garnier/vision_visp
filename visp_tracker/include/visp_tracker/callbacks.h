@@ -53,10 +53,10 @@ void reconfigureKltCallback(vpMbGenericTracker &tracker,
                             visp_tracker::ModelBasedSettingsKltConfig& config,
                             uint32_t level);
 */
+/* TODO FIX 
 void reInitViewerCommonParameters(rclcpp::Node& nh,
                                   vpMbGenericTracker &tracker);
 
-/* TODO FIX 
 void reconfigureCallbackAndInitViewer(rclcpp::Node& nh,
                                       vpMbGenericTracker &tracker,
                                       vpImage<unsigned char>& I,

@@ -329,7 +329,7 @@ namespace visp_tracker
     std::string modelDescription = fetchResource(modelPathAndExt_);
     nodeHandle_.setParam (model_description_param, modelDescription);
 
-    vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
+    vpHomogeneousMatrixToTransform(srv.Request.initial_cMo, cMo);
     
     convertVpMbTrackerToInitRequest(tracker_, srv);
 
@@ -351,7 +351,7 @@ namespace visp_tracker
 
     if (client.call(srv))
     {
-      if (srv.response.initialization_succeed)
+    if (srv.Response.initialization_succeed)
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Tracker initialized with success.");
       else
         throw std::runtime_error("failed to initialize tracker.");
@@ -361,7 +361,7 @@ namespace visp_tracker
 
     if (clientViewer.call(srv))
     {
-      if (srv.response.initialization_succeed)
+  if (srv.Response.initialization_succeed)
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Tracker Viewer initialized with success.");
       else
         throw std::runtime_error("failed to initialize tracker viewer.");
@@ -379,7 +379,7 @@ namespace visp_tracker
                        << bModelPath_.native());
 
       std::string modelPath;
-      boost::filesystem::ofstream modelStream;
+      std::ofstream modelStream;
       if (!makeModelFile(modelStream,
                          bModelPath_.native(),
                          modelPath))
@@ -493,7 +493,7 @@ namespace visp_tracker
   TrackerClient::saveInitialPose(const vpHomogeneousMatrix& cMo)
   {
     boost::filesystem::path initialPose = getInitialPoseFileFromModelName(modelName_, modelPath_);
-    boost::filesystem::ofstream file(initialPose);
+    std::ofstream file(initialPose);
     if (!file.good())
     {
       // Failed to save initial pose since model path starts with http://, package://, file:///
@@ -807,7 +807,7 @@ namespace visp_tracker
   }
 
   bool
-  TrackerClient::makeModelFile(boost::filesystem::ofstream& modelStream,
+  TrackerClient::makeModelFile(std::ofstream& modelStream,
                                const std::string& resourcePath,
                                std::string& fullModelPath)
   {

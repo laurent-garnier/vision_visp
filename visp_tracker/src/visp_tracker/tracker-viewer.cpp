@@ -29,7 +29,7 @@ namespace visp_tracker
   TrackerViewer::initCallback(visp_tracker::srv::Init::Request& req,
                               visp_tracker::srv::Init::Response& res)
   {
-    boost::filesystem::ofstream modelStream;
+    std::ofstream modelStream;
     std::string path;
 
     if (!makeModelFile(modelStream, path))
@@ -141,7 +141,7 @@ namespace visp_tracker
         (visp_tracker::reconfigure_service_viewer, reconfigureCallback);
 
 
-    boost::filesystem::ofstream modelStream;
+    std::ofstream modelStream;
     std::string path;
 
     unsigned int cpt = 0;
@@ -384,7 +384,7 @@ namespace visp_tracker
     {
       boost::format fmt("failed to load the model %1%");
       fmt % modelPath_;
-      throw std::runtime_error(fmt.str());
+      throw std::runtime_error("failed to load the model "+ modelPath_);
     }
     // ROS_WARN("Model has been successfully loaded.");
   }

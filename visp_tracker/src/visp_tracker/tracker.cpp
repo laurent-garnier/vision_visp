@@ -50,7 +50,7 @@ namespace visp_tracker
     } BOOST_SCOPE_EXIT_END;
 
     std::string fullModelPath;
-    boost::filesystem::ofstream modelStream;
+    std::ofstream modelStream;
 
     // Load model from parameter.
     if (!makeModelFile(modelStream, fullModelPath))
@@ -483,7 +483,7 @@ Tracker::~Tracker()
 void Tracker::spin()
 {
   ros::Rate loopRateTracking(100);
-  tf2_ros::Transform transform;
+  tf2::Transform transform;
   std_msgs::msg::Header lastHeader;
 
   while (!exiting())
@@ -664,7 +664,7 @@ Tracker::waitForImage()
   ros::Rate loop_rate(10);
   while (!exiting()
          && (!image_.getWidth() || !image_.getHeight())
-         && (!info_ || info_->K[0] == 0.))
+         && (!info_ || info_->k[0] == 0.))
   {
     //ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
     spinOnce();

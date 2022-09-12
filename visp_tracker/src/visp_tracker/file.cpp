@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <fstream>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -13,49 +14,39 @@ std::string
 getInitFileFromModelName (const std::string& modelName,
                           const std::string& defaultPath)
 {
-  boost::format fmt("%1%/%2%/%2%.init");
-  fmt % defaultPath % modelName;
-  return fmt.str ();
+  return std::string()+defaultPath +"/"+ modelName +"/"+ modelName+ ".init";
 }
 
 std::string
 getHelpImageFileFromModelName (const std::string& modelName,
                                const std::string& defaultPath)
 {
-  boost::format fmt("%1%/%2%/%2%.ppm");
-  fmt % defaultPath % modelName;
-  return fmt.str ();
+  return std::string()+defaultPath +"/"+ modelName +"/"+ modelName+ ".ppm";
 }
 
 std::string
 getModelFileFromModelName (const std::string& modelName,
                            const std::string& defaultPath)
 {
-  boost::format fmt("%1%/%2%/%2%");
-  fmt % defaultPath % modelName;
-  return fmt.str ();
+  return std::string()+defaultPath +"/"+ modelName +"/"+ modelName;
 }
 
 std::string
 getConfigurationFileFromModelName (const std::string& modelName,
                                    const std::string& defaultPath)
 {
-  boost::format fmt("%1%/%2%/%2%.xml");
-  fmt % defaultPath % modelName;
-  return fmt.str ();
+  return std::string()+defaultPath +"/"+ modelName +"/"+ modelName+ ".xml";
 }
 
 std::string
 getInitialPoseFileFromModelName (const std::string& modelName,
                                  const std::string& defaultPath)
 {
-  boost::format fmt("%1%/%2%/%2%.0.pos");
-  fmt % defaultPath % modelName;
-  return fmt.str ();
+  return std::string()+defaultPath +"/"+ modelName +"/"+ modelName+ ".0.pos";
 }
 
 bool
-makeModelFile(boost::filesystem::ofstream& modelStream,
+makeModelFile(std::ofstream& modelStream,
               std::string& fullModelPath)
 {
   std::string modelDescription;
