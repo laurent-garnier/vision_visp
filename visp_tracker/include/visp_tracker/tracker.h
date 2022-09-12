@@ -74,7 +74,7 @@ namespace visp_tracker
   private:
     bool exiting ()
     {
-      return exiting_ || !ros::ok();
+      return exiting_ || !rclcpp::ok();
     }
 
     void spinOnce ()

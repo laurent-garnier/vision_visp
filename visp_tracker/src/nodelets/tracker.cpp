@@ -33,7 +33,7 @@ namespace visp_tracker
           (new visp_tracker::Tracker (getMTNodeHandle (),
                                       getMTPrivateNodeHandle (),
                                       exiting_, 5u));
-      while (ros::ok () && !exiting_)
+      while (rclcpp::ok() && !exiting_)
         tracker_->spin ();
     }
 

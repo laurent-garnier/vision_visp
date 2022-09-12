@@ -98,7 +98,7 @@ namespace visp_tracker
     // Compute topic and services names.
     std::string cameraPrefix;
 
-    ros::Rate rate (1);
+    rclcpp::rate::Rate rate (1);
     while (cameraPrefix.empty ())
     {
       // Check for the global parameter /camera_prefix set by visp_tracker node
@@ -245,7 +245,7 @@ namespace visp_tracker
     vpImagePoint point (10, 10);
     vpImagePoint pointTime (22, 10);
     vpImagePoint pointCameraTopic (34, 10);
-    ros::Rate loop_rate(80);
+    rclcpp::rate::Rate loop_rate(80);
 
     boost::format fmt("tracking (x=%f y=%f z=%f)");
     boost::format fmtTime("time = %f");
@@ -296,7 +296,7 @@ namespace visp_tracker
   void
   TrackerViewer::waitForImage()
   {
-    ros::Rate loop_rate(10);
+    rclcpp::rate::Rate loop_rate(10);
     while (!exiting()
            && (!image_.getWidth() || !image_.getHeight()))
     {

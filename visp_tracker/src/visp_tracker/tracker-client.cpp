@@ -94,7 +94,7 @@ namespace visp_tracker
 
     // Compute topic and services names.
 
-    ros::Rate rate (1);
+    rclcpp::rate::Rate rate (1);
     while (cameraPrefix_.empty ())
     {
       if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_) && !ros::param::get ("~camera_prefix", cameraPrefix_))
@@ -213,7 +213,7 @@ namespace visp_tracker
     vpDisplayX d(image_, image_.getWidth(), image_.getHeight(),
                  fmtWindowTitle.str().c_str());
 
-    ros::Rate loop_rate_tracking(200);
+    rclcpp::rate::Rate loop_rate_tracking(200);
     bool ok = false;
     vpHomogeneousMatrix cMo;
     vpImagePoint point (10, 10);
@@ -341,7 +341,7 @@ namespace visp_tracker
       convertVpKltOpencvToInitRequest(kltTracker_, tracker_, srv);
     }
 
-    ros::Rate rate (1);
+    rclcpp::rate::Rate rate (1);
     while (!client.waitForExistence ())
     {
       ROS_INFO
@@ -596,7 +596,7 @@ namespace visp_tracker
 
   bool
   TrackerClient::validatePose(const vpHomogeneousMatrix &cMo){
-    ros::Rate loop_rate(200);
+    rclcpp::rate::Rate loop_rate(200);
     vpImagePoint ip;
     vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
     vpDisplay::display(image_);
@@ -613,10 +613,10 @@ namespace visp_tracker
     {
       ros::spinOnce();
       loop_rate.sleep();
-      if (!ros::ok())
+      if (!rclcpp::ok())
         return false;
     }
-    while(ros::ok() && !vpDisplay::getClick(image_, ip, button, false));
+    while(rclcpp::ok() && !vpDisplay::getClick(image_, ip, button, false));
 
     if(button == vpMouseButton::button1)
       return true;
@@ -627,7 +627,7 @@ namespace visp_tracker
   void
   TrackerClient::init()
   {
-    ros::Rate loop_rate(200);
+    rclcpp::rate::Rate loop_rate(200);
     vpHomogeneousMatrix cMo;
     vpImagePoint point (10, 10);
 
@@ -719,10 +719,10 @@ namespace visp_tracker
         {
           ros::spinOnce();
           loop_rate.sleep();
-          if (!ros::ok())
+          if (!rclcpp::ok())
             return;
         }
-        while(ros::ok() && !vpDisplay::getClick(image_, ip, button, false));
+        while(rclcpp::ok() && !vpDisplay::getClick(image_, ip, button, false));
 
         imagePoints.push_back(ip);
         vpDisplay::displayCross(image_, imagePoints.back(), 5, vpColor::green);
@@ -744,7 +744,7 @@ namespace visp_tracker
   TrackerClient::initPoint(unsigned& i,
                            points_t& points,
                            imagePoints_t& imagePoints,
-                           ros::Rate& rate,
+                           rclcpp::rate::Rate& rate,
                            vpPose& pose)
   {
     vpImagePoint ip;
@@ -783,7 +783,7 @@ namespace visp_tracker
   void
   TrackerClient::waitForImage()
   {
-    ros::Rate loop_rate(10);
+    rclcpp::rate::Rate loop_rate(10);
     while (!exiting()
            && (!image_.getWidth() || !image_.getHeight()))
     {

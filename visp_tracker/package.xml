@@ -14,16 +14,17 @@
     and orientation) of an object in an image. It is fast enough to
     allow object online tracking using a camera.
   </description>
-  
-  <author>Laurent Garnier</author>
-  <author>Fabien Spindler</author>
-  <author>Thomas Moulard</author>
 
   <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
+
   <license>GPLv2</license>
   <url type="website">http://wiki.ros.org/visp_camera_calibration</url>
   <url type="repository">https://github.com/lagadic/vision_visp/tree/ros2</url>
   <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>
+
+  <author email="laurent.garnier@irisa.fr">Laurent Garnier</author>
+  <author email="fabien.spindler@inria.fr">Fabien Spindler</author>
+  <author>Thomas Moulard</author>
 
 
    <buildtool_depend>ament_cmake_ros</buildtool_depend>

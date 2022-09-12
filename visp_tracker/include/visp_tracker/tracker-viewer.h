@@ -100,7 +100,7 @@ namespace visp_tracker
   private:
     bool exiting ()
     {
-      return exiting_ || !ros::ok();
+      return exiting_ || !rclcpp::ok();
     }
 
     volatile bool& exiting_;
@@ -176,7 +176,7 @@ namespace visp_tracker
 
     /// \name Synchronization check
     /// \{
-    ros::WallTimer timer_;
+    rclcpp::WallTimer timer_;
     unsigned countAll_;
     unsigned countImages_;
     unsigned countCameraInfo_;

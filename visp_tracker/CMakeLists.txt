@@ -31,7 +31,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/TrackerSettings.msg"
   "srv/Init.srv"
   DEPENDENCIES std_msgs sensor_msgs geometry_msgs
- )
+)
 
 #get_cmake_property(_variableNames VARIABLES)
 #list (SORT _variableNames)
@@ -51,7 +51,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 #catkin_package(
 #  LIBRARIES
 #    trackerNodelet
-#    ${PROJECT_NAME} 
+#    ${PROJECT_NAME}
 
 #  CATKIN_DEPENDS
 #    dynamic_reconfigure
@@ -106,7 +106,7 @@ ament_target_dependencies(${PROJECT_NAME}_common
   tf2_ros
   rclcpp
   VISP
-  )
+)
 
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
@@ -120,7 +120,7 @@ target_include_directories(${PROJECT_NAME}_common PUBLIC
 target_link_libraries(${PROJECT_NAME}_common
   ${VISP_LIBRARIES}
   "${cpp_typesupport_target}"
-  )
+)
 
 #install(DIRECTORY models
 #  DESTINATION share/${PROJECT_NAME}

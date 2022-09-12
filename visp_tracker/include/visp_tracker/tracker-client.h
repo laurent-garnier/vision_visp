@@ -68,7 +68,7 @@ namespace visp_tracker
     void initPoint(unsigned& i,
                    points_t& points,
                    imagePoints_t& imagePoints,
-                   ros::Rate& rate,
+                   rclcpp::rate::Rate& rate,
                    vpPose& pose);
 
 
@@ -84,7 +84,7 @@ namespace visp_tracker
   private:
     bool exiting ()
     {
-      return exiting_ || !ros::ok();
+      return exiting_ || !rclcpp::ok();
     }
 
     volatile bool& exiting_;

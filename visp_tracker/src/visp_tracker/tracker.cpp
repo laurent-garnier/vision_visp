@@ -482,7 +482,7 @@ Tracker::~Tracker()
 
 void Tracker::spin()
 {
-  ros::Rate loopRateTracking(100);
+  rclcpp::rate::Rate loopRateTracking(100);
   tf2::Transform transform;
   std_msgs::msg::Header lastHeader;
 
@@ -661,7 +661,7 @@ void Tracker::spin()
 void
 Tracker::waitForImage()
 {
-  ros::Rate loop_rate(10);
+  rclcpp::rate::Rate loop_rate(10);
   while (!exiting()
          && (!image_.getWidth() || !image_.getHeight())
          && (!info_ || info_->k[0] == 0.))

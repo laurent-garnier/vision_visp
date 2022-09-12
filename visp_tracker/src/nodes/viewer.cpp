@@ -1,13 +1,11 @@
 #include <stdexcept>
 
-#include <rclcpp/rclcpp.hpp
->
-#include <nodelet/loader.h>
+#include <rclcpp/rclcpp.hpp>
 
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "tracker_mbt_viewer");
+  rclcpp::init(argc, argv, "tracker_mbt_viewer");
 
   nodelet::Loader nodelet;
   nodelet::M_string remap(ros::names::getRemappings());
