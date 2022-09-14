@@ -18,6 +18,7 @@
   <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
 
   <license>GPLv2</license>
+  
   <url type="website">http://wiki.ros.org/visp_camera_calibration</url>
   <url type="repository">https://github.com/lagadic/vision_visp/tree/ros2</url>
   <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>

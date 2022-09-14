@@ -64,24 +64,24 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
                                     const geometry_msgs::msg::Pose& src);
 
 void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
-                                     visp_tracker::srv::Init& srv);
+                                     std::shared_ptr<visp_tracker::srv::Init::Request> srv);
 
-void convertInitRequestToVpMbTracker(const visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpMbTracker(visp_tracker::srv::Init::Request& req,
                                      vpMbGenericTracker &tracker);
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
                               const vpMbGenericTracker &tracker,
-                              visp_tracker::srv::Init& srv);
+                              std::shared_ptr<visp_tracker::srv::Init::Request> srv);
 
-void convertInitRequestToVpMe(const visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpMe(visp_tracker::srv::Init::Request& req,
                               vpMbGenericTracker &tracker,
                               vpMe& moving_edge);
 
 void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
                                      const vpMbGenericTracker &tracker,
-                                     visp_tracker::srv::Init& srv);
+                                     std::shared_ptr<visp_tracker::srv::Init::Request> srv);
 
-void convertInitRequestToVpKltOpencv(const visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpKltOpencv(visp_tracker::srv::Init::Request& req,
                                      vpMbGenericTracker &tracker,
                                      vpKltOpencv& klt);
 

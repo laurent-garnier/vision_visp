@@ -3,7 +3,8 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-
+#include <filesystem>
+		
 #include <rclcpp/rclcpp.hpp>
 
 #include "visp_tracker/file.h"
@@ -46,18 +47,21 @@ getInitialPoseFileFromModelName (const std::string& modelName,
 }
 
 bool
-makeModelFile(std::ofstream& modelStream,
+makeModelFile(rclcpp::Node* node,
+              std::ofstream& modelStream,
               std::string& fullModelPath)
 {
   std::string modelDescription;
-  if (!ros::param::has(visp_tracker::model_description_param))
+  node->declare_parameter<std::string>(visp_tracker::model_description_param);
+  rclcpp::Parameter model_description_param;
+  if (!node->get_parameter(visp_tracker::model_description_param,model_description_param))
   {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Failed to initialize: no model is provided.");
     return false;
   }
-  ROS_DEBUG_STREAM("Trying to load the model from the parameter server.");
+  RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Trying to load the model from the parameter server.");
 
-  ros::param::get(visp_tracker::model_description_param, modelDescription);
+  modelDescription = visp_tracker::model_description_param;
 
   char* tmpname = strdup("/tmp/tmpXXXXXX");
   if (mkdtemp(tmpname) == NULL)
@@ -69,7 +73,7 @@ makeModelFile(std::ofstream& modelStream,
   // From the content of the model description check if the model is in vrml or in cao format
   std::string vrml_header("#VRML #vrml");
   std::string cao_header("V1");
-  boost::filesystem::path path(tmpname);
+  std::filesystem::path path(tmpname);
   if (modelDescription.compare(0, 5, vrml_header, 0, 5) == 0) {
     path /= "model.wrl";
   }

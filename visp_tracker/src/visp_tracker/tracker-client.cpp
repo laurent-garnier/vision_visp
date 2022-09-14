@@ -4,12 +4,11 @@
 #include <stdexcept>
 
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp/param.h>
-#include <rclcpp/package.h>
+//#include <rclcpp/package.h>
 //#include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.h>
 #include <visp_tracker/srv/init.hpp>
-#include <visp_tracker/msg/model_based_settings_config.hpp>
+//#include <visp_tracker/msg/model_based_settings_config.hpp>
 
 #include <visp3/me/vpMe.h>
 #include <visp3/core/vpPixelMeterConversion.h>
@@ -35,7 +34,8 @@ namespace visp_tracker
                                rclcpp::Node& privateNh,
                                volatile bool& exiting,
                                unsigned queueSize)
-    : exiting_ (exiting),
+    : Node("TrackerClient", options),
+      exiting_ (exiting),
       queueSize_(queueSize),
       nodeHandle_(nh),
       nodeHandlePrivate_(privateNh),
@@ -99,8 +99,8 @@ namespace visp_tracker
     {
       if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_) && !ros::param::get ("~camera_prefix", cameraPrefix_))
       {
-        ROS_WARN
-            ("the camera_prefix parameter does not exist.\n"
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"),
+            "the camera_prefix parameter does not exist.\n"
              "This may mean that:\n"
              "- the tracker is not launched,\n"
              "- the tracker and viewer are not running in the same namespace."
@@ -108,8 +108,8 @@ namespace visp_tracker
       }
       else if (cameraPrefix_.empty ())
       {
-        ROS_INFO
-            ("tracker is not yet initialized, waiting...\n"
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+            "tracker is not yet initialized, waiting...\n"
              "You may want to launch the client to initialize the tracker.");
       }
       if (this->exiting())
@@ -136,8 +136,8 @@ namespace visp_tracker
     bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
     bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
 
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Model file: " << bModelPath_);
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Init file: " << bInitPath_);
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Model file: " << bModelPath_);
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Init file: " << bInitPath_);
 
     // Load the 3d model.
     loadModel();
@@ -181,18 +181,18 @@ namespace visp_tracker
     tracker_.setCameraParameters(cameraParameters_);
     tracker_.setDisplayFeatures(true);
 
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpMbTrackerToRosMessage(tracker_));
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),convertVpMbTrackerToRosMessage(tracker_));
     // - Moving edges.
     if(trackerType_!="klt"){
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpMeToRosMessage(tracker_, movingEdge_));
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),convertVpMeToRosMessage(tracker_, movingEdge_));
     }
     
     if(trackerType_!="mbt"){
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
     }
 
     // Display camera parameters and moving edges settings.
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(cameraParameters_);
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),cameraParameters_);
   }
 
   void
@@ -234,7 +234,7 @@ namespace visp_tracker
         }
         tracker_.getPose(cMo);
 
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("initial pose [tx,ty,tz,tux,tuy,tuz]:\n" << vpPoseVector(cMo).t());
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"initial pose [tx,ty,tz,tux,tuy,tuz]:\n" << vpPoseVector(cMo).t());
 
         // Track once to make sure initialization is correct.
         if (confirmInit_)
@@ -287,7 +287,7 @@ namespace visp_tracker
       }
     }
 
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Initialization done, sending initial cMo:\n" << cMo);
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Initialization done, sending initial cMo:\n" << cMo);
     try
     {
       sendcMo(cMo);
@@ -323,13 +323,13 @@ namespace visp_tracker
 
     rclcpp::Client<visp_tracker::srv::Init>::SharedPtr  clientViewer =
         nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::srv::Init_service_viewer);
-    visp_tracker::srv::Init srv;
+    auto srv = std::make_shared<visp_tracker::srv::Init::Request>();
 
     // Load the model and send it to the parameter server.
     std::string modelDescription = fetchResource(modelPathAndExt_);
     nodeHandle_.setParam (model_description_param, modelDescription);
 
-    vpHomogeneousMatrixToTransform(srv.Request.initial_cMo, cMo);
+    vpHomogeneousMatrixToTransform(srv->initial_cMo, cMo);
     
     convertVpMbTrackerToInitRequest(tracker_, srv);
 
@@ -344,8 +344,8 @@ namespace visp_tracker
     rclcpp::rate::Rate rate (1);
     while (!client.waitForExistence ())
     {
-      ROS_INFO
-          ("Waiting for the initialization service to become available.");
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+          "Waiting for the initialization service to become available.");
       rate.sleep ();
     }
 
@@ -375,12 +375,13 @@ namespace visp_tracker
   {
     try
     {
-      ROS_DEBUG_STREAM("Trying to load the model "
+      RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Trying to load the model "
                        << bModelPath_.native());
 
       std::string modelPath;
       std::ofstream modelStream;
-      if (!makeModelFile(modelStream,
+      if (!makeModelFile(this,
+                         modelStream,
                          bModelPath_.native(),
                          modelPath))
         throw std::runtime_error ("failed to retrieve model");
@@ -389,31 +390,31 @@ namespace visp_tracker
       RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Model has been successfully loaded.");
 
       if(trackerType_=="mbt"){
-        ROS_DEBUG_STREAM("Nb faces: "
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb faces: "
                          << tracker_.getFaces().getPolygon().size());
-        ROS_DEBUG_STREAM("Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
 
         std::list<vpMbtDistanceLine *> linesList;
         tracker_.getLline(linesList);
-        ROS_DEBUG_STREAM("Nb line: " << linesList.size());
-        //ROS_DEBUG_STREAM("nline: " << tracker_.nline);
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb line: " << linesList.size());
+        //RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," nline: " << tracker_.nline);
       }
       else if(trackerType_=="klt"){
-        ROS_DEBUG_STREAM("Nb faces: "
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb faces: "
                          << tracker_.getFaces().getPolygon().size());
-        ROS_DEBUG_STREAM("Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
-        ROS_DEBUG_STREAM("Nb KLT points: " << tracker_.getKltNbPoints());
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb KLT points: " << tracker_.getKltNbPoints());
       }
       else {
-        ROS_DEBUG_STREAM("Nb hidden faces: "
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb hidden faces: "
                          << tracker_.getFaces().getPolygon().size());
-        ROS_DEBUG_STREAM("Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
-        ROS_DEBUG_STREAM("Nb KLT points: " << tracker_.getKltNbPoints());
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb KLT points: " << tracker_.getKltNbPoints());
 
         std::list<vpMbtDistanceLine *> linesList;
         tracker_.getLline(linesList);
-        ROS_DEBUG_STREAM("Nb line: " << linesList.size());
-        //ROS_DEBUG_STREAM("nline: " << tracker_.nline);
+        RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Nb line: " << linesList.size());
+        //RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," nline: " << tracker_.nline);
       }
     }
     catch(...)
@@ -443,7 +444,7 @@ namespace visp_tracker
 
       if (!file.good())
       {
-        ROS_WARN_STREAM("failed to load initial pose: " << initialPose << "\n"
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"failed to load initial pose: " << initialPose << "\n"
                         << "using identity as initial pose");
         return cMo;
       }
@@ -475,9 +476,9 @@ namespace visp_tracker
       filename ="/tmp/" + username;
 #endif
       filename += "/" + modelName_ + ".0.pos";
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Try to read init pose from: " << filename);
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Try to read init pose from: " << filename);
       if (vpIoTools::checkFilename(filename)) {
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Retrieve initial pose from: " << filename);
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Retrieve initial pose from: " << filename);
         std::ifstream in( filename.c_str() );
         vpPoseVector pose;
         pose.load(in);
@@ -514,12 +515,12 @@ namespace visp_tracker
           vpIoTools::makeDirectory(logdirname);
         }
         catch (...) {
-          ROS_WARN_STREAM("Unable to create the folder " << logdirname << " to save the initial pose");
+          RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Unable to create the folder " << logdirname << " to save the initial pose");
           return;
         }
       }
       std::string filename = logdirname + "/" + modelName_ + ".0.pos";
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Save initial pose in: " << filename);
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Save initial pose in: " << filename);
       std::fstream finitpos ;
       finitpos.open(filename.c_str(), std::ios::out) ;
       vpPoseVector pose;
@@ -529,7 +530,7 @@ namespace visp_tracker
       finitpos.close();
     }
     else {
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Save initial pose in: " << initialPose);
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Save initial pose in: " << initialPose);
       vpPoseVector pose;
       pose.buildFrom(cMo);
       file << pose;
@@ -566,7 +567,7 @@ namespace visp_tracker
     unsigned int npoints;
     file >> npoints;
     file.ignore(256, '\n'); // skip the rest of the line
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Number of 3D points  " << npoints << "\n");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Number of 3D points  " << npoints << "\n");
 
     if (npoints > 100000) {
       throw vpException(vpException::badValue,
@@ -674,17 +675,17 @@ namespace visp_tracker
       catch(...){
       }
 
-      ROS_WARN_STREAM("Auto detection of help file: " << helpImagePath);
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Auto detection of help file: " << helpImagePath);
     }
 
     if (!helpImagePath.empty()){
       try {
         // check if the file exists
         if (! vpIoTools::checkFilename(helpImagePath)) {
-          ROS_WARN("Error tracker initialization help image file \"%s\" doesn't exist", helpImagePath.c_str());
+          RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"Error tracker initialization help image file \"%s\" doesn't exist", helpImagePath.c_str());
         }
         else {
-          RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Load help image: " << helpImagePath);
+          RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Load help image: " << helpImagePath);
           int winx = 0;
           int winy = 0;
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
@@ -835,7 +836,7 @@ namespace visp_tracker
 
     modelPathAndExt_ = resourcePath + modelExt_;
 
-    //ROS_WARN_STREAM("Model file Make Client: " << resourcePath << modelExt_);
+    //RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Model file Make Client: " << resourcePath << modelExt_);
 
     // Crash after when model not found
     std::string result;
@@ -859,7 +860,7 @@ namespace visp_tracker
     fullModelPath = path.native();
 
 
-    //ROS_WARN_STREAM("Model file Make Client Full path tmp: " << fullModelPath );
+    //RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Model file Make Client Full path tmp: " << fullModelPath );
 
     modelStream.open(path);
     if (!modelStream.good())

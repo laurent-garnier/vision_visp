@@ -32,10 +32,10 @@ namespace visp_tracker
     std::ofstream modelStream;
     std::string path;
 
-    if (!makeModelFile(modelStream, path))
+    if (!makeModelFile(this, modelStream, path))
       throw std::runtime_error("failed to load the model from the callback");
-    //ROS_WARN_STREAM("Make model Viewer: " << path.c_str());
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Model loaded from the service.");
+    //RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Make model Viewer: " << path.c_str());
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Model loaded from the service.");
     modelPath_ = path;
     tracker_.resetTracker();
     initializeTracker();
@@ -52,7 +52,7 @@ namespace visp_tracker
                                      visp_tracker::srv::Init::Response& res)
   {
     // Common parameters
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Reconfiguring Tracker Viewer.");
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Reconfiguring Tracker Viewer.");
     convertInitRequestToVpMbTracker(req, tracker_);
 
     res.initialization_succeed = true;
@@ -63,7 +63,8 @@ namespace visp_tracker
                                rclcpp::Node& privateNh,
                                volatile bool& exiting,
                                unsigned queueSize)
-    : exiting_ (exiting),
+    : Node("TrackerViewer", options),
+      exiting_ (exiting),
       queueSize_(queueSize),
       nodeHandle_(nh),
       nodeHandlePrivate_(privateNh),
@@ -104,7 +105,7 @@ namespace visp_tracker
       // Check for the global parameter /camera_prefix set by visp_tracker node
       if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix) && !ros::param::get ("~camera_prefix", cameraPrefix))
       {
-        ROS_WARN
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp")
             ("the camera_prefix parameter does not exist.\n"
              "This may mean that:\n"
              "- the tracker is not launched,\n"
@@ -113,8 +114,8 @@ namespace visp_tracker
       }
       else if (cameraPrefix.empty ())
       {
-        ROS_INFO
-            ("tracker is not yet initialized, waiting...\n"
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+            "tracker is not yet initialized, waiting...\n"
              "You may want to launch the client to initialize the tracker.");
       }
       if (this->exiting())
@@ -128,9 +129,13 @@ namespace visp_tracker
     cameraInfoTopic_ =
         ros::names::resolve(cameraPrefix + "/camera_info");
 
-    initCallback_t initCallback =
+    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
+                                  visp_tracker::srv::Init::Response& res)>
+       initCallback_t initCallback =
         boost::bind(&TrackerViewer::initCallback, this, _1, _2);
 
+    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
+                                  visp_tracker::srv::Init::Response& res)>
     reconfigureCallback_t reconfigureCallback =
         boost::bind(&TrackerViewer::reconfigureCallback, this, _1, _2);
 
@@ -166,12 +171,12 @@ namespace visp_tracker
     }
 
 
-    if (!makeModelFile(modelStream, path))
+    if (!makeModelFile(this, modelStream, path))
       throw std::runtime_error
         ("failed to load the model from the parameter server");
 
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Model loaded from the parameter server.");
-    //ROS_WARN_STREAM("Make model Viewer: " << path.c_str());
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Model loaded from the parameter server.");
+    //RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Make model Viewer: " << path.c_str());
     modelPath_ = path;
 
     initializeTracker();
@@ -332,7 +337,7 @@ namespace visp_tracker
         trackerName_ = "tracker_mbt";
         if(!ros::param::search(trackerName_ + "/angle_appear",key))
         {
-          ROS_WARN_STREAM("No tracker has been found with the default name value \""
+          RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"No tracker has been found with the default name value \""
                           << trackerName_ << "/angle_appear\".\n"
                           << "Tracker name parameter (tracker_name) should be provided for this node (tracker_viewer).\n"
                           << "Polygon visibility might not work well in the viewer window.");
@@ -350,13 +355,13 @@ namespace visp_tracker
       {
         double value;
         if(ros::param::get(key,value)){
-          // ROS_WARN_STREAM("Angle Appear Viewer: " << value);
+          // RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Angle Appear Viewer: " << value);
           tracker_.setAngleAppear(vpMath::rad(value));
         }
       }
       else
       {
-        ROS_WARN_STREAM("No tracker has been found with the provided parameter "
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"No tracker has been found with the provided parameter "
                         << "(tracker_name=\"" << trackerName_ << "\")\n"
                         << "Polygon visibility might not work well in the viewer window");
       }
@@ -365,7 +370,7 @@ namespace visp_tracker
       {
         double value;
         if(ros::param::get(key,value)){
-          // ROS_WARN_STREAM("Angle Disappear Viewer: " << value);
+          // RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Angle Disappear Viewer: " << value);
           tracker_.setAngleDisappear(vpMath::rad(value));
         }
       }
@@ -377,7 +382,7 @@ namespace visp_tracker
   {
     try
     {
-      // ROS_WARN_STREAM("Trying to load the model Viewer: " << modelPath_);
+      // RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Trying to load the model Viewer: " << modelPath_);
       tracker_.loadModel(modelPath_.native().c_str());
     }
     catch(...)
@@ -386,14 +391,14 @@ namespace visp_tracker
       fmt % modelPath_;
       throw std::runtime_error("failed to load the model "+ modelPath_);
     }
-    // ROS_WARN("Model has been successfully loaded.");
+    // RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"Model has been successfully loaded.");
   }
 
   void
   TrackerViewer::callback
-  (const sensor_msgs::msg::imageConstPtr& image,
+  (const sensor_msgs::msg::Image::ConstPtr& image,
    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
-   const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
+   const geometry_msgs::msg::PoseWithCovarianceStamped::ConstPtr& trackingResult,
    const visp_tracker::MovingEdgeSites::ConstPtr& sites,
    const visp_tracker::KltPoints::ConstPtr& klt)
   {

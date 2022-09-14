@@ -176,34 +176,35 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
-                                     visp_tracker::srv::Init& srv)
-{
-  srv.Request.tracker_param.angle_appear = vpMath::deg(tracker.getAngleAppear());
-  srv.Request.tracker_param.angle_disappear = vpMath::deg(tracker.getAngleDisappear());
+                                     std::shared_ptr<visp_tracker::srv::Init::Request> srv)
+{ 
+  srv->tracker_param.angle_appear = vpMath::deg(tracker.getAngleAppear());
+  srv->tracker_param.angle_disappear = vpMath::deg(tracker.getAngleDisappear());
 }
 
-void convertInitRequestToVpMbTracker(const visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpMbTracker(visp_tracker::srv::Init::Request& req,
                                      vpMbGenericTracker &tracker)
 {
+
   tracker.setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
   tracker.setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
 }
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
                               const vpMbGenericTracker &tracker,
-                              visp_tracker::srv::Init& srv)
+                              std::shared_ptr<visp_tracker::srv::Init::Request> srv)
 {
-  srv.Request.moving_edge.first_threshold = tracker.getGoodMovingEdgesRatioThreshold();
-  srv.Request.moving_edge.mask_size = moving_edge.getMaskSize();
-  srv.Request.moving_edge.range = moving_edge.getRange();
-  srv.Request.moving_edge.threshold = moving_edge.getThreshold();
-  srv.Request.moving_edge.mu1 = moving_edge.getMu1();
-  srv.Request.moving_edge.mu2 = moving_edge.getMu2();
-  srv.Request.moving_edge.sample_step = moving_edge.getSampleStep();
-  srv.Request.moving_edge.strip = moving_edge.getStrip();
+  srv->moving_edge.first_threshold = tracker.getGoodMovingEdgesRatioThreshold();
+  srv->moving_edge.mask_size = moving_edge.getMaskSize();
+  srv->moving_edge.range = moving_edge.getRange();
+  srv->moving_edge.threshold = moving_edge.getThreshold();
+  srv->moving_edge.mu1 = moving_edge.getMu1();
+  srv->moving_edge.mu2 = moving_edge.getMu2();
+  srv->moving_edge.sample_step = moving_edge.getSampleStep();
+  srv->moving_edge.strip = moving_edge.getStrip();
 }
 
-void convertInitRequestToVpMe(const visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpMe(visp_tracker::srv::Init::Request& req,
                               vpMbGenericTracker &tracker,
                               vpMe& moving_edge)
 {
@@ -224,19 +225,19 @@ void convertInitRequestToVpMe(const visp_tracker::srv::Init::Request& req,
 
 void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
                                      const vpMbGenericTracker &tracker,
-                                     visp_tracker::srv::Init& srv)
+                                     std::shared_ptr<visp_tracker::srv::Init::Request> srv)
 {  
-  srv.Request.klt_param.max_features = klt.getMaxFeatures();
-  srv.Request.klt_param.window_size = klt.getWindowSize();
-  srv.Request.klt_param.quality = klt.getQuality();
-  srv.Request.klt_param.min_distance = klt.getMinDistance();
-  srv.Request.klt_param.harris = klt.getHarrisFreeParameter();
-  srv.Request.klt_param.size_block = klt.getBlockSize();
-  srv.Request.klt_param.pyramid_lvl = klt.getPyramidLevels();
-  srv.Request.klt_param.mask_border = tracker.getKltMaskBorder();
+  srv->klt_param.max_features = klt.getMaxFeatures();
+  srv->klt_param.window_size = klt.getWindowSize();
+  srv->klt_param.quality = klt.getQuality();
+  srv->klt_param.min_distance = klt.getMinDistance();
+  srv->klt_param.harris = klt.getHarrisFreeParameter();
+  srv->klt_param.size_block = klt.getBlockSize();
+  srv->klt_param.pyramid_lvl = klt.getPyramidLevels();
+  srv->klt_param.mask_border = tracker.getKltMaskBorder();
 }
 
-void convertInitRequestToVpKltOpencv(const visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpKltOpencv(visp_tracker::srv::Init::Request& req,
                                      vpMbGenericTracker &tracker,
                                      vpKltOpencv& klt)
 {  

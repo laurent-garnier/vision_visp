@@ -14,12 +14,12 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 
-#include <resource_retriever/retriever.h>
+//#include <resource_retriever/retriever.h>
 
-#include <visp_tracker/msg/model_based_settings_config.hpp>
-#include <visp_tracker/ModelBasedSettingsKltConfig.h>
-#include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
-#include <visp_tracker/MovingEdgeSites.h>
+//#include <visp_tracker/msg/model_based_settings_config.hpp>
+//#include <visp_tracker/ModelBasedSettingsKltConfig.h>
+//#include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
+//#include <visp_tracker/MovingEdgeSites.h>
 
 #include <visp3/core/vpCameraParameters.h>
 #include <visp3/core/vpHomogeneousMatrix.h>
@@ -29,10 +29,12 @@
 #include <visp3/klt/vpKltOpencv.h>
 #include <visp3/vision/vpPose.h>
 
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/rate.h>
 
-namespace visp_tracker
+namespace visp_tracker 
 {
-  class TrackerClient
+  class TrackerClient : public rclcpp::Node
   {
   public:
     typedef vpImage<unsigned char> image_t;
@@ -77,7 +79,8 @@ namespace visp_tracker
     void sendcMo(const vpHomogeneousMatrix& cMo);
 
     std::string fetchResource(const std::string&);
-    bool makeModelFile(std::ofstream& modelStream,
+    bool makeModelFile(rclcpp::Node* node,
+                       std::ofstream& modelStream,
                        const std::string& resourcePath,
                        std::string& fullModelPath);
 

@@ -21,23 +21,16 @@
 #include <visp3/core/vpImage.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
 
+#include <rclcpp/rclcpp.hpp>
+
 namespace visp_tracker
 {
   /// \brief Monitors the tracking result provided by the tracking node.
-  class TrackerViewer
+  class TrackerViewer : public rclcpp::Node
   {
   public:
     /// \brief ViSP image type
     typedef vpImage<unsigned char> image_t;
-
-
-    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
-                                  visp_tracker::srv::Init::Response& res)>
-    initCallback_t;
-
-    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
-                                  visp_tracker::srv::Init::Response& res)>
-    reconfigureCallback_t;
 
     /// \brief Synchronization policy
     ///
@@ -47,8 +40,8 @@ namespace visp_tracker
     /// The approximate time allows light differences in timestamps
     /// which are not critical as this is only a viewer.
     typedef message_filters::sync_policies::ApproximateTime<
-    sensor_msgs::msg::mage, sensor_msgs::msg::CameraInfo,
-    geometry_msgs::PoseWithCovarianceStamped,
+    sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo,
+    geometry_msgs::msg::PoseWithCovarianceStamped,
     visp_tracker::MovingEdgeSites,
     visp_tracker::KltPoints
     > syncPolicy_t;
@@ -84,9 +77,9 @@ namespace visp_tracker
     /// \brief Callback used to received synchronized data.
     void
     callback
-    (const sensor_msgs::msg::imageConstPtr& imageConst,
+    (const sensor_msgs::msg::Image::ConstPtr& imageConst,
      const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst,
-     const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
+     const geometry_msgs::msg::PoseWithCovarianceStamped::ConstPtr& trackingResult,
      const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst,
      const visp_tracker::KltPoints::ConstPtr& kltConst);
 
@@ -161,7 +154,7 @@ namespace visp_tracker
     /// \brief Subscriber to camera information topic.
     message_filters::Subscriber<sensor_msgs::msg::CameraInfo> cameraInfoSubscriber_;
     /// \brief Subscriber to tracking result topic.
-    message_filters::Subscriber<geometry_msgs::PoseWithCovarianceStamped>
+    message_filters::Subscriber<geometry_msgs::msg::PoseWithCovarianceStamped>
     trackingResultSubscriber_;
     /// \brief Subscriber to moving edge sites topics.
     message_filters::Subscriber<visp_tracker::MovingEdgeSites>

@@ -31,6 +31,6 @@ getInitialPoseFileFromModelName (const std::string& modelName,
                                  const std::string& defaultPath);
 
 bool
-makeModelFile(std::ofstream& stream, std::string& fullModelPath);
+makeModelFile(rclcpp::Node* node, std::ofstream& stream, std::string& fullModelPath);
 
 #endif //! VISP_TRACKER_FILE_HH

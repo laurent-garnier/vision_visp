@@ -24,18 +24,16 @@
 #include <visp3/mbt/vpMbGenericTracker.h>
 #include <visp3/me/vpMe.h>
 
+#include <rclcpp/rclcpp.hpp>
+
 #include <string>
 
 namespace visp_tracker
 {
-  class Tracker
+  class Tracker: public rclcpp::Node
   {
   public:
     typedef vpImage<unsigned char> image_t;
-
-    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
-                                  visp_tracker::srv::Init::Response& res)>
-    initCallback_t;
 
     template<class ConfigType>
     struct reconfigureSrvStruct{
@@ -110,7 +108,7 @@ namespace visp_tracker
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
 
-    rclcpp::Publisher<geometry_msgs::PoseWithCovarianceStamped>::SharedPtr resultPublisher_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr resultPublisher_;
     rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transformationPublisher_;
     tf2_::TransformBroadcaster tfBroadcaster_;
     rclcpp::Publisher<visp_tracker::MovingEdgeSites>::SharedPtr  movingEdgeSitesPublisher_;

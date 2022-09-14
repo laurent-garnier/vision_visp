@@ -53,7 +53,7 @@ namespace visp_tracker
     std::ofstream modelStream;
 
     // Load model from parameter.
-    if (!makeModelFile(modelStream, fullModelPath))
+    if (!makeModelFile(this, modelStream, fullModelPath))
       return true;
 
     tracker_.resetTracker();
@@ -99,7 +99,7 @@ namespace visp_tracker
     // Load the model.
     try
     {
-      ROS_DEBUG_STREAM("Trying to load the model Tracker: " << fullModelPath);
+      RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Trying to load the model Tracker: " << fullModelPath);
       tracker_.loadModel(fullModelPath.c_str());
       modelStream.close();
     }
@@ -117,7 +117,7 @@ namespace visp_tracker
     tracker_.setCovarianceComputation(true);
 
     // Try to initialize the tracker.
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),("Initializing tracker with cMo:\n" << cMo_);
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Initializing tracker with cMo:\n" << cMo_);
     try
     {
       // Bug between setPose() and initFromPose() not present here due to previous call to resetTracker()
@@ -361,7 +361,7 @@ Tracker::Tracker(rclcpp::Node& nh,
 
   // Result publisher.
   resultPublisher_ =
-      nodeHandle_.advertise<geometry_msgs::PoseWithCovarianceStamped>
+      nodeHandle_.advertise<geometry_msgs::msg::PoseWithCovarianceStamped>
       (visp_tracker::object_position_covariance_topic, queueSize_);
 
   transformationPublisher_ =
@@ -444,7 +444,7 @@ Tracker::Tracker(rclcpp::Node& nh,
       || cameraParameters_.get_u0 () == 1.
       || cameraParameters_.get_v0 () == 0.
       || cameraParameters_.get_v0 () == 1.)
-    ROS_WARN ("Dubious camera parameters detected.\n"
+    RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"Dubious camera parameters detected.\n"
               "\n"
               "It seems that the matrix P from your camera\n"
               "calibration topics is wrong.\n"
@@ -458,10 +458,12 @@ Tracker::Tracker(rclcpp::Node& nh,
   tracker_.setCameraParameters(cameraParameters_);
   tracker_.setDisplayFeatures(false);
 
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(cameraParameters_);
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(cameraParameters_));
 
   // Service declaration.
-  initCallback_t initCallback =
+    typedef boost::function<bool (visp_tracker::srv::Init::Request&,
+                                  visp_tracker::srv::Init::Response& res)>
+    initCallback_t initCallback =
       boost::bind(&Tracker::initCallback, this, _1, _2);
 
   initService_ = nodeHandle_.advertiseService
@@ -580,7 +582,7 @@ void Tracker::spin()
         if (resultPublisher_.getNumSubscribers	() > 0)
         {
           geometry_msgs::PoseWithCovarianceStampedPtr result
-              (new geometry_msgs::PoseWithCovarianceStamped);
+              (new geometry_msgs::msg::PoseWithCovarianceStamped);
           result->header = header_;
           result->pose.pose.position.x =
               transformMsg.translation.x;

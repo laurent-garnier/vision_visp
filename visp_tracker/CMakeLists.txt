@@ -89,9 +89,9 @@ add_library(${PROJECT_NAME}_common
   src/${PROJECT_NAME}/conversion.cpp
   src/${PROJECT_NAME}/file.cpp
   src/${PROJECT_NAME}/names.cpp
-#  src/${PROJECT_NAME}/tracker-client.cpp
-#  src/${PROJECT_NAME}/tracker-viewer.cpp
-#  src/${PROJECT_NAME}/tracker.cpp
+  src/${PROJECT_NAME}/tracker-client.cpp
+  src/${PROJECT_NAME}/tracker-viewer.cpp
+  src/${PROJECT_NAME}/tracker.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}_common
 #  dynamic_reconfigure
