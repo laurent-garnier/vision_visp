@@ -99,7 +99,7 @@ ament_target_dependencies(${PROJECT_NAME}_common
   image_transport
 #  message_generation
 #  nodelet
-#  resource_retriever
+  resource_retriever
   rclcpp
   sensor_msgs
   std_msgs

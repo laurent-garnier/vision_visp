@@ -34,7 +34,7 @@ namespace visp_tracker
                                rclcpp::Node& privateNh,
                                volatile bool& exiting,
                                unsigned queueSize)
-    : Node("TrackerClient", options),
+    : Node("TrackerClient"),
       exiting_ (exiting),
       queueSize_(queueSize),
       nodeHandle_(nh),
@@ -53,9 +53,11 @@ namespace visp_tracker
       bInitPath_(),
       cameraSubscriber_(),
       mutex_(),
+/*FIXME: RECONFIGURATION
       reconfigureSrv_(NULL),
       reconfigureKltSrv_(NULL),
       reconfigureEdgeSrv_(NULL),
+*/
       movingEdge_(),
       kltTracker_(),
       cameraParameters_(),
@@ -94,7 +96,7 @@ namespace visp_tracker
 
     // Compute topic and services names.
 
-    rclcpp::rate::Rate rate (1);
+    rclcpp::Rate rate (1);
     while (cameraPrefix_.empty ())
     {
       if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_) && !ros::param::get ("~camera_prefix", cameraPrefix_))
@@ -142,7 +144,8 @@ namespace visp_tracker
     // Load the 3d model.
     loadModel();
 
-    // Dynamic reconfigure.
+/* FIXME: RECONFIGURATION
+   // Dynamic reconfigure.
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
@@ -167,7 +170,7 @@ namespace visp_tracker
                       boost::ref(mutex_), _1, _2);
       reconfigureKltSrv_->setCallback(f);
     }
-
+*/
     // Wait for the image to be initialized.
     waitForImage();
     if (this->exiting())
@@ -213,7 +216,7 @@ namespace visp_tracker
     vpDisplayX d(image_, image_.getWidth(), image_.getHeight(),
                  fmtWindowTitle.str().c_str());
 
-    rclcpp::rate::Rate loop_rate_tracking(200);
+    rclcpp::Rate loop_rate_tracking(200);
     bool ok = false;
     vpHomogeneousMatrix cMo;
     vpImagePoint point (10, 10);
@@ -304,6 +307,7 @@ namespace visp_tracker
   
   TrackerClient::~TrackerClient()
   {
+    /* FIXME: RECONFIGURATION
     if(reconfigureSrv_ != NULL)
       delete reconfigureSrv_;
 
@@ -312,6 +316,7 @@ namespace visp_tracker
 
     if(reconfigureEdgeSrv_ != NULL)
       delete reconfigureEdgeSrv_;
+      */
   }
 
   void
@@ -341,7 +346,7 @@ namespace visp_tracker
       convertVpKltOpencvToInitRequest(kltTracker_, tracker_, srv);
     }
 
-    rclcpp::rate::Rate rate (1);
+    rclcpp::Rate rate (1);
     while (!client.waitForExistence ())
     {
       RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
@@ -493,7 +498,7 @@ namespace visp_tracker
   void
   TrackerClient::saveInitialPose(const vpHomogeneousMatrix& cMo)
   {
-    boost::filesystem::path initialPose = getInitialPoseFileFromModelName(modelName_, modelPath_);
+    std::filesystem::path initialPose = getInitialPoseFileFromModelName(modelName_, modelPath_);
     std::ofstream file(initialPose);
     if (!file.good())
     {
@@ -597,7 +602,7 @@ namespace visp_tracker
 
   bool
   TrackerClient::validatePose(const vpHomogeneousMatrix &cMo){
-    rclcpp::rate::Rate loop_rate(200);
+    rclcpp::Rate loop_rate(200);
     vpImagePoint ip;
     vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
     vpDisplay::display(image_);
@@ -628,7 +633,7 @@ namespace visp_tracker
   void
   TrackerClient::init()
   {
-    rclcpp::rate::Rate loop_rate(200);
+    rclcpp::Rate loop_rate(200);
     vpHomogeneousMatrix cMo;
     vpImagePoint point (10, 10);
 
@@ -658,7 +663,7 @@ namespace visp_tracker
           RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Failed to create the temporary directory: " << strerror(errno));
         }
         else {
-          boost::filesystem::path path(tmpname);
+          std::filesystem::path path(tmpname);
           path /= ("help.ppm");
           free(tmpname);
 
@@ -745,7 +750,7 @@ namespace visp_tracker
   TrackerClient::initPoint(unsigned& i,
                            points_t& points,
                            imagePoints_t& imagePoints,
-                           rclcpp::rate::Rate& rate,
+                           rclcpp::Rate& rate,
                            vpPose& pose)
   {
     vpImagePoint ip;
@@ -784,7 +789,7 @@ namespace visp_tracker
   void
   TrackerClient::waitForImage()
   {
-    rclcpp::rate::Rate loop_rate(10);
+    rclcpp::Rate loop_rate(10);
     while (!exiting()
            && (!image_.getWidth() || !image_.getHeight()))
     {
@@ -853,7 +858,7 @@ namespace visp_tracker
           (rclcpp::get_logger("rclcpp"),"Failed to create the temporary directory: " << strerror(errno));
       return false;
     }
-    boost::filesystem::path path(tmpname);
+    std::filesystem::path path(tmpname);
     path /= ("model" + modelExt_);
     free(tmpname);
 

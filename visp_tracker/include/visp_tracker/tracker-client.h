@@ -6,6 +6,7 @@
 
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
+#include <image_proc/advertisement_checker.h>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -14,7 +15,7 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 
-//#include <resource_retriever/retriever.h>
+#include <resource_retriever/retriever.hpp>
 
 //#include <visp_tracker/msg/model_based_settings_config.hpp>
 //#include <visp_tracker/ModelBasedSettingsKltConfig.h>
@@ -30,7 +31,7 @@
 #include <visp3/vision/vpPose.h>
 
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp/rate.h>
+#include <rclcpp/rate.hpp>
 
 namespace visp_tracker 
 {
@@ -43,7 +44,7 @@ namespace visp_tracker
 
     template<class ConfigType>
     struct reconfigureSrvStruct{
-// FIX TODO
+// FIXME: RECONFIGURATION
 //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
     };
 
@@ -70,7 +71,7 @@ namespace visp_tracker
     void initPoint(unsigned& i,
                    points_t& points,
                    imagePoints_t& imagePoints,
-                   rclcpp::rate::Rate& rate,
+                   rclcpp::Rate& rate,
                    vpPose& pose);
 
 
@@ -111,16 +112,17 @@ namespace visp_tracker
     std::string trackerType_;
     double frameSize_;
 
-    boost::filesystem::path bModelPath_;
-    boost::filesystem::path bInitPath_;
+    std::filesystem::path bModelPath_;
+    std::filesystem::path bInitPath_;
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
     std::recursive_mutex mutex_;
+/* FIXME: RECONFIGURATION
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t *reconfigureSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
-
+*/
     std_msgs::msg::Header header_;
     sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
 
@@ -131,6 +133,9 @@ namespace visp_tracker
 
     bool startFromSavedPose_;
     bool confirmInit_;
+
+   /// \brief Helper used to check that subscribed topics exist.
+    image_proc::AdvertisementChecker checkInputs_;
 
     resource_retriever::Retriever resourceRetriever_;
   };

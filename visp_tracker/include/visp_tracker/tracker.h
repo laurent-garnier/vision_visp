@@ -4,6 +4,7 @@
 #include <image_transport/image_transport.h>
 
 #include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -98,22 +99,24 @@ namespace visp_tracker
     std::string rectifiedImageTopic_;
     std::string cameraInfoTopic_;
 
-    boost::filesystem::path modelPath_;
+    std::filesystem::path modelPath_;
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
     std::recursive_mutex mutex_;
 
+/* FIXME: RECONFIGURATION
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t *reconfigureSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
-
+*/
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr resultPublisher_;
     rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transformationPublisher_;
     tf2_::TransformBroadcaster tfBroadcaster_;
-    rclcpp::Publisher<visp_tracker::MovingEdgeSites>::SharedPtr  movingEdgeSitesPublisher_;
-    rclcpp::Publisher<visp_tracker::KltPoints>::SharedPtr  kltPointsPublisher_;
+    rclcpp::Publisher<visp_tracker::msg::MovingEdgeSites>::SharedPtr  movingEdgeSitesPublisher_;
+    rclcpp::Publisher<visp_tracker::msg::KltPoints>::SharedPtr  kltPointsPublisher_;
 
+  rclcpp::Service<visp_camera_calibration::srv::Calibrate>::SharedPtr initService_;
     ros::ServiceServer initService_;
     std_msgs::msg::Header header_;
     sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;

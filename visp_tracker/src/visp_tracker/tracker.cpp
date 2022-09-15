@@ -1,14 +1,14 @@
 /*#include <stdexcept>
 
-//#include <dynamic_reconfigure/server.h>
-#include <geometry_msgs/msg/pose_with_covariance_stamped.h>
-#include <image_transport/image_transport.h>
-#include <rclcpp/param.h>
+//#include <dynamic_reconfigure/server.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <image_transport/image_transport.hpp>
+#include <rclcpp/param.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <rclcpp/transport_hints.h>
-#include <sensor_msgs/Image.h>
+#include <rclcpp/transport_hints.hpp>
+#include <sensor_msgs/Image.hpp>
 #include <std_msgs/msg/string.hpp>
-#include <tf/transform_broadcaster.h>
+#include <tf/transform_broadcaster.hpp>
 
 #include <visp3/core/vpExponentialMap.h>
 #include <visp3/core/vpImage.h>
@@ -71,26 +71,32 @@ namespace visp_tracker
 
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       visp_tracker::ModelBasedSettingsConfig config;
+    /* FIXME: RECONFIGURATION
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(tracker_, config);
       reconfigureSrv_->updateConfig(config);
       convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(movingEdge_, tracker_, config);
       reconfigureSrv_->updateConfig(config);
       convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(kltTracker_, tracker_, config);
       reconfigureSrv_->updateConfig(config);
+    */
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
       visp_tracker::ModelBasedSettingsEdgeConfig config;
+      /* FIXME: RECONFIGURATION
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(tracker_, config);
       reconfigureEdgeSrv_->updateConfig(config);
       convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(movingEdge_, tracker_, config);
       reconfigureEdgeSrv_->updateConfig(config);
+      */
     }
     else{ // KLT Tracker reconfigure
+    /* FIXME: RECONFIGURATION
       visp_tracker::ModelBasedSettingsKltConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(tracker_, config);
       reconfigureKltSrv_->updateConfig(config);
       convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(kltTracker_, tracker_, config);
       reconfigureKltSrv_->updateConfig(config);
+      */
     }
 
     state_ = WAITING_FOR_INITIALIZATION;
@@ -233,7 +239,7 @@ Tracker::updateKltPoints(visp_tracker::KltPointsPtr klt)
         {
           for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
           {
-            visp_tracker::KltPoint kltPoint;
+            visp_tracker::msg::KltPoint kltPoint;
             kltPoint.id = it->first;
             kltPoint.i = it->second.get_i();
             kltPoint.j = it->second.get_j();
@@ -258,7 +264,7 @@ Tracker::updateKltPoints(visp_tracker::KltPointsPtr klt)
         {
           for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
           {
-            visp_tracker::KltPoint kltPoint;
+            visp_tracker::msg::KltPoint kltPoint;
             kltPoint.id = it->first;
             kltPoint.i = it->second.get_i();
             kltPoint.j = it->second.get_j();
@@ -295,10 +301,12 @@ Tracker::Tracker(rclcpp::Node& nh,
     modelPath_(),
     cameraSubscriber_(),
     mutex_ (),
-    //reconfigureSrv_(mutex_, nodeHandlePrivate_),
+    /*    FIXME: RECONFIGURATION
+    reconfigureSrv_(mutex_, nodeHandlePrivate_),
     reconfigureSrv_(NULL),
     reconfigureKltSrv_(NULL),
     reconfigureEdgeSrv_(NULL),
+    */
     resultPublisher_(),
     transformationPublisher_(),
     movingEdgeSitesPublisher_(),
@@ -370,12 +378,12 @@ Tracker::Tracker(rclcpp::Node& nh,
 
   // Moving edge sites_ publisher.
   movingEdgeSitesPublisher_ =
-      nodeHandle_.advertise<visp_tracker::MovingEdgeSites>
+      nodeHandle_.advertise<visp_tracker::msg::MovingEdgeSites>
       (visp_tracker::moving_edge_sites_topic, queueSize_);
 
   // Klt_points_ publisher.
   kltPointsPublisher_ =
-      nodeHandle_.advertise<visp_tracker::KltPoints>
+      nodeHandle_.advertise<visp_tracker::msg::KltPoints>
       (visp_tracker::klt_points_topic, queueSize_);
 
   // Camera subscriber.
@@ -397,6 +405,7 @@ Tracker::Tracker(rclcpp::Node& nh,
       ("object_position_hint", queueSize_, callback);
 
   // Dynamic reconfigure.
+/* FIXME: RECONFIGURATION
   if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
     reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
@@ -425,6 +434,7 @@ Tracker::Tracker(rclcpp::Node& nh,
     reconfigureKltSrv_->setCallback(f);
   }
 
+*/
   // Wait for the image to be initialized.
   waitForImage();
   if (this->exiting())
@@ -472,6 +482,7 @@ Tracker::Tracker(rclcpp::Node& nh,
 
 Tracker::~Tracker()
 {
+/* FIXME: RECONFIGURATION
   if(reconfigureSrv_ != NULL)
     delete reconfigureSrv_;
 
@@ -480,11 +491,12 @@ Tracker::~Tracker()
 
   if(reconfigureEdgeSrv_ != NULL)
     delete reconfigureEdgeSrv_;
+    */
 }
 
 void Tracker::spin()
 {
-  rclcpp::rate::Rate loopRateTracking(100);
+  rclcpp::Rate loopRateTracking(100);
   tf2::Transform transform;
   std_msgs::msg::Header lastHeader;
 
@@ -616,7 +628,7 @@ void Tracker::spin()
         if (movingEdgeSitesPublisher_.getNumSubscribers	() > 0)
         {
           visp_tracker::MovingEdgeSitesPtr sites
-              (new visp_tracker::MovingEdgeSites);
+              (new visp_tracker::msg::MovingEdgeSites);
           updateMovingEdgeSites(sites);
           sites->header = header_;
           movingEdgeSitesPublisher_.publish(sites);
@@ -625,7 +637,7 @@ void Tracker::spin()
         if (kltPointsPublisher_.getNumSubscribers	() > 0)
         {
           visp_tracker::KltPointsPtr klt
-              (new visp_tracker::KltPoints);
+              (new visp_tracker::msg::KltPoints);
           updateKltPoints(klt);
           klt->header = header_;
           kltPointsPublisher_.publish(klt);
@@ -663,7 +675,7 @@ void Tracker::spin()
 void
 Tracker::waitForImage()
 {
-  rclcpp::rate::Rate loop_rate(10);
+  rclcpp::Rate loop_rate(10);
   while (!exiting()
          && (!image_.getWidth() || !image_.getHeight())
          && (!info_ || info_->k[0] == 0.))

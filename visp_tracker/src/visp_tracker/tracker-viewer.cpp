@@ -63,7 +63,7 @@ namespace visp_tracker
                                rclcpp::Node& privateNh,
                                volatile bool& exiting,
                                unsigned queueSize)
-    : Node("TrackerViewer", options),
+    : Node("TrackerViewer"),
       exiting_ (exiting),
       queueSize_(queueSize),
       nodeHandle_(nh),
@@ -99,14 +99,14 @@ namespace visp_tracker
     // Compute topic and services names.
     std::string cameraPrefix;
 
-    rclcpp::rate::Rate rate (1);
+    rclcpp::Rate rate (1);
     while (cameraPrefix.empty ())
     {
       // Check for the global parameter /camera_prefix set by visp_tracker node
       if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix) && !ros::param::get ("~camera_prefix", cameraPrefix))
       {
-        RCLCPP_WARN(rclcpp::get_logger("rclcpp")
-            ("the camera_prefix parameter does not exist.\n"
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"),
+            "the camera_prefix parameter does not exist.\n"
              "This may mean that:\n"
              "- the tracker is not launched,\n"
              "- the tracker and viewer are not running in the same namespace."
@@ -139,11 +139,22 @@ namespace visp_tracker
     reconfigureCallback_t reconfigureCallback =
         boost::bind(&TrackerViewer::reconfigureCallback, this, _1, _2);
 
-    initService_ = nodeHandle_.advertiseService
-        (visp_tracker::srv::Init_service_viewer, initCallback);
+  // define services
+  initService_ = this->create_service<vvisp_tracker::srv::Init_service_viewer>(
+      visp_camera_calibration::calibrate_service, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+                                                            std::placeholders::_2, std::placeholders::_3));
 
-    reconfigureService_ = nodeHandle_.advertiseService
-        (visp_tracker::reconfigure_service_viewer, reconfigureCallback);
+//    initService_ = nodeHandle_.advertiseService
+//        (visp_tracker::srv::Init_service_viewer, initCallback);
+
+  // define services
+  reconfigureService_ = this->create_service<visp_tracker::reconfigure_service_viewer>(
+      visp_camera_calibration::calibrate_service, std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1,
+                                                            std::placeholders::_2, std::placeholders::_3));
+//     calibrate_service_ = n_.advertiseService(visp_camera_calibration::calibrate_service,calibrate_callback);
+
+//    reconfigureService_ = nodeHandle_.advertiseService
+//        (visp_tracker::reconfigure_service_viewer, reconfigureCallback);
 
 
     std::ofstream modelStream;
@@ -250,7 +261,7 @@ namespace visp_tracker
     vpImagePoint point (10, 10);
     vpImagePoint pointTime (22, 10);
     vpImagePoint pointCameraTopic (34, 10);
-    rclcpp::rate::Rate loop_rate(80);
+    rclcpp::Rate loop_rate(80);
 
     boost::format fmt("tracking (x=%f y=%f z=%f)");
     boost::format fmtTime("time = %f");
@@ -301,7 +312,7 @@ namespace visp_tracker
   void
   TrackerViewer::waitForImage()
   {
-    rclcpp::rate::Rate loop_rate(10);
+    rclcpp::Rate loop_rate(10);
     while (!exiting()
            && (!image_.getWidth() || !image_.getHeight()))
     {
@@ -399,8 +410,8 @@ namespace visp_tracker
   (const sensor_msgs::msg::Image::ConstPtr& image,
    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
    const geometry_msgs::msg::PoseWithCovarianceStamped::ConstPtr& trackingResult,
-   const visp_tracker::MovingEdgeSites::ConstPtr& sites,
-   const visp_tracker::KltPoints::ConstPtr& klt)
+   const visp_tracker::msg::MovingEdgeSites::ConstPtr& sites,
+   const visp_tracker::msg::KltPoints::ConstPtr& klt)
   {
     // Copy image.
     try

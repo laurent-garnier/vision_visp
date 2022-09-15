@@ -1,7 +1,7 @@
 #ifndef VISP_TRACKER_TRACKER_VIEWER_HH
 # define VISP_TRACKER_TRACKER_VIEWER_HH
 
-#include <geometry_msgs/msg/pose_with_covariance_stamped.h>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
@@ -42,8 +42,8 @@ namespace visp_tracker
     typedef message_filters::sync_policies::ApproximateTime<
     sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo,
     geometry_msgs::msg::PoseWithCovarianceStamped,
-    visp_tracker::MovingEdgeSites,
-    visp_tracker::KltPoints
+    visp_tracker::msg::MovingEdgeSites,
+    visp_tracker::msg::KltPoints
     > syncPolicy_t;
 
     /// \brief Constructor.
@@ -80,8 +80,8 @@ namespace visp_tracker
     (const sensor_msgs::msg::Image::ConstPtr& imageConst,
      const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst,
      const geometry_msgs::msg::PoseWithCovarianceStamped::ConstPtr& trackingResult,
-     const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst,
-     const visp_tracker::KltPoints::ConstPtr& kltConst);
+     const visp_tracker::msg::MovingEdgeSites::ConstPtr& sitesConst,
+     const visp_tracker::msg::KltPoints::ConstPtr& kltConst);
 
     void timerCallback();
 
@@ -101,8 +101,8 @@ namespace visp_tracker
     /// \brief Queue size for all subscribers.
     unsigned queueSize_;
 
-    rclcpp::Node& nodeHandle_;
-    rclcpp::Node& nodeHandlePrivate_;
+    std::shared_ptr<rclcpp::Node> nodeHandle_;
+    std::shared_ptr<rclcpp::Node> nodeHandlePrivate_;
 
     /// \brief Image transport used to receive images.
     image_transport::ImageTransport imageTransport_;
@@ -120,16 +120,16 @@ namespace visp_tracker
     /// \}
 
     /// \brief Service called when user ends tracker_client node
-    ros::ServiceServer initService_;
+    rclcpp::Service<visp_tracker::srv::Init_service_viewer>::SharedPtr InitService_;
 
     /// \brief Service called when user is reconfiguring tracker node
-    ros::ServiceServer reconfigureService_;
+    rclcpp::Service<visp_tracker::reconfigure_service_viewer>::SharedPtr reconfigureService_;
 
     /// \brief Name of the tracker used in this viewer node
     std::string trackerName_;
 
     /// \brief Model path.
-    boost::filesystem::path modelPath_;
+    std::filesystem::path modelPath_;
 
     /// \brief ViSP edge tracker.
     vpMbGenericTracker tracker_;
@@ -143,9 +143,9 @@ namespace visp_tracker
     /// \brief Last tracked object position, set to none if tracking failed.
     boost::optional<vpHomogeneousMatrix> cMo_;
     /// \brief Shared pointer to latest received moving edge sites.
-    visp_tracker::MovingEdgeSites::ConstPtr sites_;
+    visp_tracker::msg::MovingEdgeSites::ConstPtr sites_;
     /// \brief Shared pointer to latest received KLT point positions.
-    visp_tracker::KltPoints::ConstPtr klt_;
+    visp_tracker::msg::KltPoints::ConstPtr klt_;
 
     /// \name Subscribers and synchronizer.
     /// \{
@@ -157,10 +157,10 @@ namespace visp_tracker
     message_filters::Subscriber<geometry_msgs::msg::PoseWithCovarianceStamped>
     trackingResultSubscriber_;
     /// \brief Subscriber to moving edge sites topics.
-    message_filters::Subscriber<visp_tracker::MovingEdgeSites>
+    message_filters::Subscriber<visp_tracker::msg::MovingEdgeSites>
     movingEdgeSitesSubscriber_;
     /// \brief Subscriber to KLT point topics.
-    message_filters::Subscriber<visp_tracker::KltPoints>
+    message_filters::Subscriber<visp_tracker::msg::KltPoints>
     kltPointsSubscriber_;
 
     /// \brief Synchronizer with approximate time policy.
