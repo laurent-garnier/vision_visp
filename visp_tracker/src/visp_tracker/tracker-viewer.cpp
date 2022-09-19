@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include <rclcpp/rclcpp.hpp>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 #include <visp3/gui/vpDisplayX.h>
 
 #include "visp_tracker/conversion.h"
@@ -34,8 +34,8 @@ namespace visp_tracker
 
     if (!makeModelFile(this, modelStream, path))
       throw std::runtime_error("failed to load the model from the callback");
-    //RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Make model Viewer: " << path.c_str());
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Model loaded from the service.");
+    //RCLCPP_WARN_STREAM(this->rclcpp::get_logger(),"Make model Viewer: " << path.c_str());
+    RCLCPP_INFO_STREAM(this->rclcpp::get_logger(),"Model loaded from the service.");
     modelPath_ = path;
     tracker_.resetTracker();
     initializeTracker();
@@ -52,15 +52,15 @@ namespace visp_tracker
                                      visp_tracker::srv::Init::Response& res)
   {
     // Common parameters
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Reconfiguring Tracker Viewer.");
+    RCLCPP_INFO_STREAM(this->rclcpp::get_logger(),"Reconfiguring Tracker Viewer.");
     convertInitRequestToVpMbTracker(req, tracker_);
 
     res.initialization_succeed = true;
     return true;
   }
 
-  TrackerViewer::TrackerViewer(rclcpp::Node& nh,
-                               rclcpp::Node& privateNh,
+  TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh,
+                               std::shared_ptr<rclcpp::Node> privateNh,
                                volatile bool& exiting,
                                unsigned queueSize)
     : Node("TrackerViewer"),
@@ -105,7 +105,7 @@ namespace visp_tracker
       // Check for the global parameter /camera_prefix set by visp_tracker node
       if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix) && !ros::param::get ("~camera_prefix", cameraPrefix))
       {
-        RCLCPP_WARN(rclcpp::get_logger("rclcpp"),
+        RCLCPP_WARN(this->rclcpp::get_logger(),
             "the camera_prefix parameter does not exist.\n"
              "This may mean that:\n"
              "- the tracker is not launched,\n"
@@ -114,7 +114,7 @@ namespace visp_tracker
       }
       else if (cameraPrefix.empty ())
       {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+        RCLCPP_INFO(this->rclcpp::get_logger(),
             "tracker is not yet initialized, waiting...\n"
              "You may want to launch the client to initialize the tracker.");
       }
@@ -166,8 +166,8 @@ namespace visp_tracker
       if (!nodeHandle_.hasParam(visp_tracker::model_description_param))
       {
         if(cpt%10 == 0){
-          ROS_WARN_STREAM
-              ("[Node: " << ros::this_node::getName() << "]\n"
+        CLCPP_WARN_STREAM
+              (this->rclcpp::get_logger(), "[Node: " << ros::this_node::getName() << "]\n"
                                                          "The model_description parameter does not exist.\n"
                                                          "This may mean that:\n"
                                                          "- the tracker is not launched or not initialized,\n"
@@ -186,8 +186,8 @@ namespace visp_tracker
       throw std::runtime_error
         ("failed to load the model from the parameter server");
 
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Model loaded from the parameter server.");
-    //RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Make model Viewer: " << path.c_str());
+    RCLCPP_INFO_STREAM(this->rclcpp::get_logger(),"Model loaded from the parameter server.");
+    //RCLCPP_WARN_STREAM(this->rclcpp::get_logger(),"Make model Viewer: " << path.c_str());
     modelPath_ = path;
 
     initializeTracker();
@@ -346,7 +346,7 @@ namespace visp_tracker
         trackerName_ = "tracker_mbt";
         if(!ros::param::search(trackerName_ + "/angle_appear",key))
         {
-          RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"No tracker has been found with the default name value \""
+          RCLCPP_WARN_STREAM(this->rclcpp::get_logger(),"No tracker has been found with the default name value \""
                           << trackerName_ << "/angle_appear\".\n"
                           << "Tracker name parameter (tracker_name) should be provided for this node (tracker_viewer).\n"
                           << "Polygon visibility might not work well in the viewer window.");
@@ -364,13 +364,13 @@ namespace visp_tracker
       {
         double value;
         if(ros::param::get(key,value)){
-          // RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Angle Appear Viewer: " << value);
+          // RCLCPP_WARN_STREAM(this->rclcpp::get_logger(),"Angle Appear Viewer: " << value);
           tracker_.setAngleAppear(vpMath::rad(value));
         }
       }
       else
       {
-        RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"No tracker has been found with the provided parameter "
+        RCLCPP_WARN_STREAM(this->rclcpp::get_logger(),"No tracker has been found with the provided parameter "
                         << "(tracker_name=\"" << trackerName_ << "\")\n"
                         << "Polygon visibility might not work well in the viewer window");
       }
@@ -379,7 +379,7 @@ namespace visp_tracker
       {
         double value;
         if(ros::param::get(key,value)){
-          // RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Angle Disappear Viewer: " << value);
+          // RCLCPP_WARN_STREAM(this->rclcpp::get_logger(),"Angle Disappear Viewer: " << value);
           tracker_.setAngleDisappear(vpMath::rad(value));
         }
       }
@@ -391,7 +391,7 @@ namespace visp_tracker
   {
     try
     {
-      // RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Trying to load the model Viewer: " << modelPath_);
+      // RCLCPP_WARN_STREAM(this->rclcpp::get_logger(),"Trying to load the model Viewer: " << modelPath_);
       tracker_.loadModel(modelPath_.native().c_str());
     }
     catch(...)
@@ -400,7 +400,7 @@ namespace visp_tracker
 
       throw std::runtime_error("failed to load the model "+ modelPath_);
     }
-    // RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"Model has been successfully loaded.");
+    // RCLCPP_WARN(this->rclcpp::get_logger(),"Model has been successfully loaded.");
   }
 
   void
@@ -418,7 +418,7 @@ namespace visp_tracker
     }
     catch(std::exception& e)
     {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"dropping frame: " << e.what());
+      RCLCPP_ERROR_STREAM(this->rclcpp::get_logger(),"dropping frame: " << e.what());
     }
 
     // Copy moving camera infos, edges sites and optional KLT points.
@@ -506,7 +506,7 @@ namespace visp_tracker
            "Possible issues:\n"+
            "\t* The network is too slow.";
       
-      RCLCPP_WARN_STREAM_THROTTLE(rclcpp::get_logger("rclcpp"),10, fmt);
+      RCLCPP_WARN_STREAM_THROTTLE(this->rclcpp::get_logger(),10, fmt);
     }
   }
 } // end of namespace visp_tracker.

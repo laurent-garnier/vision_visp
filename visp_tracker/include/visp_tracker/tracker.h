@@ -1,7 +1,7 @@
 #ifndef VISP_TRACKER_TRACKER_HH
 # define VISP_TRACKER_TRACKER_HH
 
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>

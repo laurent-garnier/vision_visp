@@ -32,7 +32,7 @@ namespace visp_tracker
   Tracker::initCallback(visp_tracker::srv::Init::Request& req,
                         visp_tracker::srv::Init::Response& res)
   {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Initialization request received.");
+    RCLCPP_INFO(this->rclcpp::get_logger(),"Initialization request received.");
 
     res.initialization_succeed = false;
 
@@ -105,16 +105,16 @@ namespace visp_tracker
     // Load the model.
     try
     {
-      RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp")," Trying to load the model Tracker: " << fullModelPath);
+      RCLCPP_DEBUG_STREAM(this->rclcpp::get_logger()," Trying to load the model Tracker: " << fullModelPath);
       tracker_.loadModel(fullModelPath.c_str());
       modelStream.close();
     }
     catch(...)
     {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Failed to load the model: " << fullModelPath);
+      RCLCPP_ERROR_STREAM(this->rclcpp::get_logger(),"Failed to load the model: " << fullModelPath);
       return true;
     }
-    RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"),"Model has been successfully loaded.");
+    RCLCPP_DEBUG(this->rclcpp::get_logger(),"Model has been successfully loaded.");
 
     // Load the initial cMo.
     transformToVpHomogeneousMatrix(cMo_, req.initial_cMo);
@@ -123,25 +123,25 @@ namespace visp_tracker
     tracker_.setCovarianceComputation(true);
 
     // Try to initialize the tracker.
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Initializing tracker with cMo:\n" << cMo_);
+    RCLCPP_INFO_STREAM(this->rclcpp::get_logger(),"Initializing tracker with cMo:\n" << cMo_);
     try
     {
       // Bug between setPose() and initFromPose() not present here due to previous call to resetTracker()
       tracker_.initFromPose(image_, cMo_);
-      RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Tracker successfully initialized.");
+      RCLCPP_INFO(this->rclcpp::get_logger(),"Tracker successfully initialized.");
 
       //movingEdge.print();
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpMbTrackerToRosMessage(tracker_));
+      RCLCPP_INFO_STREAM(this->rclcpp::get_logger(),(convertVpMbTrackerToRosMessage(tracker_));
       // - Moving edges.
       if(trackerType_!="klt")
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpMeToRosMessage(tracker_, movingEdge_));
+        RCLCPP_INFO_STREAM(this->rclcpp::get_logger(),(convertVpMeToRosMessage(tracker_, movingEdge_));
 
       if(trackerType_!="mbt")
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
+        RCLCPP_INFO_STREAM(this->rclcpp::get_logger(),(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
     }
     catch(const std::string& str)
     {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Tracker initialization has failed: " << str);
+      RCLCPP_ERROR_STREAM(this->rclcpp::get_logger(),"Tracker initialization has failed: " << str);
     }
 
     // Initialization is valid.
@@ -454,7 +454,7 @@ Tracker::Tracker(rclcpp::Node& nh,
       || cameraParameters_.get_u0 () == 1.
       || cameraParameters_.get_v0 () == 0.
       || cameraParameters_.get_v0 () == 1.)
-    RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"Dubious camera parameters detected.\n"
+    RCLCPP_WARN(this->rclcpp::get_logger(),"Dubious camera parameters detected.\n"
               "\n"
               "It seems that the matrix P from your camera\n"
               "calibration topics is wrong.\n"
@@ -468,7 +468,7 @@ Tracker::Tracker(rclcpp::Node& nh,
   tracker_.setCameraParameters(cameraParameters_);
   tracker_.setDisplayFeatures(false);
 
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),(cameraParameters_));
+  RCLCPP_INFO_STREAM(this->rclcpp::get_logger(),(cameraParameters_));
 
   // Service declaration.
     typedef boost::function<bool (visp_tracker::srv::Init::Request&,

@@ -4,9 +4,9 @@
 //#include <dynamic_reconfigure/server.h>
 
 
-#include <image_transport/image_transport.h>
-#include <image_transport/subscriber_filter.h>
-//#include <image_proc/advertisement_checker.h>
+#include <image_transport/image_transport.hpp>
+#include <image_transport/subscriber_filter.hpp>
+#include <image_proc/advertisement_checker.hpp>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -80,7 +80,7 @@ namespace visp_tracker
     void sendcMo(const vpHomogeneousMatrix& cMo);
 
     std::string fetchResource(const std::string&);
-    bool makeModelFile(rclcpp::Node* node,
+    bool makeModelFile(std::shared_ptr<rclcpp::Node> node,
                        std::ofstream& modelStream,
                        const std::string& resourcePath,
                        std::string& fullModelPath);

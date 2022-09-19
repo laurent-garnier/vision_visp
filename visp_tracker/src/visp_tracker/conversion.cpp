@@ -19,7 +19,7 @@
 #include "visp_tracker/conversion.h"
 
 void rosImageToVisp(vpImage<unsigned char>& dst,
-                    const sensor_msgs::msg::Image::ConstPtr& src)
+                    const sensor_msgs::msg::Image::ConstSharedPtr& src)
 {
   using sensor_msgs::image_encodings::RGB8;
   using sensor_msgs::image_encodings::RGBA8;

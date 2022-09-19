@@ -14,6 +14,7 @@ find_package(image_transport REQUIRED)
 find_package(resource_retriever REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(image_proc REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -105,6 +106,7 @@ ament_target_dependencies(${PROJECT_NAME}_common
   std_msgs
   tf2_ros
   rclcpp
+  image_proc
   VISP
 )
 

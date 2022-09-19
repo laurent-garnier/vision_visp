@@ -47,7 +47,7 @@ getInitialPoseFileFromModelName (const std::string& modelName,
 }
 
 bool
-makeModelFile(rclcpp::Node* node,
+makeModelFile(std::shared_ptr<rclcpp::Node> node,
               std::ofstream& modelStream,
               std::string& fullModelPath)
 {

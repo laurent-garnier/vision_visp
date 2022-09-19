@@ -30,7 +30,7 @@
 /// \param dst ViSP destination image
 /// \param src ROS source image
 void rosImageToVisp(vpImage<unsigned char>& dst,
-                    const sensor_msgs::msg::Image::ConstPtr& src);
+                    const sensor_msgs::msg::Image::ConstSharedPtr& src);
 
 /// \brief Convert a ViSP image into a ROS one.
 ///

@@ -3,7 +3,7 @@
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.h>
 
 #include <message_filters/subscriber.h>
@@ -47,8 +47,8 @@ namespace visp_tracker
     > syncPolicy_t;
 
     /// \brief Constructor.
-    TrackerViewer(rclcpp::Node& nh,
-                  rclcpp::Node& privateNh,
+    TrackerViewer(std::shared_ptr<rclcpp::Node> nh,
+                  std::shared_ptr<rclcpp::Node> privateNh,
                   volatile bool& exiting,
                   unsigned queueSize = 5u);
 
