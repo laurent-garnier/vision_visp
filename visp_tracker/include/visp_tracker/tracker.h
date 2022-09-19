@@ -86,8 +86,8 @@ namespace visp_tracker
 
     unsigned queueSize_;
 
-    rclcpp::Node& nodeHandle_;
-    rclcpp::Node& nodeHandlePrivate_;
+    std::shared_ptr<rclcpp::Node> nodeHandle_;
+    std::shared_ptr<rclcpp::Node> nodeHandlePrivate_;
     image_transport::ImageTransport imageTransport_;
 
     State state_;

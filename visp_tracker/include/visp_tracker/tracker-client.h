@@ -6,7 +6,7 @@
 
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
-#include <image_proc/advertisement_checker.h>
+//#include <image_proc/advertisement_checker.h>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -48,8 +48,8 @@ namespace visp_tracker
 //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
     };
 
-    TrackerClient(rclcpp::Node& nh,
-                  rclcpp::Node& privateNh,
+    TrackerClient(std::shared_ptr<rclcpp::Node> nodeHandle_,
+                  std::shared_ptr<rclcpp::Node> privateNh,
                   volatile bool& exiting,
                   unsigned queueSize = 5u);
     
@@ -95,8 +95,8 @@ namespace visp_tracker
 
     unsigned queueSize_;
 
-    rclcpp::Node& nodeHandle_;
-    rclcpp::Node& nodeHandlePrivate_;
+    std::shared_ptr<rclcpp::Node> nodeHandle_;
+    std::shared_ptr<rclcpp::Node> nodeHandlePrivate_;
 
     image_transport::ImageTransport imageTransport_;
 

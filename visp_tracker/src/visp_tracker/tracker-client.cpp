@@ -30,8 +30,8 @@
 
 namespace visp_tracker
 {
-  TrackerClient::TrackerClient(rclcpp::Node& nh,
-                               rclcpp::Node& privateNh,
+  TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh,
+                               std::shared_ptr<rclcpp::Node> privateNh,
                                volatile bool& exiting,
                                unsigned queueSize)
     : Node("TrackerClient"),
@@ -66,14 +66,45 @@ namespace visp_tracker
       checkInputs_(),
       resourceRetriever_()
   {
-    // Parameters.
-    nodeHandlePrivate_.param<std::string>("model_path", modelPath_,
+    // Parameters. FIX TODO ?
+
+  // checks if param_name is exist  the command pass the value of param in variable but if the param 
+  // doesn't exist then the command pass "default" to variable
+
+  nodeHandlePrivate_->declare_parameter<std::string>(model_path);
+  rclcpp::Parameter modelPath_param;
+  if (!nodeHandlePrivate_->get_parameter(model_path,modelPath_param)) {
+    nodeHandlePrivate_->declare_parameter<std::string>(visp_tracker::default_model_path);
+    modelPath_ = nodeHandlePrivate_->get_parameter(visp_tracker::default_model_path,modelPath_param);
+  }
+  
+  nodeHandlePrivate_->declare_parameter<std::string>(model_name);
+  rclcpp::Parameter modelName_param;
+  if (!nodeHandlePrivate_->get_parameter(model_name,modelName_param)) {
+    modelName_ = "";
+  }
+
+  nodeHandlePrivate_->declare_parameter<bool>(start_from_saved_pose);
+  rclcpp::Parameter startFromSavedPose_param;
+  if (!nodeHandlePrivate_->get_parameter(start_from_saved_pose,startFromSavedPose_param)) {
+    startFromSavedPose_ = false;
+  }
+
+  nodeHandlePrivate_->declare_parameter<bool>(confirm_init);
+  rclcpp::Parameter confirmInit__param;
+  if (!nodeHandlePrivate_->get_parameter(confirm_init_,confirmInit_param)) {
+    confirmInit_ = true;
+  }
+
+
+/*    nodeHandlePrivate_.param<std::string>("model_path", modelPath_,
                                           visp_tracker::default_model_path);
-    nodeHandlePrivate_.param<std::string>("model_name", modelName_, "");
+
+    nodeHandlePrivate_.param<std::string>("model_name", startFromSavedPose_, "");
 
     nodeHandlePrivate_.param<bool>
         ("start_from_saved_pose", startFromSavedPose_, false);
-
+*/
     nodeHandlePrivate_.param<bool>
         ("confirm_init", confirmInit_, true);
 
@@ -210,11 +241,10 @@ namespace visp_tracker
   void
   TrackerClient::spin()
   {
-    boost::format fmtWindowTitle ("ViSP MBT tracker initialization - [ns: %s]");
-    fmtWindowTitle % ros::this_node::getNamespace ();
+    std::string fmtWindowTitle = std::string(("ViSP MBT tracker initialization - [ns: ")+ros::this_node::getNamespace ()+"]";
 
     vpDisplayX d(image_, image_.getWidth(), image_.getHeight(),
-                 fmtWindowTitle.str().c_str());
+                 fmtWindowTitle.c_str());
 
     rclcpp::Rate loop_rate_tracking(200);
     bool ok = false;
@@ -424,12 +454,11 @@ namespace visp_tracker
     }
     catch(...)
     {
-      boost::format fmt
-          ("Failed to load the model %1%\n"
-           "Do you use resource_retriever syntax?\n"
-           "I.e. replace /my/model/path by file:///my/model/path");
-      fmt % bModelPath_;
-      throw std::runtime_error(fmt.str());
+      std::string fmt = std::string
+          ("Failed to load the model ")+bModelPath_.string()+"\n"+
+           "Do you use resource_retriever syntax?\n"+
+           "I.e. replace /my/model/path by file:///my/model/path";
+      throw std::runtime_error(fmt);
     }
   }
 
@@ -460,7 +489,7 @@ namespace visp_tracker
           file >> pose[i];
         else
         {
-          ROS_WARN("failed to parse initial pose file");
+          RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"failed to parse initial pose file");
           return cMo;
         }
       }
@@ -555,9 +584,8 @@ namespace visp_tracker
 
     if (!file.good())
     {
-      boost::format fmt("failed to load initialization points: %1");
-      fmt % init;
-      throw std::runtime_error(fmt.str());
+      std::string fmt("failed to load initialization points: ")+init+;
+      throw std::runtime_error(fmt);
     }
 
     char c;
@@ -706,7 +734,7 @@ namespace visp_tracker
           vpDisplay::flush(initHelpImage);
         }
       } catch(vpException &e) {
-        ROS_WARN("Error diplaying tracker initialization help image file \"%s\":\n%s", helpImagePath.c_str(), e.what());
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"Error diplaying tracker initialization help image file \"%s\":\n%s", helpImagePath.c_str(), e.what());
       }
     }
 
@@ -755,8 +783,7 @@ namespace visp_tracker
   {
     vpImagePoint ip;
     double x = 0., y = 0.;
-    boost::format fmt("click on point %u/%u");
-    fmt % (i + 1) % points.size(); // list points from 1 to n.
+    std::string fmt("click on point ")+(i + 1)+"/"+points.size();// list points from 1 to n.
 
     // Click on the point.
     vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
@@ -765,7 +792,7 @@ namespace visp_tracker
       vpDisplay::display(image_);
       vpDisplay::displayCharString
           (image_, 15, 10,
-           fmt.str().c_str(),
+           fmt.c_str(),
            vpColor::red);
 
       for (unsigned j = 0; j < imagePoints.size(); ++j)

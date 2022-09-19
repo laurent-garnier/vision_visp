@@ -118,12 +118,26 @@ namespace visp_tracker
     std::string cameraInfoTopic_;
 
     /// \}
+  //define services
+  ros::ServiceServer initService_;
+  ros::ServiceServer set_camera_info_service_;
+  >> rclcpp::Service<sensor_msgs::srv::SetCameraInfo>::SharedPtr set_camera_info_service_;
+
+  set_camera_info_service_ = n_.advertiseService(visp_camera_calibration::set_camera_info_service,set_camera_info_callback);
+
+  // define services
+  >> rclcpp::Client<sensor_msgs::srv::SetCameraInfo>::SharedPtr set_camera_info_service_;
+  >> set_camera_info_service_ = this->create_service<sensor_msgs::srv::SetCameraInfo>(
+      visp_camera_calibration::set_camera_info_service,
+      std::bind(&Camera::setCameraInfoCallback, this, std::placeholders::_1, std::placeholders::_2,
+                std::placeholders::_3));
+
 
     /// \brief Service called when user ends tracker_client node
     rclcpp::Service<visp_tracker::srv::Init_service_viewer>::SharedPtr InitService_;
 
     /// \brief Service called when user is reconfiguring tracker node
-    rclcpp::Service<visp_tracker::reconfigure_service_viewer>::SharedPtr reconfigureService_;
+    rclcpp::Service<visp_tracker::srv::reconfigure_service_viewer>::SharedPtr reconfigureService_;
 
     /// \brief Name of the tracker used in this viewer node
     std::string trackerName_;
@@ -141,7 +155,7 @@ namespace visp_tracker
     /// \brief Shared pointer to latest received camera information.
     sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
     /// \brief Last tracked object position, set to none if tracking failed.
-    boost::optional<vpHomogeneousMatrix> cMo_;
+    std::optional<vpHomogeneousMatrix> cMo_;
     /// \brief Shared pointer to latest received moving edge sites.
     visp_tracker::msg::MovingEdgeSites::ConstPtr sites_;
     /// \brief Shared pointer to latest received KLT point positions.

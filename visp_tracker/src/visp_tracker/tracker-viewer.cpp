@@ -140,7 +140,7 @@ namespace visp_tracker
         boost::bind(&TrackerViewer::reconfigureCallback, this, _1, _2);
 
   // define services
-  initService_ = this->create_service<vvisp_tracker::srv::Init_service_viewer>(
+  initService_ = this->create_service<visp_tracker::srv::Init_service_viewer>(
       visp_camera_calibration::calibrate_service, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
                                                             std::placeholders::_2, std::placeholders::_3));
 
@@ -200,6 +200,8 @@ namespace visp_tracker
       return;
 
     // Subscribe to camera and tracker synchronously.
+// FIX TODO 
+    imageTransport.subscribe
     imageSubscriber_.subscribe
         (imageTransport_, rectifiedImageTopic_, queueSize_);
     cameraInfoSubscriber_.subscribe
@@ -252,8 +254,7 @@ namespace visp_tracker
   void
   TrackerViewer::spin()
   {
-    boost::format fmtWindowTitle ("ViSP MBT tracker viewer - [ns: %s]");
-    fmtWindowTitle % ros::this_node::getNamespace ();
+    std::string fmtWindowTitle ("ViSP MBT tracker viewer - [ns: ")+ros::this_node::getNamespace ()+"]");
 
     vpDisplayX d(image_,
                  image_.getWidth(), image_.getHeight(),
@@ -263,11 +264,9 @@ namespace visp_tracker
     vpImagePoint pointCameraTopic (34, 10);
     rclcpp::Rate loop_rate(80);
 
-    boost::format fmt("tracking (x=%f y=%f z=%f)");
-    boost::format fmtTime("time = %f");
+    std::string fmtTime;
 
-    boost::format fmtCameraTopic("camera topic = %s");
-    fmtCameraTopic % rectifiedImageTopic_;
+    std::string fmtCameraTopic = std::string("camera topic = ")+rectifiedImageTopic_;
     while (!exiting())
     {
       vpDisplay::display(image_);
@@ -287,11 +286,10 @@ namespace visp_tracker
         }
 
         ROS_DEBUG_STREAM_THROTTLE(10, "cMo viewer:\n" << *cMo_);
-
-        fmt % (*cMo_)[0][3] % (*cMo_)[1][3] % (*cMo_)[2][3];
-        vpDisplay::displayCharString
-            (image_, point, fmt.str().c_str(), vpColor::red);
-        fmtTime % info_->header.stamp.toSec();
+        fmt = std::string("tracking (x=")+(*cMo_)[0][3]+" y="+(*cMo_)[1][3]+" z="+(*cMo_)[2][3]+")";
+        vpDisplay::displayCharString(*cMo_)[2][3]
+            (image_, point, fmt.c_str(), vpColor::red);
+        fmtTime = std::string("time = "+info_->header.stamp.toSec();
         vpDisplay::displayCharString
             (image_, pointTime, fmtTime.str().c_str(), vpColor::red);
         vpDisplay::displayCharString
@@ -398,8 +396,8 @@ namespace visp_tracker
     }
     catch(...)
     {
-      boost::format fmt("failed to load the model %1%");
-      fmt % modelPath_;
+      std::string fmt("failed to load the model ")+modelPath_;
+
       throw std::runtime_error("failed to load the model "+ modelPath_);
     }
     // RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"Model has been successfully loaded.");
@@ -498,19 +496,17 @@ namespace visp_tracker
     if (countTrackingResult_ != countMovingEdgeSites_
         || countKltPoints_ != countMovingEdgeSites_)
     {
-      boost::format fmt
-          ("[visp_tracker] Low number of synchronized tuples received.\n"
-           "Images: %d\n"
-           "Camera info: %d\n"
-           "Tracking result: %d\n"
-           "Moving edge sites: %d\n"
-           "KLT points: %d\n"
-           "Synchronized tuples: %d\n"
-           "Possible issues:\n"
-           "\t* The network is too slow.");
-      fmt % countImages_ % countCameraInfo_
-          % countTrackingResult_ % countMovingEdgeSites_ % countKltPoints_ % countAll_;
-      ROS_WARN_STREAM_THROTTLE(10, fmt.str());
+      std::string fmt = std::string("[visp_tracker] Low number of synchronized tuples received.\n")+
+           "Images: "+countImages_+"\n"+
+           "Camera info: "+countCameraInfo_+"\n"+
+           "Tracking result: "+countTrackingResult_+"\n"+
+           "Moving edge sites: "+countMovingEdgeSites_+"\n"+
+           "KLT points: "+countKltPoints_+"\n"+
+           "Synchronized tuples: "+countAll_+"\n"+
+           "Possible issues:\n"+
+           "\t* The network is too slow.";
+      
+      RCLCPP_WARN_STREAM_THROTTLE(rclcpp::get_logger("rclcpp"),10, fmt);
     }
   }
 } // end of namespace visp_tracker.
