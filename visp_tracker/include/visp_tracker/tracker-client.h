@@ -80,8 +80,7 @@ namespace visp_tracker
     void sendcMo(const vpHomogeneousMatrix& cMo);
 
     std::string fetchResource(const std::string&);
-    bool makeModelFile(std::shared_ptr<rclcpp::Node> node,
-                       std::ofstream& modelStream,
+    bool makeModelFile(std::ofstream& modelStream,
                        const std::string& resourcePath,
                        std::string& fullModelPath);
 

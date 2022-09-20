@@ -79,7 +79,7 @@ namespace visp_tracker
     void spinOnce ()
     {
       //callbackQueue_.callAvailable(ros::WallDuration(0));
-      ros::spinOnce ();
+      rclcpp::spin_some (this);
     }
 
     volatile bool& exiting_;

@@ -22,6 +22,7 @@
 #include <visp3/mbt/vpMbGenericTracker.h>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/timer.hpp>
 
 namespace visp_tracker
 {
@@ -80,8 +81,8 @@ namespace visp_tracker
     (const sensor_msgs::msg::Image::ConstPtr& imageConst,
      const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst,
      const geometry_msgs::msg::PoseWithCovarianceStamped::ConstPtr& trackingResult,
-     const visp_tracker::msg::MovingEdgeSites::ConstPtr& sitesConst,
-     const visp_tracker::msg::KltPoints::ConstPtr& kltConst);
+     const visp_tracker::msg::MovingEdgeSites::ConstSharedPtr& sitesConst,
+     const visp_tracker::msg::KltPoints::ConstSharedPtr& kltConst);
 
     void timerCallback();
 
@@ -118,23 +119,9 @@ namespace visp_tracker
     std::string cameraInfoTopic_;
 
     /// \}
-  //define services
-  ros::ServiceServer initService_;
-  ros::ServiceServer set_camera_info_service_;
-  >> rclcpp::Service<sensor_msgs::srv::SetCameraInfo>::SharedPtr set_camera_info_service_;
-
-  set_camera_info_service_ = n_.advertiseService(visp_camera_calibration::set_camera_info_service,set_camera_info_callback);
-
-  // define services
-  >> rclcpp::Client<sensor_msgs::srv::SetCameraInfo>::SharedPtr set_camera_info_service_;
-  >> set_camera_info_service_ = this->create_service<sensor_msgs::srv::SetCameraInfo>(
-      visp_camera_calibration::set_camera_info_service,
-      std::bind(&Camera::setCameraInfoCallback, this, std::placeholders::_1, std::placeholders::_2,
-                std::placeholders::_3));
-
 
     /// \brief Service called when user ends tracker_client node
-    rclcpp::Service<visp_tracker::srv::Init_service_viewer>::SharedPtr InitService_;
+    rclcpp::Service<visp_tracker::srv::init_service_viewer>::SharedPtr initService_;
 
     /// \brief Service called when user is reconfiguring tracker node
     rclcpp::Service<visp_tracker::srv::reconfigure_service_viewer>::SharedPtr reconfigureService_;
@@ -157,9 +144,9 @@ namespace visp_tracker
     /// \brief Last tracked object position, set to none if tracking failed.
     std::optional<vpHomogeneousMatrix> cMo_;
     /// \brief Shared pointer to latest received moving edge sites.
-    visp_tracker::msg::MovingEdgeSites::ConstPtr sites_;
+    visp_tracker::msg::MovingEdgeSites::ConstSharedPtr sites_;
     /// \brief Shared pointer to latest received KLT point positions.
-    visp_tracker::msg::KltPoints::ConstPtr klt_;
+    visp_tracker::msg::KltPoints::ConstSharedPtr klt_;
 
     /// \name Subscribers and synchronizer.
     /// \{
