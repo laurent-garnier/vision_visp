@@ -72,7 +72,7 @@ namespace visp_tracker
       frameSize_(0.1),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
-      checkInputs_(nodeHandle_, getName()),
+      checkInputs_(nodeHandle_, get_name()),
       tracker_(),
       cameraParameters_(),
       image_(),
@@ -125,12 +125,16 @@ namespace visp_tracker
         return;
       rate.sleep ();
     }
-    nodeHandlePrivate_->declare_parameter<double>("frame_size", frameSize_,0.1);
+    if (frameSize_!= NULL) {
+      nodeHandlePrivate_.declare_parameter<double>("frame_size", frameSize_);;
+    } else {
+      nodeHandlePrivate_.declare_parameter<double>("frame_size", 0.1);
+    }
 
     rectifiedImageTopic_ =
-        ros::names::resolve(cameraPrefix + "/image_rect");
+        resolve_topic_name(cameraPrefix + "/image_rect");
     cameraInfoTopic_ =
-        ros::names::resolve(cameraPrefix + "/camera_info");
+        resolve_topic_name(cameraPrefix + "/camera_info");
 
     typedef boost::function<bool (visp_tracker::srv::Init::Request&,
                                   visp_tracker::srv::Init::Response& res)>
@@ -144,7 +148,7 @@ namespace visp_tracker
 
   // define services
   init_viewer_service_ = this->create_service<visp_tracker::srv::Init_viewer_service>(
-      visp_tracker::init_viewer_service, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+      visp_tracker::Init_viewer_service, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
                                                             std::placeholders::_2, std::placeholders::_3));
 
 //    init_viewer_service_ = nodeHandle_.advertiseService
@@ -170,7 +174,7 @@ namespace visp_tracker
       {
         if(cpt%10 == 0){
         CLCPP_WARN_STREAM
-              (this->get_logger(), "[Node: " << ros::this_node::getName() << "]\n"
+              (this->get_logger(), "[Node: " << get_name() << "]\n"
                                                          "The model_description parameter does not exist.\n"
                                                          "This may mean that:\n"
                                                          "- the tracker is not launched or not initialized,\n"
@@ -338,7 +342,11 @@ namespace visp_tracker
   void
   TrackerViewer::loadCommonParameters()
   {
-    nodeHandlePrivate_.param<std::string>("tracker_name", trackerName_, "");
+    if (trackerName_!= "") {
+      nodeHandlePrivate_.declare_parameter<std::string>("tracker_name", trackerName_);
+    } else {
+      nodeHandlePrivate_.declare_parameter<std::string>("tracker_name", "");
+    }
     std::string key;
 
     bool loadParam = false;

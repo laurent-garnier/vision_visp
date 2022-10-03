@@ -318,7 +318,7 @@ Tracker::Tracker(rclcpp::Node& nh,
     movingEdge_(),
     cameraParameters_(),
     lastTrackedImage_(),
-    checkInputs_(nodeHandle_, ros::this_node::getName()),
+    checkInputs_(nodeHandle_, get_name()),
     cMo_ (),
     listener_ (),
     worldFrameId_ (),
@@ -332,8 +332,16 @@ Tracker::Tracker(rclcpp::Node& nh,
   cMo_.eye();
 
   // Parameters.
-  nodeHandlePrivate_.param<std::string>("camera_prefix", cameraPrefix_, "");
-  nodeHandlePrivate_.param<std::string>("tracker_type", trackerType_, "mbt");
+  if (cameraPrefix_ != "") {
+    nodeHandlePrivate_.declare_parameter<std::string>("camera_prefix", cameraPrefix_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<std::string>("camera_prefix", "");
+  }
+  if (trackerType_ != "") {
+    nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", trackerType_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", "mtb");
+  }
   if(trackerType_=="mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
   else if(trackerType_=="klt")
@@ -353,16 +361,27 @@ Tracker::Tracker(rclcpp::Node& nh,
   // Create global /camera_prefix param to avoid to remap in the launch files the tracker_client and tracker_viewer nodes
   nodeHandle_.setParam("camera_prefix", cameraPrefix_);
 
-  nodeHandle_.param<std::string>("frame_id", childFrameId_, "object_position");
+  if (childFrameId_ != "") {
+    nodeHandlePrivate_.declare_parameter<std::string>("frame_id", childFrameId_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<std::string>("frame_id", "object_position");
+  }
 
   // Robot motion compensation.
-  nodeHandle_.param<std::string>("world_frame_id", worldFrameId_, "/odom");
-  nodeHandle_.param<bool>
-      ("compensate_robot_motion", compensateRobotMotion_, false);
+  if (worldFrameId_!= "") {
+    nodeHandlePrivate_.declare_parameter<std::string>("world_frame_id", worldFrameId_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<std::string>("world_frame_id", "/odom");
+  }
+  if (compensateRobotMotion_!= NULL) {
+    nodeHandlePrivate_.declare_parameter<bool>("compensate_robot_motion", compensateRobotMotion_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<bool>("compensate_robot_motion", false);
+  }
 
   // Compute topic and services names.
   rectifiedImageTopic_ =
-      ros::names::resolve(cameraPrefix_ + "/image_rect");
+      resolve_topic_name(cameraPrefix_ + "/image_rect");
 
   // Check for subscribed topics.
   checkInputs();

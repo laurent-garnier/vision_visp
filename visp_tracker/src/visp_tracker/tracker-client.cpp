@@ -71,27 +71,37 @@ namespace visp_tracker
   // checks if param_name is exist  the command pass the value of param in variable but if the param 
   // doesn't exist then the command pass "default" to variable
 
-  nodeHandlePrivate_->declare_parameter<std::string>("model_path",visp_tracker::default_model_path);
-  
-  nodeHandlePrivate_->declare_parameter<std::string>("model_name","");
+  if (modelPath_!= "") {
+    nodeHandlePrivate_.declare_parameter<std::string>("model_path", modelPath_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<std::string>("model_path", visp_tracker::default_model_path);
+  }
+  if (startFromSavedPose_!= "") {
+    nodeHandlePrivate_.declare_parameter<std::string>("model_name", startFromSavedPose_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<std::string>("model_name", "");
+  }
+  if (startFromSavedPose_!= NULL) {
+    nodeHandlePrivate_.declare_parameter<bool>("start_from_saved_pose", startFromSavedPose_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<bool>("start_from_saved_pose", false);
+  }
+  if (confirmInit_!= NULL) {
+    nodeHandlePrivate_.declare_parameter<bool>("confirm_init", confirmInit_);
+  } else {
+    nodeHandlePrivate_.declare_parameter<bool>("confirm_init", true);
+  }
 
-  nodeHandlePrivate_->declare_parameter<bool>("start_from_saved_pose",false);
 
-  nodeHandlePrivate_->declare_parameter<bool>("confirm_init",true);
+// use a default value in case the parameter doesn’t exist
+// ros::param::param<std::string>("/my_string", default_param, "default_value");
+// get_parameter_or_set : Get the parameter value; if not set, set the "alternative value" and store it in the node. 
 
-
-/*    nodeHandlePrivate_.param<std::string>("model_path", modelPath_,
-                                          visp_tracker::default_model_path);
-
-    nodeHandlePrivate_.param<std::string>("model_name", startFromSavedPose_, "");
-
-    nodeHandlePrivate_.param<bool>
-        ("start_from_saved_pose", startFromSavedPose_, false);
-
-    nodeHandlePrivate_.param<bool>
-        ("confirm_init", confirmInit_, true);
-*/
-    nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", trackerType_, "mbt");
+    if (trackerType_ != "") {
+      nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", trackerType_);
+    } else {
+      nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", "mtb");
+    }
     if(trackerType_=="mbt")
       tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
     else if(trackerType_=="klt")
@@ -99,7 +109,11 @@ namespace visp_tracker
     else
       tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
-    nodeHandlePrivate_.param<double>("frame_size", frameSize_, 0.1);
+    if (frameSize_ != NULL) {
+      nodeHandlePrivate_.declare_parameter<double>("frame_size", frameSize_);
+    } else {
+      nodeHandlePrivate_.declare_parameter<double>("frame_size", 0.1);
+    }
 
     if (modelName_.empty ())
       throw std::runtime_error
@@ -134,9 +148,9 @@ namespace visp_tracker
     }
 
     rectifiedImageTopic_ =
-        ros::names::resolve(cameraPrefix_ + "/image_rect");
+        rclcpp::names::resolve(cameraPrefix_ + "/image_rect");
     cameraInfoTopic_ =
-        ros::names::resolve(cameraPrefix_ + "/camera_info");
+        rclcpp::names::resolve(cameraPrefix_ + "/camera_info");
 
     // Check for subscribed topics.
     checkInputs();
@@ -663,7 +677,11 @@ namespace visp_tracker
     vpDisplayX *initHelpDisplay = NULL;
 
     std::string helpImagePath;
-    nodeHandlePrivate_.param<std::string>("help_image_path", helpImagePath, "");
+    if (helpImagePath!= "") {
+      nodeHandlePrivate_.param<std::string>("help_image_path", helpImagePath);
+    } else {
+      nodeHandlePrivate_.param<std::string>("help_image_path", "");
+    }
     if (helpImagePath.empty()){
 
       resource_retriever::MemoryResource resource;
