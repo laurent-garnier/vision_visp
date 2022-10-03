@@ -4,7 +4,7 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include <image_transport/image_transport.hpp>
-#include <image_transport/subscriber_filter.h>
+#include <image_transport/subscriber_filter.hpp>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -78,9 +78,9 @@ namespace visp_tracker
     /// \brief Callback used to received synchronized data.
     void
     callback
-    (const sensor_msgs::msg::Image::ConstPtr& imageConst,
+    (const sensor_msgs::msg::Image::ConstSharedPtr& imageConst,
      const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst,
-     const geometry_msgs::msg::PoseWithCovarianceStamped::ConstPtr& trackingResult,
+     const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr& trackingResult,
      const visp_tracker::msg::MovingEdgeSites::ConstSharedPtr& sitesConst,
      const visp_tracker::msg::KltPoints::ConstSharedPtr& kltConst);
 
@@ -121,10 +121,10 @@ namespace visp_tracker
     /// \}
 
     /// \brief Service called when user ends tracker_client node
-    rclcpp::Service<visp_tracker::srv::init_service_viewer>::SharedPtr initService_;
+    rclcpp::Service<visp_tracker::srv::Init>::SharedPtr init_viewer_service_;
 
     /// \brief Service called when user is reconfiguring tracker node
-    rclcpp::Service<visp_tracker::srv::reconfigure_service_viewer>::SharedPtr reconfigureService_;
+    rclcpp::Service<visp_tracker::srv::Init>::SharedPtr reconfigure_viewer_service_;
 
     /// \brief Name of the tracker used in this viewer node
     std::string trackerName_;

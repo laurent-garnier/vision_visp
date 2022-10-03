@@ -342,7 +342,7 @@ namespace visp_tracker
 
 
     rclcpp::Client<visp_tracker::srv::Init>::SharedPtr  clientViewer =
-        nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::srv::Init_service_viewer);
+        nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::srv::Init_viewer_service_);
     auto srv = std::make_shared<visp_tracker::srv::Init::Request>();
 
     // Load the model and send it to the parameter server.

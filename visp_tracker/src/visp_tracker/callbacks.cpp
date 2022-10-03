@@ -143,7 +143,7 @@ void reInitViewerCommonParameters(rclcpp::Node& nh,
                                   vpMbGenericTracker &tracker)
 {  
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr clientViewer =
-      nh.create_client<visp_tracker::srv::Init>(visp_tracker::reconfigure_service_viewer);
+      nh.create_client<visp_tracker::srv::Init>(visp_tracker::Reconfigure_viewer_service);
       
    auto srv = std::make_shared<visp_tracker::srv::Init::Request>();
   convertVpMbTrackerToInitRequest(tracker, srv);

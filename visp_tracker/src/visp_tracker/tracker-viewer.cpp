@@ -72,15 +72,15 @@ namespace visp_tracker
       frameSize_(0.1),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
-      checkInputs_(nodeHandle_, ros::this_node::getName()),
+      checkInputs_(nodeHandle_, getName()),
       tracker_(),
       cameraParameters_(),
       image_(),
       info_(),
-      initService_(),
-      reconfigureService_(),
+      init_viewer_service_(),
+      reconfigure_viewer_service_(),
       trackerName_(),
-      cMo_(boost::none),
+      cMo_(std::nullopt),
       sites_(),
       imageSubscriber_(),
       cameraInfoSubscriber_(),
@@ -88,7 +88,6 @@ namespace visp_tracker
       movingEdgeSitesSubscriber_(),
       kltPointsSubscriber_(),
       synchronizer_(syncPolicy_t(queueSize_)),
-      timer_(),
       countAll_(0u),
       countImages_(0u),
       countCameraInfo_(0u),
@@ -103,11 +102,11 @@ namespace visp_tracker
     while (cameraPrefix.empty ())
     {
       // Check for the global parameter /camera_prefix set by visp_tracker node
-    this->declare_parameter<std::string>("~camera_prefix");
+    this->declare_parameter<std::string>("~camera_prefix",this->get_parameter("~camera_prefix"));
     rclcpp::Parameter cameraPrefix_param = this->get_parameter("~camera_prefix");
     cameraPrefix = cameraPrefix_param.as_string();
 // FIX TODO ?
-      if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix) && !this->get_parameter("~camera_prefix"))
+      if (!cameraPrefix)
       {
         RCLCPP_WARN(this->get_logger(),
             "the camera_prefix parameter does not exist.\n"
@@ -126,7 +125,7 @@ namespace visp_tracker
         return;
       rate.sleep ();
     }
-    nodeHandlePrivate_.param<double>("frame_size", frameSize_, 0.1);
+    nodeHandlePrivate_->declare_parameter<double>("frame_size", frameSize_,0.1);
 
     rectifiedImageTopic_ =
         ros::names::resolve(cameraPrefix + "/image_rect");
@@ -144,21 +143,21 @@ namespace visp_tracker
         boost::bind(&TrackerViewer::reconfigureCallback, this, _1, _2);
 
   // define services
-  initService_ = this->create_service<visp_tracker::srv::Init_service_viewer>(
-      visp_camera_calibration::calibrate_service, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+  init_viewer_service_ = this->create_service<visp_tracker::srv::Init_viewer_service>(
+      visp_tracker::init_viewer_service, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
                                                             std::placeholders::_2, std::placeholders::_3));
 
-//    initService_ = nodeHandle_.advertiseService
+//    init_viewer_service_ = nodeHandle_.advertiseService
 //        (visp_tracker::srv::Init_service_viewer, initCallback);
 
   // define services
-  reconfigureService_ = this->create_service<visp_tracker::reconfigure_service_viewer>(
-      visp_camera_calibration::calibrate_service, std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1,
+  reconfigure_viewer_service_ = this->create_service<visp_tracker::srv::Reconfigure_viewer_service>(
+      visp_tracker::calibrate_service, std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1,
                                                             std::placeholders::_2, std::placeholders::_3));
 //     calibrate_service_ = n_.advertiseService(visp_camera_calibration::calibrate_service,calibrate_callback);
 
-//    reconfigureService_ = nodeHandle_.advertiseService
-//        (visp_tracker::reconfigure_service_viewer, reconfigureCallback);
+//    reconfigure_viewer_service_ = nodeHandle_.advertiseService
+//        (visp_tracker::reconfigure_viewer_service, reconfigureCallback);
 
 
     std::ofstream modelStream;
@@ -291,7 +290,7 @@ namespace visp_tracker
 
         ROS_DEBUG_STREAM_THROTTLE(10, "cMo viewer:\n" << *cMo_);
         fmt = std::string("tracking (x=")+(*cMo_)[0][3]+" y="+(*cMo_)[1][3]+" z="+(*cMo_)[2][3]+")";
-        vpDisplay::displayCharString(*cMo_)[2][3]
+        vpDisplay::displayCharString((*cMo_)[2][3]......
             (image_, point, fmt.c_str(), vpColor::red);
         fmtTime = std::string("time = "+info_->header.stamp.toSec();
         vpDisplay::displayCharString
@@ -402,18 +401,18 @@ namespace visp_tracker
     {
       std::string fmt("failed to load the model ")+modelPath_;
 
-      throw std::runtime_error("failed to load the model "+ modelPath_);
+      throw std::runtime_error(fmt);
     }
     // RCLCPP_WARN(this->get_logger(),"Model has been successfully loaded.");
   }
 
   void
   TrackerViewer::callback
-  (const sensor_msgs::msg::Image::ConstPtr& image,
+  (const sensor_msgs::msg::Image::ConstSharedPtr& image,
    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
-   const geometry_msgs::msg::PoseWithCovarianceStamped::ConstPtr& trackingResult,
-   const visp_tracker::msg::MovingEdgeSites::ConstPtr& sites,
-   const visp_tracker::msg::KltPoints::ConstPtr& klt)
+   const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr& trackingResult,
+   const visp_tracker::msg::MovingEdgeSites::ConstSharedPtr& sites,
+   const visp_tracker::msg::KltPoints::ConstSharedPtr& klt)
   {
     // Copy image.
     try
@@ -501,12 +500,12 @@ namespace visp_tracker
         || countKltPoints_ != countMovingEdgeSites_)
     {
       std::string fmt = std::string("[visp_tracker] Low number of synchronized tuples received.\n")+
-           "Images: "+countImages_+"\n"+
-           "Camera info: "+countCameraInfo_+"\n"+
-           "Tracking result: "+countTrackingResult_+"\n"+
-           "Moving edge sites: "+countMovingEdgeSites_+"\n"+
-           "KLT points: "+countKltPoints_+"\n"+
-           "Synchronized tuples: "+countAll_+"\n"+
+           "Images: "+std::to_string(countImages_) +"\n"+
+           "Camera info: "+std::to_string(countCameraInfo_)+"\n"+
+           "Tracking result: "+std::to_string(countTrackingResult_)+"\n"+
+           "Moving edge sites: "+std::to_string(countMovingEdgeSites_)+"\n"+
+           "KLT points: "+std::to_string(countKltPoints_)+"\n"+
+           "Synchronized tuples: "+std::to_string(countAll_)+"\n"+
            "Possible issues:\n"+
            "\t* The network is too slow.";
       

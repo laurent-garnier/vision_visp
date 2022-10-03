@@ -6,7 +6,7 @@
 
 #include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.hpp>
-#include <image_proc/advertisement_checker.hpp>
+#include <image_proc/advertisement_checker.h>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>

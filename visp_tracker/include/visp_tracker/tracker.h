@@ -116,7 +116,7 @@ namespace visp_tracker
     rclcpp::Publisher<visp_tracker::msg::MovingEdgeSites>::SharedPtr  movingEdgeSitesPublisher_;
     rclcpp::Publisher<visp_tracker::msg::KltPoints>::SharedPtr  kltPointsPublisher_;
 
-  rclcpp::Service<visp_camera_calibration::srv::Calibrate>::SharedPtr initService_;
+    rclcpp::Service<visp_camera_calibration::srv::Calibrate>::SharedPtr initService_;
     ros::ServiceServer initService_;
     std_msgs::msg::Header header_;
     sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
