@@ -37,7 +37,7 @@ public:
   typedef vpImage<unsigned char> image_t;
 
   template <class ConfigType> struct reconfigureSrvStruct {
-    // FIX TODO
+    // TODO PORT ROS2
     //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
   };
 

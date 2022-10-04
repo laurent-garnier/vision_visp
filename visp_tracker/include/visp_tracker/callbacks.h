@@ -11,7 +11,7 @@
 #include <visp3/me/vpMe.h>
 #include <visp3/klt/vpKltOpencv.h>
 
-/* TODO FIX:
+/* TODO PORT ROS2
 #include <visp_tracker/msg/model_based_settings_config.hpp>
 
 #include <visp_tracker/ModelBasedSettingsKltConfig.h>
@@ -53,7 +53,7 @@ void reconfigureKltCallback(vpMbGenericTracker &tracker,
                             visp_tracker::ModelBasedSettingsKltConfig& config,
                             uint32_t level);
 */
-/* TODO FIX 
+/* TODO PORT ROS2
 void reInitViewerCommonParameters(rclcpp::Node& nh,
                                   vpMbGenericTracker &tracker);
 

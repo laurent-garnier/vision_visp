@@ -576,7 +576,7 @@ void Tracker::waitForImage()
 {
   rclcpp::Rate loop_rate(10);
   while (!exiting() && (!image_.getWidth() || !image_.getHeight()) && (!info_ || info_->k[0] == 0.)) {
-    // ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
+    // RCLCPP_INFO_THROTTLE(1, "waiting for a rectified image...");
     spinOnce();
     loop_rate.sleep();
   }

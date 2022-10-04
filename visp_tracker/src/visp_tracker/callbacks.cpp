@@ -36,7 +36,7 @@ void imageCallback(vpImage<unsigned char>& image,
   info = infoConst;
 }
 
-/* FIX TODO
+/*  TODO PORT ROS2
 void reconfigureCallback(vpMbGenericTracker &tracker,
                          vpImage<unsigned char>& I,
                          vpMe& moving_edge,
@@ -165,7 +165,7 @@ void reInitViewerCommonParameters(rclcpp::Node& nh,
   }
 }
 */
-/* FIX TODO
+/* TODO PORT ROS2
 void reconfigureCallbackAndInitViewer(rclcpp::Node& nh,
                                       vpMbGenericTracker &tracker,
                                       vpImage<unsigned char>& I,

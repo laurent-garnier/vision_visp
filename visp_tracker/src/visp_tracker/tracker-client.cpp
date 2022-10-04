@@ -44,7 +44,6 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     // checkInputs_(),// TODO PORT ROS2
     resourceRetriever_()
 {
-  // Parameters. FIX TODO ?
 
   // checks if param_name is exist  the command pass the value of param in variable but if the param
   // doesn't exist then the command pass "default" to variable
@@ -707,7 +706,7 @@ void TrackerClient::waitForImage()
 {
   rclcpp::Rate loop_rate(10);
   while (!exiting() && (!image_.getWidth() || !image_.getHeight())) {
-    ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
+    RCLCPP_INFO_THROTTLE(1, "waiting for a rectified image...");
     ros::spin_some(nh);
     loop_rate.sleep();
   }

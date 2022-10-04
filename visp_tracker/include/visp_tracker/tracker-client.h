@@ -3,7 +3,7 @@
 
 //#include <dynamic_reconfigure/server.h>
 
-#include <image_proc/advertisement_checker.h>
+// #include <image_proc/advertisement_checker.h> // TODO PORT ROS2
 #include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.hpp>
 
