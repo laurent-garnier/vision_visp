@@ -18,7 +18,7 @@
   <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
 
   <license>GPLv2</license>
-  
+
   <url type="website">http://wiki.ros.org/visp_camera_calibration</url>
   <url type="repository">https://github.com/lagadic/vision_visp/tree/ros2</url>
   <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>
@@ -28,40 +28,37 @@
   <author>Thomas Moulard</author>
 
 
-   <buildtool_depend>ament_cmake_ros</buildtool_depend>
-   <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
-  <build_depend>message_generation</build_depend>
-  <build_depend>rclcpp</build_depend>
-<!--  <build_depend>rospy</build_depend> -->
-  <build_depend>std_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-<!--  <build_depend>image_proc</build_depend> -->
-  <build_depend>image_transport</build_depend>
-  <build_depend>resource_retriever</build_depend>
-  <build_depend>tf2_ros</build_depend>
-  <!-- catkin_lint produce an error arround build_depend visp. -->
-  <!-- This error shouldn't be considered. If build_depend visp is removed, -->
-  <!-- the package is not able to build on ros buildfarm. -->
   <build_depend>visp</build_depend>
 
-  <exec_depend>message_runtime</exec_depend>
-  <exec_depend>message_generation</exec_depend>
-<!--  <exec_depend>dynamic_reconfigure</exec_depend> -->
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-<!--  <exec_depend>image_proc</exec_depend>-->
-  <exec_depend>image_transport</exec_depend>
-  <exec_depend>resource_retriever</exec_depend>
-  <exec_depend>tf2_ros</exec_depend>
-  <exec_depend>visp</exec_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>image_proc</build_depend>
+  <build_depend>image_transport</build_depend>
+  <build_depend>rclcpp</build_depend>
+  <build_depend>resource_retriever</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>tf2_ros</build_depend>
 
-    <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>image_proc</exec_depend>
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>resource_retriever</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>visp</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+
+  <!-- Recommanded: https://docs.ros.org/en/foxy/Tutorials/Intermediate/Launch/Creating-Launch-Files.html -->
+  <exec_depend>ros2launch</exec_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
