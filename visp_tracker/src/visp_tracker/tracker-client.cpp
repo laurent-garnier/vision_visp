@@ -68,34 +68,29 @@ namespace visp_tracker
   {
     // Parameters. FIX TODO ?
 
-  // checks if param_name is exist  the command pass the value of param in variable but if the param 
-  // doesn't exist then the command pass "default" to variable
+    // checks if param_name is exist  the command pass the value of param in variable but if the param 
+    // doesn't exist then the command pass "default" to variable
 
-  if (modelPath_!= "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("model_path", modelPath_);
-  } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("model_path", visp_tracker::default_model_path);
-  }
-  if (startFromSavedPose_!= "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("model_name", startFromSavedPose_);
-  } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("model_name", "");
-  }
-  if (startFromSavedPose_!= NULL) {
-    nodeHandlePrivate_.declare_parameter<bool>("start_from_saved_pose", startFromSavedPose_);
-  } else {
-    nodeHandlePrivate_.declare_parameter<bool>("start_from_saved_pose", false);
-  }
-  if (confirmInit_!= NULL) {
-    nodeHandlePrivate_.declare_parameter<bool>("confirm_init", confirmInit_);
-  } else {
-    nodeHandlePrivate_.declare_parameter<bool>("confirm_init", true);
-  }
-
-
-// use a default value in case the parameter doesn’t exist
-// ros::param::param<std::string>("/my_string", default_param, "default_value");
-// get_parameter_or_set : Get the parameter value; if not set, set the "alternative value" and store it in the node. 
+    if (modelPath_!= "") {
+      nodeHandlePrivate_.declare_parameter<std::string>("model_path", modelPath_);
+    } else {
+     nodeHandlePrivate_.declare_parameter<std::string>("model_path", visp_tracker::default_model_path);
+    }
+    if (startFromSavedPose_!= "") {
+     nodeHandlePrivate_.declare_parameter<std::string>("model_name", startFromSavedPose_);
+    } else {
+      nodeHandlePrivate_.declare_parameter<std::string>("model_name", "");
+    }
+   if (startFromSavedPose_!= NULL) {
+      nodeHandlePrivate_.declare_parameter<bool>("start_from_saved_pose", startFromSavedPose_);
+    } else {
+      nodeHandlePrivate_.declare_parameter<bool>("start_from_saved_pose", false);
+    }
+    if (confirmInit_!= NULL) {
+      nodeHandlePrivate_.declare_parameter<bool>("confirm_init", confirmInit_);
+    } else {
+      nodeHandlePrivate_.declare_parameter<bool>("confirm_init", true);
+    }
 
     if (trackerType_ != "") {
       nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", trackerType_);

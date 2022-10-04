@@ -148,7 +148,7 @@ namespace visp_tracker
 
   // define services
   init_viewer_service_ = this->create_service<visp_tracker::srv::Init_viewer_service>(
-      visp_tracker::Init_viewer_service, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+      visp_tracker::Init_viewer_service_, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
                                                             std::placeholders::_2, std::placeholders::_3));
 
 //    init_viewer_service_ = nodeHandle_.advertiseService
@@ -374,7 +374,8 @@ namespace visp_tracker
       if (ros::param::search(trackerName_ + "/angle_appear",key))
       {
         double value;
-        if(ros::param::get(key,value)){
+
+        if(this->get_parameter(key, value)){
           // RCLCPP_WARN_STREAM(this->get_logger(),"Angle Appear Viewer: " << value);
           tracker_.setAngleAppear(vpMath::rad(value));
         }
@@ -389,7 +390,7 @@ namespace visp_tracker
       if (ros::param::search(trackerName_ + "/angle_disappear",key))
       {
         double value;
-        if(ros::param::get(key,value)){
+        if(this->get_parameter(key, value)){
           // RCLCPP_WARN_STREAM(this->get_logger(),"Angle Disappear Viewer: " << value);
           tracker_.setAngleDisappear(vpMath::rad(value));
         }
