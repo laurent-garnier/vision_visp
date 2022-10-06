@@ -58,7 +58,7 @@ protected:
   void checkInputs();
   void waitForImage();
 
-  void objectPositionHintCallback(const geometry_msgs::msg::TransformStampedConstPtr &);
+  void objectPositionHintCallback(const geometry_msgs::msg::TransformStampedConstPtr::SharedPtr);
 
 private:
   bool exiting() { return exiting_ || !rclcpp::ok(); }
@@ -104,7 +104,6 @@ private:
   rclcpp::Publisher<visp_tracker::msg::KltPoints>::SharedPtr kltPointsPublisher_;
 
   rclcpp::Service<visp_camera_calibration::srv::Calibrate>::SharedPtr initService_;
-  ros::ServiceServer initService_;
   std_msgs::msg::Header header_;
   sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
 
@@ -124,7 +123,8 @@ private:
   tf2_ros::TransformBroadcaster transformBroadcaster_;
   std::string childFrameId_;
 
-  ros::Subscriber objectPositionHintSubscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::TransformStampedConstPtr>::SharedPtr objectPositionHintSubscriber_; // ok
+// SUB ros::Subscriber objectPositionHintSubscriber_;
   geometry_msgs::msg::TransformStamped objectPositionHint_;
 };
 } // end of namespace visp_tracker.

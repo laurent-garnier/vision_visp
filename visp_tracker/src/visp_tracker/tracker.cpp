@@ -280,14 +280,14 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
 
   // Parameters.
   if (cameraPrefix_ != "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("camera_prefix", cameraPrefix_);
+    nodeHandlePrivate_->declare_parameter<std::string>("camera_prefix", cameraPrefix_);
   } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("camera_prefix", "");
+    nodeHandlePrivate_->declare_parameter<std::string>("camera_prefix", "");
   }
   if (trackerType_ != "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", trackerType_);
+    nodeHandlePrivate_->declare_parameter<std::string>("tracker_type", trackerType_);
   } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", "mtb");
+    nodeHandlePrivate_->declare_parameter<std::string>("tracker_type", "mtb");
   }
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
@@ -308,21 +308,21 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
   nodeHandle_.setParam("camera_prefix", cameraPrefix_);
 
   if (childFrameId_ != "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("frame_id", childFrameId_);
+    nodeHandlePrivate_->declare_parameter<std::string>("frame_id", childFrameId_);
   } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("frame_id", "object_position");
+    nodeHandlePrivate_->declare_parameter<std::string>("frame_id", "object_position");
   }
 
   // Robot motion compensation.
   if (worldFrameId_ != "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("world_frame_id", worldFrameId_);
+    nodeHandlePrivate_->declare_parameter<std::string>("world_frame_id", worldFrameId_);
   } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("world_frame_id", "/odom");
+    nodeHandlePrivate_->declare_parameter<std::string>("world_frame_id", "/odom");
   }
   if (compensateRobotMotion_ != NULL) {
-    nodeHandlePrivate_.declare_parameter<bool>("compensate_robot_motion", compensateRobotMotion_);
+    nodeHandlePrivate_->declare_parameter<bool>("compensate_robot_motion", compensateRobotMotion_);
   } else {
-    nodeHandlePrivate_.declare_parameter<bool>("compensate_robot_motion", false);
+    nodeHandlePrivate_->declare_parameter<bool>("compensate_robot_motion", false);
   }
 
   // Compute topic and services names.
@@ -351,10 +351,13 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
       boost::bind(imageCallback, boost::ref(image), boost::ref(header_), boost::ref(info_), _1, _2));
 
   // Object position hint subscriber.
-  typedef boost::function<void(const geometry_msgs::msg::TransformStampedConstPtr &)> objectPositionHintCallback_t;
-  objectPositionHintCallback_t callback = boost::bind(&Tracker::objectPositionHintCallback, this, _1);
-  objectPositionHintSubscriber_ =
-      nodeHandle_.subscribe<geometry_msgs::msg::TransformStamped>("object_position_hint", queueSize_, callback);
+//  typedef boost::function<void(const geometry_msgs::msg::TransformStampedConstPtr &)> objectPositionHintCallback_t;
+// SUB   objectPositionHintCallback_t callback = boost::bind(&Tracker::objectPositionHintCallback, this, _1);
+  objectPositionHintSubscriber_ = this->create_subscription<geometry_msgs::msg::TransformStampedConstPtr>(
+      "object_position_hint", queue_size_,
+      std::bind(&Tracker::objectPositionHintCallback, this, std::placeholders::_1));
+// SUB  objectPositionHintSubscriber_ =
+//      nodeHandle_.subscribe<geometry_msgs::msg::TransformStamped>("object_position_hint", queueSize_, callback);
 
   // Dynamic reconfigure.
   /* FIXME: RECONFIGURATION
@@ -575,14 +578,16 @@ void Tracker::spin()
 void Tracker::waitForImage()
 {
   rclcpp::Rate loop_rate(10);
+  rclcpp::Clock clock;
+  constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting() && (!image_.getWidth() || !image_.getHeight()) && (!info_ || info_->k[0] == 0.)) {
-    // RCLCPP_INFO_THROTTLE(1, "waiting for a rectified image...");
+    // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,LOG_THROTTLE_PERIOD , "waiting for a rectified image...");
     spinOnce();
     loop_rate.sleep();
   }
 }
 
-void Tracker::objectPositionHintCallback(const geometry_msgs::msg::TransformStampedConstPtr &transform)
+void Tracker::objectPositionHintCallback(const geometry_msgs::msg::TransformStampedConstPtr::SharedPtr transform)
 {
   objectPositionHint_ = *transform;
 }

@@ -45,34 +45,34 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     resourceRetriever_()
 {
 
-  // checks if param_name is exist  the command pass the value of param in variable but if the param
+  // checks if param_name is exist the command pass the value of param in variable but if the param
   // doesn't exist then the command pass "default" to variable
 
   if (modelPath_ != "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("model_path", modelPath_);
+    nodeHandlePrivate_->declare_parameter<std::string>("model_path", modelPath_);
   } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("model_path", visp_tracker::default_model_path);
+    nodeHandlePrivate_->declare_parameter<std::string>("model_path", visp_tracker::default_model_path);
   }
-  if (startFromSavedPose_ != "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("model_name", startFromSavedPose_);
+  if (modelName_ != "") {
+    nodeHandlePrivate_->declare_parameter<std::string>("model_name", modelName_);
   } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("model_name", "");
+    nodeHandlePrivate_->declare_parameter<std::string>("model_name", "");
   }
-  if (startFromSavedPose_ != NULL) {
-    nodeHandlePrivate_.declare_parameter<bool>("start_from_saved_pose", startFromSavedPose_);
+  if (startFromSavedPose_ == true) {
+    nodeHandlePrivate_->declare_parameter<bool>("start_from_saved_pose", startFromSavedPose_);
   } else {
-    nodeHandlePrivate_.declare_parameter<bool>("start_from_saved_pose", false);
+    nodeHandlePrivate_->declare_parameter<bool>("start_from_saved_pose", false);
   }
-  if (confirmInit_ != NULL) {
-    nodeHandlePrivate_.declare_parameter<bool>("confirm_init", confirmInit_);
+  if (confirmInit_ == false) {
+    nodeHandlePrivate_->declare_parameter<bool>("confirm_init", confirmInit_);
   } else {
-    nodeHandlePrivate_.declare_parameter<bool>("confirm_init", true);
+    nodeHandlePrivate_->declare_parameter<bool>("confirm_init", true);
   }
 
   if (trackerType_ != "") {
-    nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", trackerType_);
+    nodeHandlePrivate_->declare_parameter<std::string>("tracker_type", trackerType_);
   } else {
-    nodeHandlePrivate_.declare_parameter<std::string>("tracker_type", "mtb");
+    nodeHandlePrivate_->declare_parameter<std::string>("tracker_type", "mtb");
   }
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
@@ -81,10 +81,10 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   else
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
-  if (frameSize_ != NULL) {
-    nodeHandlePrivate_.declare_parameter<double>("frame_size", frameSize_);
+  if (frameSize_ != 0.1) {
+    nodeHandlePrivate_->declare_parameter<double>("frame_size", frameSize_);
   } else {
-    nodeHandlePrivate_.declare_parameter<double>("frame_size", 0.1);
+    nodeHandlePrivate_->declare_parameter<double>("frame_size", 0.1);
   }
 
   if (modelName_.empty())
@@ -96,7 +96,7 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   rclcpp::Rate rate(1);
   while (cameraPrefix_.empty()) {
-    if (!nodeHandle_.getParam("camera_prefix", cameraPrefix_) && !ros::param::get("~camera_prefix", cameraPrefix_)) {
+    if (!nodeHandle_->get_parameter("camera_prefix", cameraPrefix_) && !this->get_parameter("~camera_prefix", cameraPrefix_)) {
       RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
                                       "This may mean that:\n"
                                       "- the tracker is not launched,\n"
@@ -110,16 +110,17 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     rate.sleep();
   }
 
-  rectifiedImageTopic_ = rclcpp::names::resolve(cameraPrefix_ + "/image_rect");
-  cameraInfoTopic_ = rclcpp::names::resolve(cameraPrefix_ + "/camera_info");
+  rectifiedImageTopic_ = rclcpp::resolve_topic_name(cameraPrefix_ + "/image_rect");
+  cameraInfoTopic_ = rclcpp::resolve_topic_name(cameraPrefix_ + "/camera_info");
 
   // Check for subscribed topics.
   checkInputs();
 
   // Camera subscriber.
   cameraSubscriber_ = imageTransport_.subscribeCamera(
+    
       rectifiedImageTopic_, queueSize_,
-      boost::bind(imageCallback, boost::ref(image), boost::ref(header_), boost::ref(info_), _1, _2));
+      boost::bind(imageCallback, boost::ref(image_), boost::ref(header_), boost::ref(info_), _1, _2));
 
   // Model loading.
   bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
@@ -579,9 +580,9 @@ void TrackerClient::init()
 
   std::string helpImagePath;
   if (helpImagePath != "") {
-    nodeHandlePrivate_.param<std::string>("help_image_path", helpImagePath);
+    nodeHandlePrivate_->get_parameter<std::string>("help_image_path", helpImagePath);
   } else {
-    nodeHandlePrivate_.param<std::string>("help_image_path", "");
+    nodeHandlePrivate_->get_parameter<std::string>("help_image_path", "");
   }
   if (helpImagePath.empty()) {
 
@@ -705,9 +706,11 @@ void TrackerClient::initPoint(unsigned &i, points_t &points, imagePoints_t &imag
 void TrackerClient::waitForImage()
 {
   rclcpp::Rate loop_rate(10);
+  rclcpp::Clock clock;
+  constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting() && (!image_.getWidth() || !image_.getHeight())) {
-    RCLCPP_INFO_THROTTLE(1, "waiting for a rectified image...");
-    ros::spin_some(nh);
+    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,LOG_THROTTLE_PERIOD, "waiting for a rectified image...");
+    rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
 }
