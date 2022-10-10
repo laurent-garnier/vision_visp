@@ -46,8 +46,8 @@ namespace visp_tracker
     }
   private:
     volatile bool exiting_;
-    boost::shared_ptr<visp_tracker::TrackerClient> trackerClient_;
-    boost::shared_ptr<boost::thread> thread_;
+    std::shared_ptr<visp_tracker::TrackerClient> trackerClient_;
+    std::shared_ptr<std::thread> thread_;
   };
 
 } // end of namespace visp_tracker.

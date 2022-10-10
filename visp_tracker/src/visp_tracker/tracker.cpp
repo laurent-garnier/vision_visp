@@ -326,7 +326,7 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
   }
 
   // Compute topic and services names.
-  rectifiedImageTopic_ = resolve_topic_name(cameraPrefix_ + "/image_rect");
+  rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/image_rect");
 
   // Check for subscribed topics.
   checkInputs();
@@ -348,7 +348,7 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
   // Camera subscriber.
   cameraSubscriber_ = imageTransport_.subscribeCamera(
       rectifiedImageTopic_, queueSize_,
-      boost::bind(imageCallback, boost::ref(image), boost::ref(header_), boost::ref(info_), _1, _2));
+      boost::bind(imageCallback, std::ref(image), std::ref(header_), std::ref(info_),_1 , _2));
 
   // Object position hint subscriber.
 //  typedef boost::function<void(const geometry_msgs::msg::TransformStampedConstPtr &)> objectPositionHintCallback_t;
@@ -364,25 +364,25 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_,
     nodeHandlePrivate_); reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f
-    = boost::bind(&reconfigureCallbackAndInitViewer, boost::ref(nodeHandle_), boost::ref(tracker_), boost::ref(image_),
-    boost::ref(movingEdge_), boost::ref(kltTracker_), boost::ref(mutex_), _1, _2); reconfigureSrv_->setCallback(f);
+    = boost::bind(&reconfigureCallbackAndInitViewer, std::ref(nodeHandle_), std::ref(tracker_), std::ref(image_),
+    std::ref(movingEdge_), std::ref(kltTracker_), std::ref(mutex_), std::placeholders::_1, std::placeholders::_2); reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
       reconfigureEdgeSrv_ = new
     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
           boost::bind(&reconfigureEdgeCallbackAndInitViewer,
-                      boost::ref(nodeHandle_), boost::ref(tracker_),
-                      boost::ref(image_), boost::ref(movingEdge_),
-                      boost::ref(mutex_), _1, _2);
+                      std::ref(nodeHandle_), std::ref(tracker_),
+                      std::ref(image_), std::ref(movingEdge_),
+                      std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
       reconfigureEdgeSrv_->setCallback(f);
     }
     else{ // KLT Tracker reconfigure
       reconfigureKltSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_,
     nodeHandlePrivate_); reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType
-    f = boost::bind(&reconfigureKltCallbackAndInitViewer, boost::ref(nodeHandle_), boost::ref(tracker_),
-                      boost::ref(image_), boost::ref(kltTracker_),
-                      boost::ref(mutex_), _1, _2);
+    f = boost::bind(&reconfigureKltCallbackAndInitViewer, std::ref(nodeHandle_), std::ref(tracker_),
+                      std::ref(image_), std::ref(kltTracker_),
+                      std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
       reconfigureKltSrv_->setCallback(f);
     }
 
@@ -419,7 +419,7 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
 
   // Service declaration.
   typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-      initCallback_t initCallback = boost::bind(&Tracker::initCallback, this, _1, _2);
+      initCallback_t initCallback = boost::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2);
 
   initService_ = nodeHandle_.advertiseService(visp_tracker::srv::Init_service, initCallback);
 }
@@ -481,7 +481,7 @@ void Tracker::spin()
       if (state_ == LOST) {
         // If the last received message is recent enough,
         // use it otherwise do nothing.
-        if (ros::Time::now() - objectPositionHint_.header.stamp < rclcpp::Duration(1.))
+        if (rclcpp::Time::now() - objectPositionHint_.header.stamp < rclcpp::Duration(1.))
           transformToVpHomogeneousMatrix(cMo_, objectPositionHint_.transform);
 
         mutex_.lock();

@@ -19,7 +19,9 @@ namespace visp_tracker
     {
       exiting_ = true;
       if (thread_)
-        if (!thread_->timed_join (boost::posix_time::seconds (2)))
+      // TODO PORT ROS2
+      // https://www.boost.org/doc/libs/1_53_0/doc/html/thread/thread_management.html#thread.thread_management.thread.timed_join
+        if (!thread_->join (std::posix_time::seconds (2)))
           NODELET_WARN ("failed to join thread but continuing anyway");
       thread_.reset ();
       trackerViewer_.reset ();

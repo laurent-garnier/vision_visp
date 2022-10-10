@@ -74,7 +74,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     rclcpp::Parameter cameraPrefix_param = this->get_parameter("~camera_prefix");
     cameraPrefix = cameraPrefix_param.as_string();
 // TODO PORT ROS2
-    if (!cameraPrefix) {
+    if (cameraPrefix.empty()) {
       RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
                                       "This may mean that:\n"
                                       "- the tracker is not launched,\n"
@@ -94,14 +94,14 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     nodeHandlePrivate_->declare_parameter<double>("frame_size", 0.1);
   }
 
-  rectifiedImageTopic_ = resolve_topic_name(cameraPrefix + "/image_rect");
-  cameraInfoTopic_ = resolve_topic_name(cameraPrefix + "/camera_info");
+  rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/image_rect");
+  cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/camera_info");
 
   typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-      initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, _1, _2);
+      initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, std::placeholders::_1, std::placeholders::_2);
 
   typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-      reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this, _1, _2);
+      reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1, std::placeholders::_2);
 
   // define services
   init_viewer_service_ = this->create_service<visp_tracker::srv::Init_viewer_service>(
@@ -168,7 +168,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   synchronizer_.connectInput(imageSubscriber_, cameraInfoSubscriber_, trackingResultSubscriber_,
                              movingEdgeSitesSubscriber_, kltPointsSubscriber_);
-  synchronizer_.registerCallback(std::bind(&TrackerViewer::callback, this, _1, _2, _3, _4, _5));
+  synchronizer_.registerCallback(std::bind(&TrackerViewer::callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_3, std::placeholders::_5));
 
   // Check for synchronization every 30s.
   synchronizer_.registerCallback(std::bind(increment, &countAll_));
@@ -178,7 +178,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   movingEdgeSitesSubscriber_.registerCallback(std::bind(increment, &countMovingEdgeSites_));
   kltPointsSubscriber_.registerCallback(std::bind(increment, &countKltPoints_));
   auto ros_clock = rclcpp::Clock::make_shared();
-  timer_ = rclcpp::create_timer(this, ros_clock, ros::WallDuration(30.), std::bind(&TrackerViewer::timerCallback));
+  timer_ = rclcpp::create_timer(this, ros_clock, rclcpp::Duration(30, 0), std::bind(&TrackerViewer::timerCallback));
 
   // Wait for image.
   waitForImage();
@@ -197,9 +197,9 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
 void TrackerViewer::spin()
 {
-    std::string fmtWindowTitle ("ViSP MBT tracker viewer - [ns: ")+ros::this_node::getNamespace ()+"]");
+    std::string fmtWindowTitle ("ViSP MBT tracker viewer - [ns: ")+rclcpp::getNamespace ()+"]");
 
-    vpDisplayX d(image_, image_.getWidth(), image_.getHeight(), fmtWindowTitle.str().c_str());
+    vpDisplayX d(image_, image_.getWidth(), image_.getHeight(), fmtWindowTitle.c_str());
     vpImagePoint point(10, 10);
     vpImagePoint pointTime(22, 10);
     vpImagePoint pointCameraTopic(34, 10);

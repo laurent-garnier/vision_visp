@@ -110,8 +110,11 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     rate.sleep();
   }
 
-  rectifiedImageTopic_ = rclcpp::resolve_topic_name(cameraPrefix_ + "/image_rect");
-  cameraInfoTopic_ = rclcpp::resolve_topic_name(cameraPrefix_ + "/camera_info");
+  auto node_topics_interface = rclcpp::node_interfaces::get_node_topics_interface();
+  node_topics_interface->resolve_topic_name("topic_name");
+    
+  rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/image_rect");
+  cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/camera_info");
 
   // Check for subscribed topics.
   checkInputs();
@@ -120,7 +123,7 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   cameraSubscriber_ = imageTransport_.subscribeCamera(
     
       rectifiedImageTopic_, queueSize_,
-      boost::bind(imageCallback, boost::ref(image_), boost::ref(header_), boost::ref(info_), _1, _2));
+      std::bind(imageCallback, std::ref(image_), std::ref(header_), std::ref(info_), std::placeholders::_1, std::placeholders::_2));
 
   // Model loading.
   bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
@@ -137,25 +140,25 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
       if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
         reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_,
      nodeHandlePrivate_); reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f
-     = boost::bind(&reconfigureCallback, boost::ref(tracker_), boost::ref(image_), boost::ref(movingEdge_),
-     boost::ref(kltTracker_), boost::ref(mutex_), _1, _2); reconfigureSrv_->setCallback(f);
+     = boost::bind(&reconfigureCallback, std::ref(tracker_), std::ref(image_), std::ref(movingEdge_),
+     std::ref(kltTracker_), std::ref(mutex_), std::placeholders::_1, std::placeholders::_2); reconfigureSrv_->setCallback(f);
       }
       else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
         reconfigureEdgeSrv_ = new
      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
         reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
-            boost::bind(&reconfigureEdgeCallback, boost::ref(tracker_),
-                        boost::ref(image_), boost::ref(movingEdge_),
-                        boost::ref(mutex_), _1, _2);
+            boost::bind(&reconfigureEdgeCallback, std::ref(tracker_),
+                        std::ref(image_), std::ref(movingEdge_),
+                        std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
         reconfigureEdgeSrv_->setCallback(f);
       }
       else{ // KLT Tracker reconfigure
         reconfigureKltSrv_ = new
      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
         reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType f =
-            boost::bind(&reconfigureKltCallback, boost::ref(tracker_),
-                        boost::ref(image_), boost::ref(kltTracker_),
-                        boost::ref(mutex_), _1, _2);
+            boost::bind(&reconfigureKltCallback, std::ref(tracker_),
+                        std::ref(image_), std::ref(kltTracker_),
+                        std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
         reconfigureKltSrv_->setCallback(f);
       }
   */
@@ -240,7 +243,7 @@ void TrackerClient::spin()
           vpDisplay::displayCharString(image_, point, "tracking, click to initialize tracker", vpColor::red);
           vpDisplay::flush(image_);
 
-          ros::spin_some(nh);
+          rclcpp::spin_some(nh);
           loop_rate_tracking.sleep();
           if (exiting())
             return;
@@ -548,7 +551,7 @@ bool TrackerClient::validatePose(const vpHomogeneousMatrix &cMo)
   tracker_.setDisplayFeatures(true);
 
   do {
-    ros::spin_some(nh);
+    rclcpp::spin_some(nh);
     loop_rate.sleep();
     if (!rclcpp::ok())
       return false;
@@ -651,7 +654,7 @@ void TrackerClient::init()
     imagePoints.clear();
     for (unsigned i = 0; i < points.size(); ++i) {
       do {
-        ros::spin_some(nh);
+        rclcpp::spin_some(nh);
         loop_rate.sleep();
         if (!rclcpp::ok())
           return;
@@ -690,7 +693,7 @@ void TrackerClient::initPoint(unsigned &i, points_t &points, imagePoints_t &imag
       vpDisplay::displayCross(image_, imagePoints[j], 5, vpColor::green);
 
     vpDisplay::flush(image_);
-    ros::spin_some(nh);
+    rclcpp::spin_some(nh);
     rate.sleep();
     if (exiting())
       return;
