@@ -3,8 +3,8 @@
 #include <sstream>
 
 #include <image_transport/image_transport.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <rclcpp/logging.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <visp3/gui/vpDisplayX.h>
 
 #include "visp_tracker/callbacks.h"
@@ -73,7 +73,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     this->declare_parameter<std::string>("~camera_prefix", this->get_parameter("~camera_prefix"));
     rclcpp::Parameter cameraPrefix_param = this->get_parameter("~camera_prefix");
     cameraPrefix = cameraPrefix_param.as_string();
-// TODO PORT ROS2
+    // TODO PORT ROS2
     if (cameraPrefix.empty()) {
       RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
                                       "This may mean that:\n"
@@ -97,11 +97,13 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/image_rect");
   cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/camera_info");
 
-//  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-//      initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, std::placeholders::_1, std::placeholders::_2);
+  //  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
+  //      initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+  //      std::placeholders::_2);
 
-//  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-//      reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1, std::placeholders::_2);
+  //  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
+  //      reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this,
+  //      std::placeholders::_1, std::placeholders::_2);
 
   // define services
   init_viewer_service_ = this->create_service<visp_tracker::srv::Init_viewer_service>(
@@ -113,8 +115,9 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   // define services
   reconfigure_viewer_service_ = this->create_service<visp_tracker::srv::Reconfigure_viewer_service>(
-      visp_tracker::reconfigure_viewer_service_, std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1,
-                                                 std::placeholders::_2, std::placeholders::_3));
+      visp_tracker::reconfigure_viewer_service_,
+      std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1, std::placeholders::_2,
+                std::placeholders::_3));
 
   //    reconfigure_viewer_service_ = nodeHandle_.advertiseService
   //        (visp_tracker::reconfigure_viewer_service, reconfigureCallback);
@@ -127,12 +130,12 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     if (!nodeHandle_->get_parameter(visp_tracker::model_description_param)) {
       if (cpt % 10 == 0) {
         RCLCPP_WARN_STREAM(this->get_logger(),
-                          "[Node: " << std::string(get_name())
-                                    << "]\n"
-                                       "The model_description parameter does not exist.\n"
-                                       "This may mean that:\n"
-                                       "- the tracker is not launched or not initialized,\n"
-                                       "- the tracker and viewer are not running in the same namespace.");
+                           "[Node: " << std::string(get_name())
+                                     << "]\n"
+                                        "The model_description parameter does not exist.\n"
+                                        "This may mean that:\n"
+                                        "- the tracker is not launched or not initialized,\n"
+                                        "- the tracker and viewer are not running in the same namespace.");
       }
       cpt++;
     }
@@ -167,7 +170,8 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   synchronizer_.connectInput(imageSubscriber_, cameraInfoSubscriber_, trackingResultSubscriber_,
                              movingEdgeSitesSubscriber_, kltPointsSubscriber_);
-  synchronizer_.registerCallback(std::bind(&TrackerViewer::callback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_3, std::placeholders::_5));
+  synchronizer_.registerCallback(std::bind(&TrackerViewer::callback, this, std::placeholders::_1, std::placeholders::_2,
+                                           std::placeholders::_3, std::placeholders::_3, std::placeholders::_5));
 
   // Check for synchronization every 30s.
   synchronizer_.registerCallback(std::bind(increment, &countAll_));
@@ -176,8 +180,6 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   trackingResultSubscriber_.registerCallback(std::bind(increment, &countTrackingResult_));
   movingEdgeSitesSubscriber_.registerCallback(std::bind(increment, &countMovingEdgeSites_));
   kltPointsSubscriber_.registerCallback(std::bind(increment, &countKltPoints_));
-  auto ros_clock = rclcpp::Clock::make_shared();
-  timer_ = rclcpp::create_timer(this, ros_clock, rclcpp::Duration(30, 0), std::bind(&TrackerViewer::timerCallback));
 
   // Wait for image.
   waitForImage();
@@ -196,63 +198,62 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
 void TrackerViewer::spin()
 {
-    std::string fmtWindowTitle ("ViSP MBT tracker viewer - [ns: ")+rclcpp::getNamespace ()+"]");
+  std::string fmtWindowTitle("ViSP MBT tracker viewer");
 
-    vpDisplayX d(image_, image_.getWidth(), image_.getHeight(), fmtWindowTitle.c_str());
-    vpImagePoint point(10, 10);
-    vpImagePoint pointTime(22, 10);
-    vpImagePoint pointCameraTopic(34, 10);
-    rclcpp::Rate loop_rate(80);
+  vpDisplayX d(image_, image_.getWidth(), image_.getHeight(), fmtWindowTitle.c_str());
+  vpImagePoint point(10, 10);
+  vpImagePoint pointTime(22, 10);
+  vpImagePoint pointCameraTopic(34, 10);
+  rclcpp::Rate loop_rate(80);
 
-    std::string fmtTime;
-    std::string fmt;
+  std::string fmtTime;
+  std::string fmt;
 
-    std::string fmtCameraTopic = std::string("camera topic = ") + rectifiedImageTopic_;
-    rclcpp::Clock clock;
-    constexpr size_t LOG_THROTTLE_PERIOD = 10;
-    while (!exiting()) {
-      vpDisplay::display(image_);
-      displayMovingEdgeSites();
-      displayKltPoints();
-      if (cMo_) {
-        try {
-          tracker_.initFromPose(image_, *cMo_);
-          tracker_.display(image_, *cMo_, cameraParameters_, vpColor::red);
-          vpDisplay::displayFrame(image_, *cMo_, cameraParameters_, frameSize_, vpColor::none, 2);
-        } catch (...) {
-          RCLCPP_DEBUG_STREAM_THROTTLE(this->get_logger(),clock, LOG_THROTTLE_PERIOD, "failed to display cmo");
-        }
-
-        RCLCPP_DEBUG_STREAM_THROTTLE(this->get_logger(),clock, LOG_THROTTLE_PERIOD, "cMo viewer:\n" << *cMo_);
-        fmt = std::string("tracking (x=") + std::to_string((*cMo_)[0][3]) + " y=" + std::to_string((*cMo_)[1][3]) + " z=" + std::to_string((*cMo_)[2][3]) + ")";
-        vpDisplay::displayCharString
-            (image_, point, fmt.c_str(), vpColor::red);
-        fmtTime = std::string("time = "+info_->header.stamp.sec);
-        vpDisplay::displayCharString
-            (image_, pointTime, fmtTime.c_str(), vpColor::red);
-        vpDisplay::displayCharString
-            (image_, pointCameraTopic, fmtCameraTopic.c_str(),
-             vpColor::red);
-      } else {
-        vpDisplay::displayCharString(image_, point, "tracking failed", vpColor::red);
+  std::string fmtCameraTopic = std::string("camera topic = ") + rectifiedImageTopic_;
+  rclcpp::Clock clock;
+  constexpr size_t LOG_THROTTLE_PERIOD = 10;
+  while (!exiting()) {
+    vpDisplay::display(image_);
+    displayMovingEdgeSites();
+    displayKltPoints();
+    if (cMo_) {
+      try {
+        tracker_.initFromPose(image_, *cMo_);
+        tracker_.display(image_, *cMo_, cameraParameters_, vpColor::red);
+        vpDisplay::displayFrame(image_, *cMo_, cameraParameters_, frameSize_, vpColor::none, 2);
+      } catch (...) {
+        RCLCPP_DEBUG_STREAM_THROTTLE(this->get_logger(), clock, LOG_THROTTLE_PERIOD, "failed to display cmo");
       }
 
-      vpDisplay::flush(image_);
-      rclcpp::spin_some(this->get_node_base_interface());
-      loop_rate.sleep();
+      RCLCPP_DEBUG_STREAM_THROTTLE(this->get_logger(), clock, LOG_THROTTLE_PERIOD, "cMo viewer:\n" << *cMo_);
+      fmt = std::string("tracking (x=") + std::to_string((*cMo_)[0][3]) + " y=" + std::to_string((*cMo_)[1][3]) +
+            " z=" + std::to_string((*cMo_)[2][3]) + ")";
+      vpDisplay::displayCharString(image_, point, fmt.c_str(), vpColor::red);
+      fmtTime = std::string("time = " + info_->header.stamp.sec);
+      vpDisplay::displayCharString(image_, pointTime, fmtTime.c_str(), vpColor::red);
+      vpDisplay::displayCharString(image_, pointCameraTopic, fmtCameraTopic.c_str(), vpColor::red);
+    } else {
+      vpDisplay::displayCharString(image_, point, "tracking failed", vpColor::red);
     }
+
+    vpDisplay::flush(image_);
+    rclcpp::spin_some(this->get_node_base_interface());
+    loop_rate.sleep();
+  }
 }
 
 void TrackerViewer::waitForImage()
 {
+#if 0 // TODO PORT ROS2
   rclcpp::Rate loop_rate(10);
   rclcpp::Clock clock;
   constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting() && (!image_.getWidth() || !image_.getHeight())) {
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,LOG_THROTTLE_PERIOD , "waiting for a rectified image...");
+    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"), clock, LOG_THROTTLE_PERIOD, "waiting for a rectified image...");
     rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
+#endif
 }
 
 void TrackerViewer::checkInputs()
@@ -270,9 +271,9 @@ void TrackerViewer::checkInputs()
 void TrackerViewer::loadCommonParameters()
 {
   if (trackerName_ != "") {
-    nodeHandlePrivate_->declare_parameter <std::string> ("tracker_name", trackerName_);
+    nodeHandlePrivate_->declare_parameter<std::string>("tracker_name", trackerName_);
   } else {
-    nodeHandlePrivate_->declare_parameter <std::string> ("tracker_name", "");
+    nodeHandlePrivate_->declare_parameter<std::string>("tracker_name", "");
   }
 
   bool loadParam = false;
@@ -326,7 +327,7 @@ void TrackerViewer::initializeTracker()
     tracker_.loadModel(modelPath_.native().c_str());
   } catch (...) {
     std::string fmt("failed to load the model ");
-    throw std::runtime_error(fmt+std::string(modelPath_));
+    throw std::runtime_error(fmt + std::string(modelPath_));
   }
   // RCLCPP_WARN(this->get_logger(),"Model has been successfully loaded.");
 }

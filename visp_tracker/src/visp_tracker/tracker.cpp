@@ -35,7 +35,7 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
   res.initialization_succeed = false;
 
   // If something goes wrong, rollback all changes.
-  BOOST_SCOPE_EXIT((&res)(&tracker_)(&state_)(&lastTrackedImage_)(&trackerType_))
+  // BOOST_SCOPE_EXIT((&res)(&tracker_)(&state_)(&lastTrackedImage_)(&trackerType_))
   {
     if (!res.initialization_succeed) {
       tracker_.resetTracker();
@@ -43,13 +43,13 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
       lastTrackedImage_ = 0;
     }
   }
-  BOOST_SCOPE_EXIT_END;
+  // BOOST_SCOPE_EXIT_END;
 
   std::string fullModelPath;
   std::ofstream modelStream;
 
   // Load model from parameter.
-  if (!makeModelFile(modelStream, fullModelPath))
+  if (!makeModelFile(nodeHandle_, modelStream, fullModelPath))
     return true;
 
   tracker_.resetTracker();
@@ -66,8 +66,8 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
   }
 
   if (trackerType_ == "mbt+klt") { // Hybrid Tracker reconfigure
-    visp_tracker::ModelBasedSettingsConfig config;
     /* FIXME: RECONFIGURATION
+        visp_tracker::ModelBasedSettingsConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(tracker_, config);
       reconfigureSrv_->updateConfig(config);
       convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(movingEdge_, tracker_, config);
@@ -76,14 +76,14 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
       config); reconfigureSrv_->updateConfig(config);
     */
   } else if (trackerType_ == "mbt") { // Edge Tracker reconfigure
-    visp_tracker::ModelBasedSettingsEdgeConfig config;
-    /* FIXME: RECONFIGURATION
-    convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(tracker_, config);
-    reconfigureEdgeSrv_->updateConfig(config);
-    convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(movingEdge_, tracker_, config);
-    reconfigureEdgeSrv_->updateConfig(config);
-    */
-  } else { // KLT Tracker reconfigure
+                                      /* FIXME: RECONFIGURATION
+                                    visp_tracker::ModelBasedSettingsEdgeConfig config;
+                                    convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(tracker_, config);
+                                    reconfigureEdgeSrv_->updateConfig(config);
+                                    convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(movingEdge_, tracker_, config);
+                                    reconfigureEdgeSrv_->updateConfig(config);
+                                    */
+  } else {                            // KLT Tracker reconfigure
     /* FIXME: RECONFIGURATION
       visp_tracker::ModelBasedSettingsKltConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(tracker_, config);
@@ -121,13 +121,13 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
     RCLCPP_INFO(this->get_logger(), "Tracker successfully initialized.");
 
     // movingEdge.print();
-      RCLCPP_INFO_STREAM(this->get_logger(),(convertVpMbTrackerToRosMessage(tracker_));
-      // - Moving edges.
-      if(trackerType_!="klt")
-        RCLCPP_INFO_STREAM(this->get_logger(),(convertVpMeToRosMessage(tracker_, movingEdge_));
+    RCLCPP_INFO_STREAM(this->get_logger(), convertVpMbTrackerToRosMessage(tracker_));
+    // - Moving edges.
+    if (trackerType_ != "klt")
+      RCLCPP_INFO_STREAM(this->get_logger(), convertVpMeToRosMessage(tracker_, movingEdge_));
 
-      if(trackerType_!="mbt")
-        RCLCPP_INFO_STREAM(this->get_logger(),(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
+    if (trackerType_ != "mbt")
+      RCLCPP_INFO_STREAM(this->get_logger(), convertVpKltOpencvToRosMessage(tracker_, kltTracker_));
   } catch (const std::string &str) {
     RCLCPP_ERROR_STREAM(this->get_logger(), "Tracker initialization has failed: " << str);
   }
@@ -138,7 +138,7 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
   return true;
 }
 
-void Tracker::updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites)
+void Tracker::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites::SharedPtr sites)
 {
   if (!sites)
     return;
@@ -160,25 +160,26 @@ void Tracker::updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites)
       if (line && line->isVisible() && line->meline)
 #endif
       {
+        rclcpp::Clock clock;
 #if VISP_VERSION_INT >= VP_VERSION_INT(3, 0, 0) // ViSP >= 3.0.0
         for (unsigned int a = 0; a < line->meline.size(); a++) {
           if (line->meline[a] != NULL) {
             std::list<vpMeSite>::const_iterator sitesIterator = line->meline[a]->getMeList().begin();
             if (line->meline[a]->getMeList().empty())
-              ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+              RCLCPP_DEBUG_THROTTLE(this->get_logger(), clock, 10, "no moving edge for a line");
             for (; sitesIterator != line->meline[a]->getMeList().end(); ++sitesIterator) {
 #elif VISP_VERSION_INT >= VP_VERSION_INT(2, 10, 0) // ViSP >= 2.10.0
         std::list<vpMeSite>::const_iterator sitesIterator = line->meline->getMeList().begin();
         if (line->meline->getMeList().empty())
-          ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+          RCLCPP_DEBUG_THROTTLE(this->get_logger(), clock, 10, "no moving edge for a line");
         for (; sitesIterator != line->meline->getMeList().end(); ++sitesIterator) {
 #else
         std::list<vpMeSite>::const_iterator sitesIterator = line->meline->list.begin();
         if (line->meline->list.empty())
-          ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+          RCLCPP_DEBUG_THROTTLE(this->get_logger(), clock, 10, "no moving edge for a line");
         for (; sitesIterator != line->meline->list.end(); ++sitesIterator) {
 #endif
-              visp_tracker::MovingEdgeSite movingEdgeSite;
+              visp_tracker::msg::MovingEdgeSite movingEdgeSite;
               movingEdgeSite.x = sitesIterator->ifloat;
               movingEdgeSite.y = sitesIterator->jfloat;
 #if VISP_VERSION_INT < VP_VERSION_INT(2, 10, 0) // ViSP < 2.10.0
@@ -193,12 +194,14 @@ void Tracker::updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites)
       }
 #endif
     }
-    if (noVisibleLine)
-      ROS_DEBUG_THROTTLE(10, "no distance lines");
+    if (noVisibleLine) {
+      rclcpp::Clock clock;
+      RCLCPP_DEBUG_THROTTLE(this->get_logger(), clock, 10, "no distance lines");
+    }
   }
 }
 
-void Tracker::updateKltPoints(visp_tracker::KltPointsPtr klt)
+void Tracker::updateKltPoints(visp_tracker::msg::KltPoints::SharedPtr klt)
 {
   if (!klt)
     return;
@@ -254,12 +257,12 @@ void Tracker::updateKltPoints(visp_tracker::KltPointsPtr klt)
 
 void Tracker::checkInputs()
 {
-  ros::V_string topics;
-  topics.push_back(rectifiedImageTopic_);
+  // ros::V_string topics;
+  // topics.push_back(rectifiedImageTopic_);
   // checkInputs_.start(topics, 60.0); // TODO PORT ROS2
 }
 
-Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiting, unsigned queueSize)
+Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, bool &exiting, unsigned queueSize)
   : exiting_(exiting), queueSize_(queueSize), nodeHandle_(nh), nodeHandlePrivate_(privateNh),
     imageTransport_(nodeHandle_), state_(WAITING_FOR_INITIALIZATION), image_(), cameraPrefix_(), rectifiedImageTopic_(),
     cameraInfoTopic_(), modelPath_(), cameraSubscriber_(), mutex_(),
@@ -272,7 +275,7 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
     resultPublisher_(), transformationPublisher_(), movingEdgeSitesPublisher_(), kltPointsPublisher_(), initService_(),
     header_(), info_(), kltTracker_(), movingEdge_(), cameraParameters_(), lastTrackedImage_(),
     // checkInputs_(nodeHandle_, get_name()), // TODO PORT ROS2
-    cMo_(), listener_(), worldFrameId_(), compensateRobotMotion_(false), transformBroadcaster_(), childFrameId_(),
+    cMo_(), worldFrameId_(), compensateRobotMotion_(false), transformBroadcaster_(), childFrameId_(),
     objectPositionHintSubscriber_(), objectPositionHint_()
 {
   // Set cMo to identity.
@@ -349,16 +352,16 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
   // Camera subscriber.
   cameraSubscriber_ = imageTransport_.subscribeCamera(
       rectifiedImageTopic_, queueSize_,
-      boost::bind(imageCallback, std::ref(image), std::ref(header_), std::ref(info_),_1 , _2));
+      boost::bind(imageCallback, std::ref(image), std::ref(header_), std::ref(info_), _1, _2));
 
   // Object position hint subscriber.
-//  typedef boost::function<void(const geometry_msgs::msg::TransformStampedConstPtr &)> objectPositionHintCallback_t;
-// SUB   objectPositionHintCallback_t callback = boost::bind(&Tracker::objectPositionHintCallback, this, _1);
+  //  typedef boost::function<void(const geometry_msgs::msg::TransformStampedConstPtr &)> objectPositionHintCallback_t;
+  // SUB   objectPositionHintCallback_t callback = boost::bind(&Tracker::objectPositionHintCallback, this, _1);
   objectPositionHintSubscriber_ = this->create_subscription<geometry_msgs::msg::TransformStampedConstPtr>(
       "object_position_hint", queue_size_,
       std::bind(&Tracker::objectPositionHintCallback, this, std::placeholders::_1));
-// SUB  objectPositionHintSubscriber_ =
-//      nodeHandle_.subscribe<geometry_msgs::msg::TransformStamped>("object_position_hint", queueSize_, callback);
+  // SUB  objectPositionHintSubscriber_ =
+  //      nodeHandle_.subscribe<geometry_msgs::msg::TransformStamped>("object_position_hint", queueSize_, callback);
 
   // Dynamic reconfigure.
   /* FIXME: RECONFIGURATION
@@ -366,7 +369,8 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_,
     nodeHandlePrivate_); reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f
     = boost::bind(&reconfigureCallbackAndInitViewer, std::ref(nodeHandle_), std::ref(tracker_), std::ref(image_),
-    std::ref(movingEdge_), std::ref(kltTracker_), std::ref(mutex_), std::placeholders::_1, std::placeholders::_2); reconfigureSrv_->setCallback(f);
+    std::ref(movingEdge_), std::ref(kltTracker_), std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
+    reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
       reconfigureEdgeSrv_ = new
@@ -416,11 +420,12 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
   tracker_.setCameraParameters(cameraParameters_);
   tracker_.setDisplayFeatures(false);
 
-  RCLCPP_INFO_STREAM(this->get_logger(), (cameraParameters_));
+  RCLCPP_INFO_STREAM(this->get_logger(), cameraParameters_);
 
   // Service declaration.
   typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-      initCallback_t initCallback = boost::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2);
+      initCallback_t initCallback =
+          boost::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2);
 
   initService_ = nodeHandle_.advertiseService(visp_tracker::srv::Init_service_, initCallback);
 }
@@ -444,6 +449,8 @@ void Tracker::spin()
   rclcpp::Rate loopRateTracking(100);
   tf2::Transform transform;
   std_msgs::msg::Header lastHeader;
+  tf2::BufferCore buffer;
+  tf2_ros::TransformListener listener(buffer);
 
   while (!exiting()) {
     // When a camera sequence is played several times,
@@ -459,13 +466,14 @@ void Tracker::spin()
       // we update the cMo to compensate for robot motion.
       if (compensateRobotMotion_)
         try {
+
           _ tf2_ros::StampedTransform stampedTransform;
-          listener_.lookupTransform(header_.frame_id, // camera frame name
-                                    header_.stamp,    // current image time
-                                    header_.frame_id, // camera frame name
-                                    lastHeader.stamp, // last processed image time
-                                    worldFrameId_,    // frame attached to the environment
-                                    stampedTransform);
+          listener.lookupTransform(header_.frame_id, // camera frame name
+                                   header_.stamp,    // current image time
+                                   header_.frame_id, // camera frame name
+                                   lastHeader.stamp, // last processed image time
+                                   worldFrameId_,    // frame attached to the environment
+                                   stampedTransform);
           vpHomogeneousMatrix newMold;
           transformToVpHomogeneousMatrix(newMold, stampedTransform);
           cMo_ = newMold * cMo_;
@@ -578,17 +586,20 @@ void Tracker::spin()
 // data.
 void Tracker::waitForImage()
 {
+#if 0 // TODO PORT ROS2
   rclcpp::Rate loop_rate(10);
   rclcpp::Clock clock;
   constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting() && (!image_.getWidth() || !image_.getHeight()) && (!info_ || info_->k[0] == 0.)) {
-    // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,LOG_THROTTLE_PERIOD , "waiting for a rectified image...");
+    // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,LOG_THROTTLE_PERIOD , "waiting for a rectified
+    // image...");
     spinOnce();
     loop_rate.sleep();
   }
+#endif
 }
 
-void Tracker::objectPositionHintCallback(const geometry_msgs::msg::TransformStampedConstPtr::SharedPtr transform)
+void Tracker::objectPositionHintCallback(const geometry_msgs::msg::TransformStamped::SharedPtr transform)
 {
   objectPositionHint_ = *transform;
 }

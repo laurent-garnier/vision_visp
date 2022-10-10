@@ -53,7 +53,7 @@ public:
 
   ~TrackerClient();
 
-  void spin();
+  void spin(rclcpp::Node::SharedPtr node_ptr);
 
 protected:
   /// \brief Make sure the topics we subscribe already exist.

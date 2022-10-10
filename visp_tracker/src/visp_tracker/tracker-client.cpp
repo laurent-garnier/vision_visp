@@ -27,6 +27,8 @@
 
 #include "visp_tracker/tracker-client.h"
 
+using namespace std::chrono_literals;
+
 namespace visp_tracker
 {
 TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<rclcpp::Node> privateNh,
@@ -96,7 +98,8 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   rclcpp::Rate rate(1);
   while (cameraPrefix_.empty()) {
-    if (!nodeHandle_->get_parameter("camera_prefix", cameraPrefix_) && !this->get_parameter("~camera_prefix", cameraPrefix_)) {
+    if (!nodeHandle_->get_parameter("camera_prefix", cameraPrefix_) &&
+        !this->get_parameter("~camera_prefix", cameraPrefix_)) {
       RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
                                       "This may mean that:\n"
                                       "- the tracker is not launched,\n"
@@ -109,30 +112,26 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
       return;
     rate.sleep();
   }
-// ros1   rectifiedImageTopic_ =        ros::names::resolve(cameraPrefix_ + "/image_rect");
-// ros1   cameraInfoTopic_ =        ros::names::resolve(cameraPrefix_ + "/camera_info");
-// ros::names::resolve - Resolve a graph resource name into a fully qualified graph resource name.
+  // ros1   rectifiedImageTopic_ =        ros::names::resolve(cameraPrefix_ + "/image_rect");
+  // ros1   cameraInfoTopic_ =        ros::names::resolve(cameraPrefix_ + "/camera_info");
+  // ros::names::resolve - Resolve a graph resource name into a fully qualified graph resource name.
 
-//  auto node_topics_interface = rclcpp::node_interfaces::get_node_topics_interface();
-//  node_topics_interface->resolve_topic_name("topic_name");
-    
-  rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/image_rect");
-  cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/camera_info");
+  //  auto node_topics_interface = rclcpp::node_interfaces::get_node_topics_interface();
+  //  node_topics_interface->resolve_topic_name("topic_name");
+
+  // rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/image_rect");
+  // cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/camera_info");
+  rectifiedImageTopic_ = cameraPrefix_ + "/image_rect";
+  cameraInfoTopic_ = cameraPrefix_ + "/camera_info";
 
   // Check for subscribed topics.
   checkInputs();
 
   cameraSubscriber_ = imageTransport_.subscribeCamera(
-    
-      rectifiedImageTopic_,
-      queueSize_,
-      std::bind(imageCallback, 
-                std::ref(image_), 
-                std::ref(header_), 
-                std::ref(info_), 
-                std::placeholders::_1, 
-                std::placeholders::_2)
-      );
+
+      rectifiedImageTopic_, queueSize_,
+      std::bind(imageCallback, std::ref(image_), std::ref(header_), std::ref(info_), std::placeholders::_1,
+                std::placeholders::_2));
 
   // Model loading.
   bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
@@ -150,7 +149,8 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
         reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_,
      nodeHandlePrivate_); reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f
      = boost::bind(&reconfigureCallback, std::ref(tracker_), std::ref(image_), std::ref(movingEdge_),
-     std::ref(kltTracker_), std::ref(mutex_), std::placeholders::_1, std::placeholders::_2); reconfigureSrv_->setCallback(f);
+     std::ref(kltTracker_), std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
+     reconfigureSrv_->setCallback(f);
       }
       else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
         reconfigureEdgeSrv_ = new
@@ -209,19 +209,17 @@ void TrackerClient::checkInputs()
   //    pub_mono_  = image_transport::create_publisher(this, image_mono);
 }
 
-void TrackerClient::spin()
+void TrackerClient::spin(rclcpp::Node::SharedPtr node_ptr)
 {
-    std::string fmtWindowTitle = std::string(("ViSP MBT tracker initialization - [ns: ")+rclcpp::getNamespace ()+"]";
+  std::string fmtWindowTitle("ViSP MBT tracker initialization");
 
-    vpDisplayX d(image_, image_.getWidth(), image_.getHeight(),
-                 fmtWindowTitle.c_str());
+  vpDisplayX d(image_, image_.getWidth(), image_.getHeight(), fmtWindowTitle.c_str());
 
-    rclcpp::Rate loop_rate_tracking(200);
-    bool ok = false;
-    vpHomogeneousMatrix cMo;
-    vpImagePoint point (10, 10);
-    while (!ok && !exiting())
-    {
+  rclcpp::Rate loop_rate_tracking(200);
+  bool ok = false;
+  vpHomogeneousMatrix cMo;
+  vpImagePoint point(10, 10);
+  while (!ok && !exiting()) {
     try {
       // Initialize.
       vpDisplay::display(image_);
@@ -252,7 +250,7 @@ void TrackerClient::spin()
           vpDisplay::displayCharString(image_, point, "tracking, click to initialize tracker", vpColor::red);
           vpDisplay::flush(image_);
 
-          rclcpp::spin_some(this->get_node_base_interface());
+          rclcpp::spin_some(node_ptr);
           loop_rate_tracking.sleep();
           if (exiting())
             return;
@@ -270,21 +268,16 @@ void TrackerClient::spin()
       mutex_.unlock();
       RCLCPP_ERROR(this->get_logger(), "failed to initialize, retrying...");
     }
-    }
+  }
 
-    RCLCPP_INFO_STREAM(this->get_logger(),"Initialization done, sending initial cMo:\n" << cMo);
-    try
-    {
+  RCLCPP_INFO_STREAM(this->get_logger(), "Initialization done, sending initial cMo:\n" << cMo);
+  try {
     sendcMo(cMo);
-    }
-    catch(std::exception& e)
-    {
+  } catch (std::exception &e) {
     RCLCPP_ERROR_STREAM(this->get_logger(), "failed to send cMo: " << e.what());
-    }
-    catch(...)
-    {
+  } catch (...) {
     RCLCPP_ERROR(this->get_logger(), "unknown error happened while sending the cMo, retrying...");
-    }
+  }
 }
 
 TrackerClient::~TrackerClient()
@@ -307,7 +300,7 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
       nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::init_service_);
 
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr clientViewer =
-      nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::Init_viewer_service_);
+      nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::init_viewer_service_);
   auto srv = std::make_shared<visp_tracker::srv::Init::Request>();
 
   // Load the model and send it to the parameter server.
@@ -327,30 +320,32 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
     convertVpKltOpencvToInitRequest(kltTracker_, tracker_, srv);
   }
 
-  rclcpp::Rate rate(1);
   // Wait for this service to be advertised and available.
-  while (!client.waitForExistence()) {
-    RCLCPP_INFO(this->get_logger(), "Waiting for the initialization service to become available.");
-    rate.sleep();
+  while (!client->wait_for_service(1s)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the initialization service. Exiting.");
+      return;
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Initialization service not available, waiting again...");
   }
 
   auto client_result = client->async_send_request(srv);
   if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_result) ==
       rclcpp::FutureReturnCode::SUCCESS)
-      RCLCPP_INFO(this->get_logger(), "Tracker initialized with success.");
-    else
-      throw std::runtime_error("failed to initialize tracker.");
-//  } else
-//    throw std::runtime_error("failed to call service init");
+    RCLCPP_INFO(this->get_logger(), "Tracker initialized with success.");
+  else
+    throw std::runtime_error("failed to initialize tracker.");
+  //  } else
+  //    throw std::runtime_error("failed to call service init");
 
   auto client_viewer_result = clientViewer->async_send_request(srv);
   if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_viewer_result) ==
       rclcpp::FutureReturnCode::SUCCESS)
-      RCLCPP_INFO(this->get_logger(), "Tracker Viewer initialized with success.");
-    else
-      throw std::runtime_error("failed to initialize tracker viewer.");
-//  } else
-//    RCLCPP_INFO(this->get_logger(), "No Tracker Viewer node to initialize from service");
+    RCLCPP_INFO(this->get_logger(), "Tracker Viewer initialized with success.");
+  else
+    throw std::runtime_error("failed to initialize tracker viewer.");
+  //  } else
+  //    RCLCPP_INFO(this->get_logger(), "No Tracker Viewer node to initialize from service");
 }
 
 void TrackerClient::loadModel()
@@ -506,7 +501,7 @@ TrackerClient::points_t TrackerClient::loadInitializationPoints()
   file << resource;
 
   if (!file.good()) {
-    std::string fmt("failed to load initialization points: ") + init ;
+    std::string fmt = std::string("failed to load initialization points: ") + init;
     throw std::runtime_error(fmt);
   }
 
@@ -564,7 +559,6 @@ bool TrackerClient::validatePose(const vpHomogeneousMatrix &cMo)
   tracker_.setDisplayFeatures(true);
 
   do {
-    this->get_node_base_interface(nodeHandle_);
     loop_rate.sleep();
     if (!rclcpp::ok())
       return false;
@@ -664,7 +658,6 @@ void TrackerClient::init()
     imagePoints.clear();
     for (unsigned i = 0; i < points.size(); ++i) {
       do {
-        this->get_node_base_interface()(nodeHandle_);
         loop_rate.sleep();
         if (!rclcpp::ok())
           return;
@@ -691,7 +684,8 @@ void TrackerClient::initPoint(unsigned &i, points_t &points, imagePoints_t &imag
 {
   vpImagePoint ip;
   double x = 0., y = 0.;
-  std::string fmt("click on point ") + std::to_string(i + 1) + "/" + std::to_string(points.size()); // list points from 1 to n.
+  std::string fmt = std::string("click on point ") + std::to_string(i + 1) + "/" +
+                    std::to_string(points.size()); // list points from 1 to n.
 
   // Click on the point.
   vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
@@ -703,7 +697,6 @@ void TrackerClient::initPoint(unsigned &i, points_t &points, imagePoints_t &imag
       vpDisplay::displayCross(image_, imagePoints[j], 5, vpColor::green);
 
     vpDisplay::flush(image_);
-    this->get_node_base_interface(nodeHandle_);
     rate.sleep();
     if (exiting())
       return;
@@ -718,14 +711,16 @@ void TrackerClient::initPoint(unsigned &i, points_t &points, imagePoints_t &imag
 
 void TrackerClient::waitForImage()
 {
+#if 0 // TODO PORT ROS2
   rclcpp::Rate loop_rate(10);
   rclcpp::Clock clock;
   constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting() && (!image_.getWidth() || !image_.getHeight())) {
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,LOG_THROTTLE_PERIOD, "waiting for a rectified image...");
+    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"), clock, LOG_THROTTLE_PERIOD, "waiting for a rectified image...");
     rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
+#endif
 }
 
 std::string TrackerClient::fetchResource(const std::string &s)

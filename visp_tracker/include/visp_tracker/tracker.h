@@ -25,8 +25,8 @@
 #include <visp3/mbt/vpMbGenericTracker.h>
 #include <visp3/me/vpMe.h>
 
-#include <rclcpp/rclcpp.hpp>
 #include <filesystem>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 
 namespace visp_tracker
@@ -43,7 +43,7 @@ public:
 
   enum State { WAITING_FOR_INITIALIZATION, TRACKING, LOST };
 
-  Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiting, unsigned queueSize = 5u);
+  Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, bool &exiting, unsigned queueSize = 5u);
 
   ~Tracker();
 
@@ -52,29 +52,29 @@ public:
 protected:
   bool initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::srv::Init::Response &res);
 
-  void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
-  void updateKltPoints(visp_tracker::KltPointsPtr klt);
+  void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites::SharedPtr sites);
+  void updateKltPoints(visp_tracker::msg::KltPoints::SharedPtr klt);
 
   void checkInputs();
   void waitForImage();
 
-  void objectPositionHintCallback(const geometry_msgs::msg::TransformStampedConstPtr::SharedPtr);
+  void objectPositionHintCallback(const geometry_msgs::msg::TransformStamped::SharedPtr);
 
 private:
   bool exiting() { return exiting_ || !rclcpp::ok(); }
 
-  void spinOnce()
+  void spinOnce(rclcpp::Node::SharedPtr node_ptr)
   {
     // callbackQueue_.callAvailable(ros::WallDuration(0));
-    rclcpp::spin_some(this);
+    rclcpp::spin_some(node_ptr);
   }
 
   volatile bool &exiting_;
 
   unsigned queueSize_;
 
-  std::shared_ptr<rclcpp::Node> nodeHandle_;
-  std::shared_ptr<rclcpp::Node> nodeHandlePrivate_;
+  rclcpp::Node::SharedPtr nodeHandle_;
+  rclcpp::Node::SharedPtr nodeHandlePrivate_;
   image_transport::ImageTransport imageTransport_;
 
   State state_;
@@ -99,11 +99,10 @@ private:
   */
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr resultPublisher_;
   rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transformationPublisher_;
-  tf2_::TransformBroadcaster tfBroadcaster_;
   rclcpp::Publisher<visp_tracker::msg::MovingEdgeSites>::SharedPtr movingEdgeSitesPublisher_;
   rclcpp::Publisher<visp_tracker::msg::KltPoints>::SharedPtr kltPointsPublisher_;
 
-  rclcpp::Service<visp_camera_calibration::srv::Calibrate>::SharedPtr initService_;
+  rclcpp::Service<visp_tracker::srv::Init>::SharedPtr initService_;
   std_msgs::msg::Header header_;
   sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
 
@@ -116,15 +115,14 @@ private:
 
   vpHomogeneousMatrix cMo_;
 
-  tf2_ros::TransformListener listener_;
   std::string worldFrameId_;
   bool compensateRobotMotion_;
 
   tf2_ros::TransformBroadcaster transformBroadcaster_;
   std::string childFrameId_;
 
-  rclcpp::Subscription<geometry_msgs::msg::TransformStampedConstPtr>::SharedPtr objectPositionHintSubscriber_; // ok
-// SUB ros::Subscriber objectPositionHintSubscriber_;
+  rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr objectPositionHintSubscriber_; // ok
+  // SUB ros::Subscriber objectPositionHintSubscriber_;
   geometry_msgs::msg::TransformStamped objectPositionHint_;
 };
 } // end of namespace visp_tracker.
