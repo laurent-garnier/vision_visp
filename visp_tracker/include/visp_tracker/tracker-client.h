@@ -32,6 +32,8 @@
 #include <rclcpp/rate.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <filesystem>
+
 namespace visp_tracker
 {
 class TrackerClient : public rclcpp::Node

@@ -10,8 +10,8 @@ namespace visp_tracker
   extern std::string moving_edge_sites_topic;
   extern std::string klt_points_topic;
   extern std::string camera_velocity_topic;
-  extern std::string init_service;
-  extern std::string Init_viewer_service_;
+  extern std::string init_service_;
+  extern std::string init_viewer_service_;
   extern std::string Reconfigure_viewer_service_;
 
   extern std::string default_model_path;

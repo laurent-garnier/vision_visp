@@ -20,7 +20,7 @@ namespace visp_tracker
     {
       exiting_ = true;
       if (thread_)
-        if (!thread_->timed_join (boost::posix_time::seconds (2)))
+        if (!thread_->timed_join (std::posix_time::seconds (2)))
           NODELET_WARN ("failed to join thread but continuing anyway");
       thread_.reset ();
       trackerClient_.reset ();
@@ -28,7 +28,7 @@ namespace visp_tracker
 
     void spin ()
     {
-      trackerClient_ = boost::shared_ptr<visp_tracker::TrackerClient>
+      trackerClient_ = std::shared_ptr<visp_tracker::TrackerClient>
           (new visp_tracker::TrackerClient
            (getMTNodeHandle (),
             getMTPrivateNodeHandle (),

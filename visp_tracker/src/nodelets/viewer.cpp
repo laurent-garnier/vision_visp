@@ -29,7 +29,7 @@ namespace visp_tracker
 
     void spin ()
     {
-      trackerViewer_ = boost::shared_ptr<visp_tracker::TrackerViewer>
+      trackerViewer_ = std::shared_ptr<visp_tracker::TrackerViewer>
           (new visp_tracker::TrackerViewer
            (getMTNodeHandle (),
             getMTPrivateNodeHandle (),
@@ -47,8 +47,8 @@ namespace visp_tracker
     }
   private:
     volatile bool exiting_;
-    boost::shared_ptr<visp_tracker::TrackerViewer> trackerViewer_;
-    boost::shared_ptr<boost::thread> thread_;
+    std::shared_ptr<visp_tracker::TrackerViewer> trackerViewer_;
+    std::shared_ptr<boost::thread> thread_;
   };
 
 } // end of namespace visp_tracker.

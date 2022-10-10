@@ -24,6 +24,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/timer.hpp>
 
+#include <filesystem>
+
 namespace visp_tracker
 {
   /// \brief Monitors the tracking result provided by the tracking node.

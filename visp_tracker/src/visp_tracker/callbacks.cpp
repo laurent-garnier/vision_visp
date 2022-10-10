@@ -11,7 +11,7 @@
 
 #include <visp3/mbt/vpMbGenericTracker.h>
 
-void imageCallback(vpImage<unsigned char>& image,
+void imageCallback_master(vpImage<unsigned char>& image,
                    const sensor_msgs::msg::Image::ConstSharedPtr& msg,
                    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& /*info*/)
 {
@@ -31,7 +31,7 @@ void imageCallback(vpImage<unsigned char>& image,
                    const sensor_msgs::msg::Image::ConstSharedPtr& msg,
                    const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst)
 {
-  imageCallback(image, msg, info);
+  imageCallback_master(image, msg, info);
   header = msg->header;
   info = infoConst;
 }

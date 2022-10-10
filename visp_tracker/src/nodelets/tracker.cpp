@@ -19,7 +19,7 @@ namespace visp_tracker
     {
       exiting_ = true;
       if (thread_)
-        if (!thread_->timed_join (boost::posix_time::seconds (2)))
+        if (!thread_->timed_join (std::posix_time::seconds (2)))
           NODELET_WARN ("failed to join thread but continuing anyway");
       thread_.reset ();
       tracker_.reset ();
@@ -29,7 +29,7 @@ namespace visp_tracker
     {
       if (exiting_)
         return;
-      tracker_ = boost::shared_ptr<visp_tracker::Tracker>
+      tracker_ = std::shared_ptr<visp_tracker::Tracker>
           (new visp_tracker::Tracker (getMTNodeHandle (),
                                       getMTPrivateNodeHandle (),
                                       exiting_, 5u));
@@ -47,8 +47,8 @@ namespace visp_tracker
 
   private:
     volatile bool exiting_;
-    boost::shared_ptr<visp_tracker::Tracker> tracker_;
-    boost::shared_ptr<boost::thread> thread_;
+    std::shared_ptr<visp_tracker::Tracker> tracker_;
+    std::shared_ptr<boost::thread> thread_;
   };
 
 } // end of namespace visp_tracker.

@@ -26,7 +26,7 @@
 #include <visp3/me/vpMe.h>
 
 #include <rclcpp/rclcpp.hpp>
-
+#include <filesystem>
 #include <string>
 
 namespace visp_tracker

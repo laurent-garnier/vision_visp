@@ -19,7 +19,7 @@
 */
 
 void
-imageCallback(vpImage<unsigned char>& image,
+imageCallback_master(vpImage<unsigned char>& image,
               const sensor_msgs::msg::Image::ConstSharedPtr& msg,
               const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
 

@@ -87,7 +87,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
       return;
     rate.sleep();
   }
-  if (frameSize_ != NULL) {
+  if (frameSize_ != 0.1) {
     nodeHandlePrivate_->declare_parameter<double>("frame_size", frameSize_);
     ;
   } else {
@@ -97,11 +97,11 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/image_rect");
   cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/camera_info");
 
-  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-      initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, std::placeholders::_1, std::placeholders::_2);
+//  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
+//      initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, std::placeholders::_1, std::placeholders::_2);
 
-  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-      reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1, std::placeholders::_2);
+//  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
+//      reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1, std::placeholders::_2);
 
   // define services
   init_viewer_service_ = this->create_service<visp_tracker::srv::Init_viewer_service>(
@@ -113,9 +113,8 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   // define services
   reconfigure_viewer_service_ = this->create_service<visp_tracker::srv::Reconfigure_viewer_service>(
-      visp_tracker::calibrate_service, std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1,
+      visp_tracker::reconfigure_viewer_service_, std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1,
                                                  std::placeholders::_2, std::placeholders::_3));
-  //     calibrate_service_ = n_.advertiseService(visp_camera_calibration::calibrate_service,calibrate_callback);
 
   //    reconfigure_viewer_service_ = nodeHandle_.advertiseService
   //        (visp_tracker::reconfigure_viewer_service, reconfigureCallback);

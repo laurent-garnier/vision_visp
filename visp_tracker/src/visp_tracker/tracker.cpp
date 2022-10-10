@@ -108,7 +108,7 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
   RCLCPP_DEBUG(this->get_logger(), "Model has been successfully loaded.");
 
   // Load the initial cMo.
-  transformToVpHomogeneousMatrix(cMo_, req.initial_cMo);
+  transformToVpHomogeneousMatrix(cMo_, req.initial_pose);
 
   // Enable covariance matrix.
   tracker_.setCovarianceComputation(true);
@@ -305,7 +305,8 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
   }
   // Create global /camera_prefix param to avoid to remap in the launch files the tracker_client and tracker_viewer
   // nodes
-  nodeHandle_.setParam("camera_prefix", cameraPrefix_);
+  rclcpp::Parameter str_param("camera_prefix", cameraPrefix_);
+  nodeHandle_->set_parameter(str_param);
 
   if (childFrameId_ != "") {
     nodeHandlePrivate_->declare_parameter<std::string>("frame_id", childFrameId_);
@@ -421,7 +422,7 @@ Tracker::Tracker(rclcpp::Node &nh, rclcpp::Node &privateNh, volatile bool &exiti
   typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
       initCallback_t initCallback = boost::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2);
 
-  initService_ = nodeHandle_.advertiseService(visp_tracker::srv::Init_service, initCallback);
+  initService_ = nodeHandle_.advertiseService(visp_tracker::srv::Init_service_, initCallback);
 }
 
 Tracker::~Tracker()
