@@ -263,7 +263,7 @@ void Tracker::checkInputs()
 }
 
 Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, bool &exiting, unsigned queueSize)
-  : exiting_(exiting), queueSize_(queueSize), nodeHandle_(nh), nodeHandlePrivate_(privateNh),
+  : Node("Tracker"), exiting_(exiting), queueSize_(queueSize), nodeHandle_(nh), nodeHandlePrivate_(privateNh),
     imageTransport_(nodeHandle_), state_(WAITING_FOR_INITIALIZATION), image_(), cameraPrefix_(), rectifiedImageTopic_(),
     cameraInfoTopic_(), modelPath_(), cameraSubscriber_(), mutex_(),
     /*    FIXME: RECONFIGURATION
@@ -451,6 +451,7 @@ void Tracker::spin()
   std_msgs::msg::Header lastHeader;
   tf2::BufferCore buffer;
   tf2_ros::TransformListener listener(buffer);
+  rclcpp::Clock clock;
 
   while (!exiting()) {
     // When a camera sequence is played several times,
@@ -510,7 +511,7 @@ void Tracker::spin()
           mutex_.unlock();
         } catch (...) {
           mutex_.unlock();
-          ROS_WARN_THROTTLE(10, "tracking lost");
+          RCLCPP_WAN_THROTTLE(this->get_logger(), clock, 10, "tracking lost");
           state_ = LOST;
         }
 
@@ -568,11 +569,11 @@ void Tracker::spin()
 
         // Publish to tf.
         transform.setOrigin(
-            tf2_ros::Vector3(transformMsg.translation.x, transformMsg.translation.y, transformMsg.translation.z));
-        transform.setRotation(tf2_ros::Quaternion(transformMsg.rotation.x, transformMsg.rotation.y,
+            tf2::Vector3(transformMsg.translation.x, transformMsg.translation.y, transformMsg.translation.z));
+        transform.setRotation(tf2::Quaternion(transformMsg.rotation.x, transformMsg.rotation.y,
                                                   transformMsg.rotation.z, transformMsg.rotation.w));
         transformBroadcaster_.sendTransform(
-            tf2_ros::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
+            tf2::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
       }
     }
 

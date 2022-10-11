@@ -70,15 +70,17 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   rclcpp::Rate rate(1);
   while (cameraPrefix.empty()) {
     // Check for the global parameter /camera_prefix set by visp_tracker node
-    this->declare_parameter<std::string>("~camera_prefix", this->get_parameter("~camera_prefix"));
-    rclcpp::Parameter cameraPrefix_param = this->get_parameter("~camera_prefix");
-    cameraPrefix = cameraPrefix_param.as_string();
-    // TODO PORT ROS2
+    nodeHandle_->get_parameter("camera_prefix", cameraPrefix))
+    // TODO PORT ROS2 ??
     if (cameraPrefix.empty()) {
-      RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
+      this->get_parameter("~camera_prefix", cameraPrefix))
+      if (cameraPrefix.empty()) {
+
+        RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
                                       "This may mean that:\n"
                                       "- the tracker is not launched,\n"
                                       "- the tracker and viewer are not running in the same namespace.");
+      }
     } else if (cameraPrefix.empty()) {
       RCLCPP_INFO(this->get_logger(), "tracker is not yet initialized, waiting...\n"
                                       "You may want to launch the client to initialize the tracker.");
@@ -106,7 +108,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   //      std::placeholders::_1, std::placeholders::_2);
 
   // define services
-  init_viewer_service_ = this->create_service<visp_tracker::srv::Init_viewer_service>(
+  init_viewer_service_ = this->create_service<visp_tracker::srv::init_viewer_service>(
       visp_tracker::Init_viewer_service_, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
                                                     std::placeholders::_2, std::placeholders::_3));
 
