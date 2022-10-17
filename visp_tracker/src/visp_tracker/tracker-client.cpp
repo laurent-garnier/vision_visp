@@ -297,10 +297,10 @@ TrackerClient::~TrackerClient()
 void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
 {
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr client =
-      nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::init_service_);
+      nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::init_service);
 
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr clientViewer =
-      nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::init_viewer_service_);
+      nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::init_viewer_service);
   auto srv = std::make_shared<visp_tracker::srv::Init::Request>();
 
   // Load the model and send it to the parameter server.

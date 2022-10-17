@@ -275,19 +275,24 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
     resultPublisher_(), transformationPublisher_(), movingEdgeSitesPublisher_(), kltPointsPublisher_(), initService_(),
     header_(), info_(), kltTracker_(), movingEdge_(), cameraParameters_(), lastTrackedImage_(),
     // checkInputs_(nodeHandle_, get_name()), // TODO PORT ROS2
-    cMo_(), worldFrameId_(), compensateRobotMotion_(false), childFrameId_(),
-    objectPositionHintSubscriber_(), objectPositionHint_()
+    cMo_(), worldFrameId_(), compensateRobotMotion_(false), childFrameId_(), objectPositionHintSubscriber_(),
+    objectPositionHint_()
 {
   // Set cMo to identity.
   cMo_.eye();
 
   // Parameters.
-  rclcpp::Parameter tmp_param("camera_prefix", "");
+
   rclcpp::Parameter cameraPrefix_val;
   rclcpp::Parameter trackerType_val;
-  nodeHandlePrivate_->get_parameter_or("camera_prefix", cameraPrefix_val, "");
-  tmp_param("tracker_type", "mtb");
-  nodeHandlePrivate_->get_parameter_or("tracker_type", trackerType_val, "mtb");
+  {
+    rclcpp::Parameter tmp_param("camera_prefix", "");
+    nodeHandlePrivate_->get_parameter_or("camera_prefix", cameraPrefix_val, tmp_param);
+  }
+  {
+    rclcpp::Parameter tmp_param("tracker_type", "mtb");
+    nodeHandlePrivate_->get_parameter_or("tracker_type", trackerType_val, tmp_param);
+  }
 
   cameraPrefix_ = cameraPrefix_val.as_string();
   trackerType_ = trackerType_val.as_string();
@@ -301,64 +306,74 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
 
   if (cameraPrefix_.empty()) {
     RCLCPP_FATAL(this->get_logger(), "The camera_prefix parameter not set.\n"
-              "Please relaunch the tracker while setting this parameter, i.e.\n"
-              "$ rosrun visp_tracker tracker _camera_prefix:=/my/camera");
+                                     "Please relaunch the tracker while setting this parameter, i.e.\n"
+                                     "$ rosrun visp_tracker tracker _camera_prefix:=/my/camera");
     rclcpp::shutdown();
     return;
   }
   // Create global /camera_prefix param to avoid to remap in the launch files the tracker_client and tracker_viewer
   // nodes
-  rclcpp::Parameter str_param("camera_prefix", cameraPrefix_);
-  nodeHandle_->set_parameter(str_param);
+  {
+    rclcpp::Parameter str_param("camera_prefix", cameraPrefix_);
+    nodeHandle_->set_parameter(str_param);
+  }
 
   rclcpp::Parameter childFrameId_val;
   rclcpp::Parameter worldFrameId_val;
   rclcpp::Parameter compensateRobotMotion_val;
-
-  rclcpp::Parameter tmp_param("frame_id", "object_position");
-  nodeHandlePrivate_->get_parameter_or("frame_id", childFrameId_val, "object_position");
+  {
+    rclcpp::Parameter tmp_param("frame_id", "object_position");
+    nodeHandlePrivate_->get_parameter_or("frame_id", childFrameId_val, tmp_param);
+  }
 
   // Robot motion compensation.
-  tmp_param("world_frame_id", "/odom");
-  nodeHandlePrivate_->get_parameter_or("world_frame_id", worldFrameId_val, "/odom");
-  tmp_param("compensate_robot_motion", false);
-  nodeHandlePrivate_->get_parameter_or("compensate_robot_motion", compensateRobotMotion_val, false);
+  {
+    rclcpp::Parameter tmp_param("world_frame_id", "/odom");
+    nodeHandlePrivate_->get_parameter_or("world_frame_id", worldFrameId_val, tmp_param);
+  }
+  {
+    rclcpp::Parameter tmp_param("compensate_robot_motion", false);
+    nodeHandlePrivate_->get_parameter_or("compensate_robot_motion", compensateRobotMotion_val, tmp_param);
+  }
 
-  childFrameId_,= childFrameId_val,.as_string();
+  childFrameId_ = childFrameId_val.as_string();
   worldFrameId_ = worldFrameId_val.as_string();
-  compensateRobotMotion_ =  compensateRobotMotion_val.as_bool();
+  compensateRobotMotion_ = compensateRobotMotion_val.as_bool();
 
   // Compute topic and services names.
-  rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/image_rect");
+  // rectifiedImageTopic_ = ros::names::resolve(cameraPrefix_ + "/image_rect");
+  rectifiedImageTopic_ = cameraPrefix_ + "/image_rect";
 
   // Check for subscribed topics.
   checkInputs();
 
   // Result publisher.
-  resultPublisher_ = nodeHandle_.advertise<geometry_msgs::msg::PoseWithCovarianceStamped>(
+  resultPublisher_ = nodeHandle_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
       visp_tracker::object_position_covariance_topic, queueSize_);
 
-  transformationPublisher_ =
-      nodeHandle_.advertise<geometry_msgs::msg::TransformStamped>(visp_tracker::object_position_topic, queueSize_);
+  transformationPublisher_ = nodeHandle_->create_publisher<geometry_msgs::msg::TransformStamped>(
+      visp_tracker::object_position_topic, queueSize_);
 
   // Moving edge sites_ publisher.
-  movingEdgeSitesPublisher_ =
-      nodeHandle_.advertise<visp_tracker::msg::MovingEdgeSites>(visp_tracker::moving_edge_sites_topic, queueSize_);
+  movingEdgeSitesPublisher_ = nodeHandle_->create_publisher<visp_tracker::msg::MovingEdgeSites>(
+      visp_tracker::moving_edge_sites_topic, queueSize_);
 
   // Klt_points_ publisher.
-  kltPointsPublisher_ = nodeHandle_.advertise<visp_tracker::msg::KltPoints>(visp_tracker::klt_points_topic, queueSize_);
+  kltPointsPublisher_ =
+      nodeHandle_->create_publisher<visp_tracker::msg::KltPoints>(visp_tracker::klt_points_topic, queueSize_);
 
   // Camera subscriber.
-  cameraSubscriber_ = imageTransport_.subscribeCamera(
-      rectifiedImageTopic_, queueSize_,
-      std::bind(imageCallback, std::ref(image_), std::ref(header_), std::ref(info_), std::placeholders::_1, std::placeholders::_2));
+  cameraSubscriber_ =
+      imageTransport_.subscribeCamera(rectifiedImageTopic_, queueSize_,
+                                      std::bind(imageCallback, std::ref(image_), std::ref(header_), std::ref(info_),
+                                                std::placeholders::_1, std::placeholders::_2));
 
   // Object position hint subscriber.
   //  typedef boost::function<void(const geometry_msgs::msg::TransformStampedConstPtr &)> objectPositionHintCallback_t;
-  // SUB   objectPositionHintCallback_t callback = boost::bind(&Tracker::objectPositionHintCallback, this, std::placeholders::_1);
-  objectPositionHintSubscriber_ = this->create_subscription<geometry_msgs::msg::TransformStamped::SharedPtr>(
-      "object_position_hint", queueSize_,
-      std::bind(&Tracker::objectPositionHintCallback, this, std::placeholders::std::placeholders::_1));
+  // SUB   objectPositionHintCallback_t callback = boost::bind(&Tracker::objectPositionHintCallback, this,
+  // std::placeholders::_1);
+  objectPositionHintSubscriber_ = nodeHandle_->create_subscription<geometry_msgs::msg::TransformStamped>(
+      "object_position_hint", queueSize_, std::bind(&Tracker::objectPositionHintCallback, this, std::placeholders::_1));
   // SUB  objectPositionHintSubscriber_ =
   //      nodeHandle_.subscribe<geometry_msgs::msg::TransformStamped>("object_position_hint", queueSize_, callback);
 
@@ -368,7 +383,8 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_,
     nodeHandlePrivate_); reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f
     = boost::bind(&reconfigureCallbackAndInitViewer, std::ref(nodeHandle_), std::ref(tracker_), std::ref(image_),
-    std::ref(movingEdge_), std::ref(kltTracker_), std::ref(mutex_), std::placeholders::std::placeholders::std::placeholders::_1, std::placeholders::_2);
+    std::ref(movingEdge_), std::ref(kltTracker_), std::ref(mutex_),
+    std::placeholders::std::placeholders::std::placeholders::_1, std::placeholders::_2);
     reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
@@ -422,11 +438,11 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
   RCLCPP_INFO_STREAM(this->get_logger(), cameraParameters_);
 
   // Service declaration.
-  typedef std::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-      initCallback_t initCallback =
-          std::bind(&Tracker::initCallback, this, std::placeholders::std::placeholders::_1, std::placeholders::_2);
+  initCallback_t initCallback = std::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2);
 
-  initService_ = nodeHandle_.advertiseService(visp_tracker::srv::Init_service_, initCallback);
+  initService_ = nodeHandle_->create_service<visp_tracker::srv::Init>(visp_tracker::init_service, initCallback);
+
+  transformBroadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(*this);
 }
 
 Tracker::~Tracker()
@@ -456,24 +472,28 @@ void Tracker::spin()
     // When a camera sequence is played several times,
     // the seq id will decrease, in this case we want to
     // continue the tracking.
-    if (header_.stamp < lastHeader.stamp)
+    tf2::TimePoint tf2_time(
+        std::chrono::nanoseconds(header_.stamp.nanosec) +
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(header_.stamp.sec)));
+    tf2::TimePoint tf2_last_time(
+        std::chrono::nanoseconds(lastHeader.stamp.nanosec) +
+        std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(lastHeader.stamp.sec)));
+    if (tf2_time < tf2_last_time)
       lastTrackedImage_ = 0;
 
-    if (lastTrackedImage_ < header_.stamp) {
-      lastTrackedImage_ = header_.stamp;
+    if (lastTrackedImage_ < tf2_time) {
+      lastTrackedImage_ = tf2_time;
 
       // If we can estimate the camera displacement using tf,
       // we update the cMo to compensate for robot motion.
       if (compensateRobotMotion_)
         try {
 
-          _ tf2_ros::StampedTransform stampedTransform;
-          listener.lookupTransform(header_.frame_id, // camera frame name
-                                   header_.stamp,    // current image time
-                                   header_.frame_id, // camera frame name
-                                   lastHeader.stamp, // last processed image time
-                                   worldFrameId_,    // frame attached to the environment
-                                   stampedTransform);
+          geometry_msgs::msg::TransformStamped stampedTransform =
+              listener->lookupTransform(header_.frame_id,    // camera frame name
+                                        lastHeader.frame_id, // last processed image time
+                                        tf2_last_time);      // TODO check if not tf2_time
+
           vpHomogeneousMatrix newMold;
           transformToVpHomogeneousMatrix(newMold, stampedTransform);
           cMo_ = newMold * cMo_;
@@ -510,7 +530,7 @@ void Tracker::spin()
           mutex_.unlock();
         } catch (...) {
           mutex_.unlock();
-        RCLCPP_WARN_THROTTLE(this->get_logger(), clock, 10, "tracking lost");
+          RCLCPP_WARN_THROTTLE(this->get_logger(), clock, 10, "tracking lost");
           state_ = LOST;
         }
 
@@ -521,7 +541,7 @@ void Tracker::spin()
 
         // Publish position.
         if (transformationPublisher_.getNumSubscribers() > 0) {
-          geometry_msgs::msg::TransformStamped::SharedPtr   objectPosition(new geometry_msgs::msg::TransformStamped);
+          geometry_msgs::msg::TransformStamped::SharedPtr objectPosition(new geometry_msgs::msg::TransformStamped);
           objectPosition->header = header_;
           objectPosition->child_frame_id = childFrameId_;
           objectPosition->transform = transformMsg;
@@ -569,10 +589,12 @@ void Tracker::spin()
         // Publish to tf.
         transform.setOrigin(
             tf2::Vector3(transformMsg.translation.x, transformMsg.translation.y, transformMsg.translation.z));
-        transform.setRotation(tf2::Quaternion(transformMsg.rotation.x, transformMsg.rotation.y,
-                                                  transformMsg.rotation.z, transformMsg.rotation.w));
-        transformBroadcaster_.sendTransform(
-            tf2::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
+        transform.setRotation(tf2::Quaternion(transformMsg.rotation.x, transformMsg.rotation.y, transformMsg.rotation.z,
+                                              transformMsg.rotation.w));
+        if (transformBroadcaster_) {
+          transformBroadcaster_->sendTransform(
+              tf2::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
+        }
       }
     }
 

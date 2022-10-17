@@ -35,8 +35,8 @@ class Tracker : public rclcpp::Node
 {
 public:
   typedef vpImage<unsigned char> image_t;
-  typedef std::function<bool (visp_tracker::srv::Init::Request&,
-                                  visp_tracker::srv::Init::Response& res)>  initCallback_t;
+  typedef std::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response &res)>
+      initCallback_t;
   template <class ConfigType> struct reconfigureSrvStruct {
     // TODO PORT ROS2
     //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
@@ -112,14 +112,14 @@ private:
   vpCameraParameters cameraParameters_;
   vpMbGenericTracker tracker_;
 
-  unsigned lastTrackedImage_;
+  tf2::TimePoint lastTrackedImage_;
 
   vpHomogeneousMatrix cMo_;
 
   std::string worldFrameId_;
   bool compensateRobotMotion_;
 
-  tf2_ros::TransformBroadcaster transformBroadcaster_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> transformBroadcaster_;
   std::string childFrameId_;
 
   rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr objectPositionHintSubscriber_; // ok
