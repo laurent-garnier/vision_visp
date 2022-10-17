@@ -40,7 +40,7 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
     if (!res.initialization_succeed) {
       tracker_.resetTracker();
       state_ = WAITING_FOR_INITIALIZATION;
-      lastTrackedImage_ = 0;
+      lastTrackedImage_ = {};
     }
   }
   // BOOST_SCOPE_EXIT_END;
@@ -94,7 +94,7 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
   }
 
   state_ = WAITING_FOR_INITIALIZATION;
-  lastTrackedImage_ = 0;
+  lastTrackedImage_ = {};
 
   // Load the model.
   try {
@@ -479,7 +479,7 @@ void Tracker::spin()
         std::chrono::nanoseconds(lastHeader.stamp.nanosec) +
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(lastHeader.stamp.sec)));
     if (tf2_time < tf2_last_time)
-      lastTrackedImage_ = 0;
+      lastTrackedImage_ = {};
 
     if (lastTrackedImage_ < tf2_time) {
       lastTrackedImage_ = tf2_time;
