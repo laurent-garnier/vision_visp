@@ -100,15 +100,15 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/camera_info");
 
   //  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-  initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+  initCallback_t initCallback = std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
         std::placeholders::_2);
 
   //  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
 //  reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this,
-       std::placeholders::_1, std::placeholders::_2);
+//       std::placeholders::_1, std::placeholders::_2);
 
   // define services
-  init_viewer_service_ = this->create_service<visp_tracker::srv::init_viewer_service>(
+  init_viewer_service_ = this->create_service<visp_tracker::init_viewer_service_>(
       visp_tracker::init_viewer_service_, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
                                                     std::placeholders::_2, std::placeholders::_3));
 
@@ -128,8 +128,8 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   std::string path;
 
   unsigned int cpt = 0;
-  while (!nodeHandle_->get_parameter(visp_tracker::model_description_param)) {
-    if (!nodeHandle_->get_parameter(visp_tracker::model_description_param)) {
+  while (nodeHandle_->get_parameter(visp_tracker::model_description_param).get_type ()  == rclcpp::ParameterType::PARAMETER_NOT_SET) {
+    if (!nodeHandle_->get_parameter(visp_tracker::model_description_param).get_type ()  == rclcpp::ParameterType::PARAMETER_NOT_SET) {
       if (cpt % 10 == 0) {
         RCLCPP_WARN_STREAM(this->get_logger(),
                            "[Node: " << std::string(get_name())

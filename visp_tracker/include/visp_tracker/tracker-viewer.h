@@ -35,8 +35,8 @@ public:
   /// \brief ViSP image type
   typedef vpImage<unsigned char> image_t;
 
-  typedef std::function<bool (visp_tracker::Init::Request&,
-                                  visp_tracker::Init::Response& res)>  initCallback_t;
+  typedef std::function<bool (visp_tracker::srv::Init::Request&,
+                                  visp_tracker::srv::Init::Response& res)>  initCallback_t;
 
   /// \brief Synchronization policy
   ///
