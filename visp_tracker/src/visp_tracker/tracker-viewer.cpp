@@ -58,8 +58,8 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   : Node("TrackerViewer"), exiting_(exiting), queueSize_(queueSize), nodeHandle_(nh), nodeHandlePrivate_(privateNh),
     imageTransport_(nodeHandle_), frameSize_(0.1), rectifiedImageTopic_(), cameraInfoTopic_(),
     /*checkInputs_(nodeHandle_, get_name()), */ // TODO PORT ROS2
-    tracker_(), cameraParameters_(), image_(), info_(), init_viewer_service_(), reconfigure_viewer_service_(),
-    trackerName_(), cMo_(std::nullopt), sites_(), imageSubscriber_(), cameraInfoSubscriber_(),
+    init_viewer_service_(), reconfigure_viewer_service_(), trackerName_(), tracker_(), cameraParameters_(), image_(), info_(),
+    cMo_(std::nullopt), sites_(), imageSubscriber_(), cameraInfoSubscriber_(),
     trackingResultSubscriber_(), movingEdgeSitesSubscriber_(), kltPointsSubscriber_(),
     synchronizer_(syncPolicy_t(queueSize_)), countAll_(0u), countImages_(0u), countCameraInfo_(0u),
     countTrackingResult_(0u), countMovingEdgeSites_(0u), countKltPoints_(0u)
@@ -70,10 +70,10 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   rclcpp::Rate rate(1);
   while (cameraPrefix.empty()) {
     // Check for the global parameter /camera_prefix set by visp_tracker node
-    nodeHandle_->get_parameter("camera_prefix", cameraPrefix))
+    nodeHandle_->get_parameter("camera_prefix", cameraPrefix);
     // TODO PORT ROS2 ??
     if (cameraPrefix.empty()) {
-      this->get_parameter("~camera_prefix", cameraPrefix))
+      this->get_parameter("~camera_prefix", cameraPrefix);
       if (cameraPrefix.empty()) {
 
         RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
@@ -100,23 +100,23 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/camera_info");
 
   //  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-  //      initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
-  //      std::placeholders::_2);
+  initCallback_t initCallback = boost::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+        std::placeholders::_2);
 
   //  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
-  //      reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this,
-  //      std::placeholders::_1, std::placeholders::_2);
+//  reconfigureCallback_t reconfigureCallback = boost::bind(&TrackerViewer::reconfigureCallback, this,
+       std::placeholders::_1, std::placeholders::_2);
 
   // define services
   init_viewer_service_ = this->create_service<visp_tracker::srv::init_viewer_service>(
-      visp_tracker::Init_viewer_service_, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+      visp_tracker::init_viewer_service_, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
                                                     std::placeholders::_2, std::placeholders::_3));
 
   //    init_viewer_service_ = nodeHandle_.advertiseService
   //        (visp_tracker::srv::Init_service_viewer, initCallback);
 
   // define services
-  reconfigure_viewer_service_ = this->create_service<visp_tracker::srv::Reconfigure_viewer_service>(
+  reconfigure_viewer_service_ = this->create_service<visp_tracker::srv::reconfigure_viewer_service>(
       visp_tracker::reconfigure_viewer_service_,
       std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
@@ -128,7 +128,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   std::string path;
 
   unsigned int cpt = 0;
-  while (!nodeHandle_->t(visp_tracker::model_description_param)) {
+  while (!nodeHandle_->get_parameter(visp_tracker::model_description_param)) {
     if (!nodeHandle_->get_parameter(visp_tracker::model_description_param)) {
       if (cpt % 10 == 0) {
         RCLCPP_WARN_STREAM(this->get_logger(),
@@ -146,7 +146,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     rate.sleep();
   }
 
-  if (!makeModelFile(modelStream, path))
+  if (!makeModelFile(nodeHandle_, modelStream, path))
     throw std::runtime_error("failed to load the model from the parameter server");
 
   RCLCPP_INFO_STREAM(this->get_logger(), "Model loaded from the parameter server.");
@@ -164,7 +164,18 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   // Subscribe to camera and tracker synchronously.
   // TODO PORT ROS2
-  imageSubscriber_.subscribe(imageTransport_, rectifiedImageTopic_, queueSize_);
+/*    point_correspondence_subscriber_callback_t point_correspondence_callback = boost::bind(&Calibrator::pointCorrespondenceCallback, this, _1);
+    calibrate_service_callback_t calibrate_callback = boost::bind(&Calibrator::calibrateCallback, this, _1, _2);
+
+  point_correspondence_subscriber_ = n_.subscribe(visp_camera_calibration::point_correspondence_topic, queue_size_,
+                                                    point_correspondence_callback);
+  point_correspondence_subscriber_ = this->create_subscription<visp_camera_calibration::msg::CalibPointArray>(
+      visp_camera_calibration::point_correspondence_topic, queue_size_,
+      std::bind(&Calibrator::pointCorrespondenceCallback, this, std::placeholders::_1));
+*/
+// ROS2 : FROM https://github.com/ruffsl/Kimera-VIO-ROS/blob/2ab53a796cf91f45df1060de3aeaaaf460aa0028/src/KimeraVioNode.cpp#L42-L43
+  image_transport::TransportHints hints();
+  imageSubscriber_.subscribe(imageTransport_, rectifiedImageTopic_, hints.getTransport());
   cameraInfoSubscriber_.subscribe(nodeHandle_, cameraInfoTopic_, queueSize_);
   trackingResultSubscriber_.subscribe(nodeHandle_, visp_tracker::object_position_covariance_topic, queueSize_);
   movingEdgeSitesSubscriber_.subscribe(nodeHandle_, visp_tracker::moving_edge_sites_topic, queueSize_);
@@ -172,8 +183,10 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   synchronizer_.connectInput(imageSubscriber_, cameraInfoSubscriber_, trackingResultSubscriber_,
                              movingEdgeSitesSubscriber_, kltPointsSubscriber_);
-  synchronizer_.registerCallback(std::bind(&TrackerViewer::callback, this, std::placeholders::_1, std::placeholders::_2,
-                                           std::placeholders::_3, std::placeholders::_3, std::placeholders::_5));
+  synchronizer_.registerCallback(std::bind(&TrackerViewer::callback, this, 
+                                 std::placeholders::_1, std::placeholders::_2,
+                                 std::placeholders::_3, std::placeholders::_3, 
+                                 std::placeholders::_5));
 
   // Check for synchronization every 30s.
   synchronizer_.registerCallback(std::bind(increment, &countAll_));

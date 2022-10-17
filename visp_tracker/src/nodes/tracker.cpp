@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   nodelet::M_string remap(ros::names::getRemappings());
   nodelet::V_string nargv;
 
-  nodelet.load(ros::this_node::getName(), "visp_tracker/Tracker", remap, nargv);
+  nodelet.load(rclcpp::this_node::getName(), "visp_tracker/Tracker", remap, nargv);
 
   rclcpp::spin(...);
   return 0;

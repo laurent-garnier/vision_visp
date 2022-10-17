@@ -41,14 +41,14 @@ namespace visp_tracker
     {
       NODELET_DEBUG ("Initializing nodelet...");
       exiting_ = false;
-      thread_ = std::make_shared<boost::thread>
+      thread_ = std::make_shared<std::thread>
           (std::bind (&TrackerNodelet::spin, this));
     }
 
   private:
     volatile bool exiting_;
     std::shared_ptr<visp_tracker::Tracker> tracker_;
-    std::shared_ptr<boost::thread> thread_;
+    std::shared_ptr<std::thread> thread_;
   };
 
 } // end of namespace visp_tracker.

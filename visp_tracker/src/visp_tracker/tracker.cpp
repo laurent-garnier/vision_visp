@@ -275,23 +275,23 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
     resultPublisher_(), transformationPublisher_(), movingEdgeSitesPublisher_(), kltPointsPublisher_(), initService_(),
     header_(), info_(), kltTracker_(), movingEdge_(), cameraParameters_(), lastTrackedImage_(),
     // checkInputs_(nodeHandle_, get_name()), // TODO PORT ROS2
-    cMo_(), worldFrameId_(), compensateRobotMotion_(false), transformBroadcaster_(), childFrameId_(),
+    cMo_(), worldFrameId_(), compensateRobotMotion_(false), childFrameId_(),
     objectPositionHintSubscriber_(), objectPositionHint_()
 {
   // Set cMo to identity.
   cMo_.eye();
 
   // Parameters.
-  if (cameraPrefix_ != "") {
-    nodeHandlePrivate_->declare_parameter<std::string>("camera_prefix", cameraPrefix_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<std::string>("camera_prefix", "");
-  }
-  if (trackerType_ != "") {
-    nodeHandlePrivate_->declare_parameter<std::string>("tracker_type", trackerType_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<std::string>("tracker_type", "mtb");
-  }
+  rclcpp::Parameter tmp_param("camera_prefix", "");
+  rclcpp::Parameter cameraPrefix_val;
+  rclcpp::Parameter trackerType_val;
+  nodeHandlePrivate_->get_parameter_or("camera_prefix", cameraPrefix_val, "");
+  tmp_param("tracker_type", "mtb");
+  nodeHandlePrivate_->get_parameter_or("tracker_type", trackerType_val, "mtb");
+
+  cameraPrefix_ = cameraPrefix_val.as_string();
+  trackerType_ = trackerType_val.as_string();
+
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
   else if (trackerType_ == "klt")
@@ -300,7 +300,7 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
   if (cameraPrefix_.empty()) {
-    ROS_FATAL("The camera_prefix parameter not set.\n"
+    RCLCPP_FATAL(this->get_logger(), "The camera_prefix parameter not set.\n"
               "Please relaunch the tracker while setting this parameter, i.e.\n"
               "$ rosrun visp_tracker tracker _camera_prefix:=/my/camera");
     rclcpp::shutdown();
@@ -311,23 +311,22 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
   rclcpp::Parameter str_param("camera_prefix", cameraPrefix_);
   nodeHandle_->set_parameter(str_param);
 
-  if (childFrameId_ != "") {
-    nodeHandlePrivate_->declare_parameter<std::string>("frame_id", childFrameId_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<std::string>("frame_id", "object_position");
-  }
+  rclcpp::Parameter childFrameId_val;
+  rclcpp::Parameter worldFrameId_val;
+  rclcpp::Parameter compensateRobotMotion_val;
+
+  rclcpp::Parameter tmp_param("frame_id", "object_position");
+  nodeHandlePrivate_->get_parameter_or("frame_id", childFrameId_val, "object_position");
 
   // Robot motion compensation.
-  if (worldFrameId_ != "") {
-    nodeHandlePrivate_->declare_parameter<std::string>("world_frame_id", worldFrameId_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<std::string>("world_frame_id", "/odom");
-  }
-  if (compensateRobotMotion_ != NULL) {
-    nodeHandlePrivate_->declare_parameter<bool>("compensate_robot_motion", compensateRobotMotion_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<bool>("compensate_robot_motion", false);
-  }
+  tmp_param("world_frame_id", "/odom");
+  nodeHandlePrivate_->get_parameter_or("world_frame_id", worldFrameId_val, "/odom");
+  tmp_param("compensate_robot_motion", false);
+  nodeHandlePrivate_->get_parameter_or("compensate_robot_motion", compensateRobotMotion_val, false);
+
+  childFrameId_,= childFrameId_val,.as_string();
+  worldFrameId_ = worldFrameId_val.as_string();
+  compensateRobotMotion_ =  compensateRobotMotion_val.as_bool();
 
   // Compute topic and services names.
   rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/image_rect");
@@ -352,14 +351,14 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
   // Camera subscriber.
   cameraSubscriber_ = imageTransport_.subscribeCamera(
       rectifiedImageTopic_, queueSize_,
-      boost::bind(imageCallback, std::ref(image), std::ref(header_), std::ref(info_), _1, _2));
+      std::bind(imageCallback, std::ref(image_), std::ref(header_), std::ref(info_), std::placeholders::_1, std::placeholders::_2));
 
   // Object position hint subscriber.
   //  typedef boost::function<void(const geometry_msgs::msg::TransformStampedConstPtr &)> objectPositionHintCallback_t;
-  // SUB   objectPositionHintCallback_t callback = boost::bind(&Tracker::objectPositionHintCallback, this, _1);
-  objectPositionHintSubscriber_ = this->create_subscription<geometry_msgs::msg::TransformStampedConstPtr>(
-      "object_position_hint", queue_size_,
-      std::bind(&Tracker::objectPositionHintCallback, this, std::placeholders::_1));
+  // SUB   objectPositionHintCallback_t callback = boost::bind(&Tracker::objectPositionHintCallback, this, std::placeholders::_1);
+  objectPositionHintSubscriber_ = this->create_subscription<geometry_msgs::msg::TransformStamped::SharedPtr>(
+      "object_position_hint", queueSize_,
+      std::bind(&Tracker::objectPositionHintCallback, this, std::placeholders::std::placeholders::_1));
   // SUB  objectPositionHintSubscriber_ =
   //      nodeHandle_.subscribe<geometry_msgs::msg::TransformStamped>("object_position_hint", queueSize_, callback);
 
@@ -369,7 +368,7 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_,
     nodeHandlePrivate_); reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f
     = boost::bind(&reconfigureCallbackAndInitViewer, std::ref(nodeHandle_), std::ref(tracker_), std::ref(image_),
-    std::ref(movingEdge_), std::ref(kltTracker_), std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
+    std::ref(movingEdge_), std::ref(kltTracker_), std::ref(mutex_), std::placeholders::std::placeholders::std::placeholders::_1, std::placeholders::_2);
     reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
@@ -379,7 +378,7 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
           boost::bind(&reconfigureEdgeCallbackAndInitViewer,
                       std::ref(nodeHandle_), std::ref(tracker_),
                       std::ref(image_), std::ref(movingEdge_),
-                      std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
+                      std::ref(mutex_), std::placeholders::std::placeholders::_1, std::placeholders::_2);
       reconfigureEdgeSrv_->setCallback(f);
     }
     else{ // KLT Tracker reconfigure
@@ -423,9 +422,9 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
   RCLCPP_INFO_STREAM(this->get_logger(), cameraParameters_);
 
   // Service declaration.
-  typedef boost::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
+  typedef std::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response & res)>
       initCallback_t initCallback =
-          boost::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2);
+          std::bind(&Tracker::initCallback, this, std::placeholders::std::placeholders::_1, std::placeholders::_2);
 
   initService_ = nodeHandle_.advertiseService(visp_tracker::srv::Init_service_, initCallback);
 }
@@ -457,11 +456,11 @@ void Tracker::spin()
     // When a camera sequence is played several times,
     // the seq id will decrease, in this case we want to
     // continue the tracking.
-    if (header_.seq < lastHeader.seq)
+    if (header_.stamp < lastHeader.stamp)
       lastTrackedImage_ = 0;
 
-    if (lastTrackedImage_ < header_.seq) {
-      lastTrackedImage_ = header_.seq;
+    if (lastTrackedImage_ < header_.stamp) {
+      lastTrackedImage_ = header_.stamp;
 
       // If we can estimate the camera displacement using tf,
       // we update the cMo to compensate for robot motion.
@@ -511,7 +510,7 @@ void Tracker::spin()
           mutex_.unlock();
         } catch (...) {
           mutex_.unlock();
-          RCLCPP_WAN_THROTTLE(this->get_logger(), clock, 10, "tracking lost");
+        RCLCPP_WARN_THROTTLE(this->get_logger(), clock, 10, "tracking lost");
           state_ = LOST;
         }
 
@@ -522,7 +521,7 @@ void Tracker::spin()
 
         // Publish position.
         if (transformationPublisher_.getNumSubscribers() > 0) {
-          geometry_msgs::msg::TransformStampedPtr objectPosition(new geometry_msgs::msg::TransformStamped);
+          geometry_msgs::msg::TransformStamped::SharedPtr   objectPosition(new geometry_msgs::msg::TransformStamped);
           objectPosition->header = header_;
           objectPosition->child_frame_id = childFrameId_;
           objectPosition->transform = transformMsg;

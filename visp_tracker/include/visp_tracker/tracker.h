@@ -35,7 +35,8 @@ class Tracker : public rclcpp::Node
 {
 public:
   typedef vpImage<unsigned char> image_t;
-
+  typedef std::function<bool (visp_tracker::Init::Request&,
+                                  visp_tracker::Init::Response& res)>  initCallback_t;
   template <class ConfigType> struct reconfigureSrvStruct {
     // TODO PORT ROS2
     //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;

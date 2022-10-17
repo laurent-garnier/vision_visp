@@ -35,6 +35,9 @@ public:
   /// \brief ViSP image type
   typedef vpImage<unsigned char> image_t;
 
+  typedef std::function<bool (visp_tracker::Init::Request&,
+                                  visp_tracker::Init::Response& res)>  initCallback_t;
+
   /// \brief Synchronization policy
   ///
   /// This is used to make sure that the image, the object position

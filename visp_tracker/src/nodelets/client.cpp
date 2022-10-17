@@ -41,7 +41,7 @@ namespace visp_tracker
     {
       NODELET_DEBUG ("Initializing nodelet...");
       exiting_ = false;
-      thread_ = std::make_shared<boost::thread>
+      thread_ = std::make_shared<std::thread>
           (std::bind (&TrackerClientNodelet::spin, this));
     }
   private:
