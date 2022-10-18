@@ -442,7 +442,6 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
 
   initService_ = nodeHandle_->create_service<visp_tracker::srv::Init>(visp_tracker::init_service, initCallback);
 
-  transformBroadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(*this);
 }
 
 Tracker::~Tracker()
@@ -467,6 +466,7 @@ void Tracker::spin()
   tf2::BufferCore buffer;
   tf2_ros::TransformListener listener(buffer);
   rclcpp::Clock clock;
+  tf2_ros::TransformBroadcaster transformBroadcaster(this);
 
   while (!exiting()) {
     // When a camera sequence is played several times,
@@ -510,7 +510,7 @@ void Tracker::spin()
       if (state_ == LOST) {
         // If the last received message is recent enough,
         // use it otherwise do nothing.
-        if (rclcpp::Time::now() - objectPositionHint_.header.stamp < rclcpp::Duration(1.))
+        if (rclcpp::Clock{}.now() - objectPositionHint_.header.stamp < rclcpp::Duration(1.))
           transformToVpHomogeneousMatrix(cMo_, objectPositionHint_.transform);
 
         mutex_.lock();
@@ -591,8 +591,23 @@ void Tracker::spin()
             tf2::Vector3(transformMsg.translation.x, transformMsg.translation.y, transformMsg.translation.z));
         transform.setRotation(tf2::Quaternion(transformMsg.rotation.x, transformMsg.rotation.y, transformMsg.rotation.z,
                                               transformMsg.rotation.w));
-        if (transformBroadcaster_) {
-          transformBroadcaster_->sendTransform(
+
+/* http://wiki.ros.org/tf2/Tutorials/Migration/TransformBroadcaster
+ROS1
+   geometry_msgs::TransformStamped transformGeom = ...;
+   tfb.sendTransform(transformGeom);
+   
+   tf::StampedTransform transformTf = ...;
+   tfb.sendTransform(transformTf);
+
+ROS2
+   tf2::Stamped<Transform> transformTf = ...;
+   geometry_msgs::TransformStamped transformTfGeom = tf2::toMsg(transformTf);
+   transformTfGeom.child_frame_id = ...;
+   tfb.sendTransform(transformTfGeom);
+  */
+        if (transformBroadcaster) {
+          transformBroadcaster->sendTransform(
               tf2::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
         }
       }

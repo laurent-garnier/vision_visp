@@ -108,8 +108,8 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 //       std::placeholders::_1, std::placeholders::_2);
 
   // define services
-  init_viewer_service_ = this->create_service<visp_tracker::init_viewer_service_>(
-      visp_tracker::init_viewer_service_, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
+  init_viewer_service_ = this->create_service<visp_tracker::init_viewer_service>(
+      visp_tracker::init_viewer_service, std::bind(&TrackerViewer::initCallback, this, std::placeholders::_1,
                                                     std::placeholders::_2, std::placeholders::_3));
 
   //    init_viewer_service_ = nodeHandle_.advertiseService
@@ -117,7 +117,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   // define services
   reconfigure_viewer_service_ = this->create_service<visp_tracker::srv::reconfigure_viewer_service>(
-      visp_tracker::reconfigure_viewer_service_,
+      visp_tracker::reconfigure_viewer_service,
       std::bind(&TrackerViewer::reconfigureCallback, this, std::placeholders::_1, std::placeholders::_2,
                 std::placeholders::_3));
 
