@@ -94,12 +94,10 @@ add_library(${PROJECT_NAME}_common
   src/${PROJECT_NAME}/tracker-viewer.cpp
   src/${PROJECT_NAME}/tracker.cpp
 )
+
 ament_target_dependencies(${PROJECT_NAME}_common
-#  dynamic_reconfigure
   geometry_msgs
   image_transport
-#  message_generation
-#  nodelet
   resource_retriever
   rclcpp
   sensor_msgs
@@ -110,7 +108,36 @@ ament_target_dependencies(${PROJECT_NAME}_common
   VISP
 )
 
+
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+
+########
+# Node #
+########
+
+add_executable(tracker src/nodes/tracker.cpp)
+target_link_libraries(tracker
+  ${PROJECT_NAME}_common
+  "${cpp_typesupport_target}"
+  #  ${nodelet_LIBRARIES}
+)
+ament_target_dependencies(tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(${PROJECT_NAME}_client src/nodes/client.cpp)
+target_link_libraries(${PROJECT_NAME}_client
+  ${PROJECT_NAME}_common
+  "${cpp_typesupport_target}"
+#  ${nodelet_LIBRARIES}
+)
+ament_target_dependencies(${PROJECT_NAME}_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(${PROJECT_NAME}_viewer src/nodes/viewer.cpp)
+target_link_libraries(${PROJECT_NAME}_viewer
+  ${PROJECT_NAME}_common
+  "${cpp_typesupport_target}"
+#  ${nodelet_LIBRARIES}
+)
+
 
 
 target_include_directories(${PROJECT_NAME}_common PUBLIC
