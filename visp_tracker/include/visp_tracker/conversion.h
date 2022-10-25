@@ -57,8 +57,6 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::msg::Transform& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
                                     const geometry_msgs::msg::Transform& src);
 
-void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const geometry_msgs::msg::Transform& src);
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
                                     const geometry_msgs::msg::Pose& src);
@@ -66,14 +64,14 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
                                      std::shared_ptr<visp_tracker::srv::Init::Request> srv);
 
-void convertInitRequestToVpMbTracker(visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpMbTracker(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
                                      vpMbGenericTracker &tracker);
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
                               const vpMbGenericTracker &tracker,
                               std::shared_ptr<visp_tracker::srv::Init::Request> srv);
 
-void convertInitRequestToVpMe(visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpMe(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
                               vpMbGenericTracker &tracker,
                               vpMe& moving_edge);
 
@@ -81,7 +79,7 @@ void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
                                      const vpMbGenericTracker &tracker,
                                      std::shared_ptr<visp_tracker::srv::Init::Request> srv);
 
-void convertInitRequestToVpKltOpencv(visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpKltOpencv(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
                                      vpMbGenericTracker &tracker,
                                      vpKltOpencv& klt);
 

@@ -182,12 +182,12 @@ void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
   srv->tracker_param.angle_disappear = vpMath::deg(tracker.getAngleDisappear());
 }
 
-void convertInitRequestToVpMbTracker(visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpMbTracker(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
                                      vpMbGenericTracker &tracker)
 {
 
-  tracker.setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
-  tracker.setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
+  tracker.setAngleAppear(vpMath::rad(req->tracker_param.angle_appear));
+  tracker.setAngleDisappear(vpMath::rad(req->tracker_param.angle_disappear));
 }
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
@@ -204,18 +204,18 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
   srv->moving_edge.strip = moving_edge.getStrip();
 }
 
-void convertInitRequestToVpMe(visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpMe(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
                               vpMbGenericTracker &tracker,
                               vpMe& moving_edge)
 {
-  tracker.setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
-  moving_edge.setMaskSize( req.moving_edge.mask_size );
-  moving_edge.setRange( req.moving_edge.range );
-  moving_edge.setThreshold( req.moving_edge.threshold );
-  moving_edge.setMu1( req.moving_edge.mu1 );
-  moving_edge.setMu2( req.moving_edge.mu2 );
-  moving_edge.setSampleStep( req.moving_edge.sample_step );
-  moving_edge.setStrip( req.moving_edge.strip );
+  tracker.setGoodMovingEdgesRatioThreshold(req->moving_edge.first_threshold);
+  moving_edge.setMaskSize( req->moving_edge.mask_size );
+  moving_edge.setRange( req->moving_edge.range );
+  moving_edge.setThreshold( req->moving_edge.threshold );
+  moving_edge.setMu1( req->moving_edge.mu1 );
+  moving_edge.setMu2( req->moving_edge.mu2 );
+  moving_edge.setSampleStep( req->moving_edge.sample_step );
+  moving_edge.setStrip( req->moving_edge.strip );
 
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
@@ -237,18 +237,18 @@ void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
   srv->klt_param.mask_border = tracker.getKltMaskBorder();
 }
 
-void convertInitRequestToVpKltOpencv(visp_tracker::srv::Init::Request& req,
+void convertInitRequestToVpKltOpencv(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
                                      vpMbGenericTracker &tracker,
                                      vpKltOpencv& klt)
 {  
-  klt.setMaxFeatures(req.klt_param.max_features);
-  klt.setWindowSize(req.klt_param.window_size);
-  klt.setQuality(req.klt_param.quality);
-  klt.setMinDistance(req.klt_param.min_distance);
-  klt.setHarrisFreeParameter(req.klt_param.harris);
-  klt.setBlockSize(req.klt_param.size_block);
-  klt.setPyramidLevels(req.klt_param.pyramid_lvl);
-  tracker.setKltMaskBorder((unsigned)req.klt_param.mask_border);
+  klt.setMaxFeatures(req->klt_param.max_features);
+  klt.setWindowSize(req->klt_param.window_size);
+  klt.setQuality(req->klt_param.quality);
+  klt.setMinDistance(req->klt_param.min_distance);
+  klt.setHarrisFreeParameter(req->klt_param.harris);
+  klt.setBlockSize(req->klt_param.size_block);
+  klt.setPyramidLevels(req->klt_param.pyramid_lvl);
+  tracker.setKltMaskBorder((unsigned)req->klt_param.mask_border);
 
   tracker.setKltOpencv(klt);
 }

@@ -35,8 +35,8 @@ public:
   /// \brief ViSP image type
   typedef vpImage<unsigned char> image_t;
 
-  typedef std::function<bool(visp_tracker::srv::Init::Request &, visp_tracker::srv::Init::Response &res)>
-      initCallback_t;
+//  typedef std::function<bool (const std::shared_ptr<visp_tracker::srv::Init::Request>,
+//                                  const std::shared_ptr<visp_tracker::srv::Init::Response> res)>  initCallback_t;
 
   /// \brief Synchronization policy
   ///
@@ -71,9 +71,13 @@ protected:
   /// \brief Hang until the first image is received.
   void waitForImage();
 
-  bool initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::srv::Init::Response &res);
+  bool initCallback(const std::shared_ptr<rmw_request_id_t> request_header,
+                    const std::shared_ptr<visp_tracker::srv::Init::Request> req,
+                    std::shared_ptr<visp_tracker::srv::Init::Response>res);
 
-  bool reconfigureCallback(visp_tracker::srv::Init::Request &req, visp_tracker::srv::Init::Response &res);
+  bool reconfigureCallback(const std::shared_ptr<rmw_request_id_t> request_header,
+                           const std::shared_ptr<visp_tracker::srv::Init::Request> req,
+                           std::shared_ptr<visp_tracker::srv::Init::Response>res);
 
   /// \brief Callback used to received synchronized data.
   void callback(const sensor_msgs::msg::Image::ConstSharedPtr &imageConst,
@@ -169,6 +173,7 @@ private:
   unsigned countMovingEdgeSites_;
   unsigned countKltPoints_;
   ///}
+
 };
 } // end of namespace visp_tracker
 

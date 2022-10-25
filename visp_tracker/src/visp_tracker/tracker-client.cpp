@@ -118,7 +118,7 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   //  auto node_topics_interface = rclcpp::node_interfaces::get_node_topics_interface();
   //  node_topics_interface->resolve_topic_name("topic_name");
-
+  // ROS2 FIXME
   // rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/image_rect");
   // cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/camera_info");
   rectifiedImageTopic_ = cameraPrefix_ + "/image_rect";

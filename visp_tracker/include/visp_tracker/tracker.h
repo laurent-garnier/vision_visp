@@ -35,8 +35,8 @@ class Tracker : public rclcpp::Node
 {
 public:
   typedef vpImage<unsigned char> image_t;
-  typedef std::function<bool (visp_tracker::srv::Init::Request&,
-                                  visp_tracker::srv::Init::Response& res)>  initCallback_t;
+//  typedef std::function<bool (const std::shared_ptr<visp_tracker::srv::Init::Request>,
+//                                  const std::shared_ptr<visp_tracker::srv::Init::Response> res)>  initCallback_t;
   template <class ConfigType> struct reconfigureSrvStruct {
     // TODO PORT ROS2
     //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
@@ -51,10 +51,12 @@ public:
   void spin();
 
 protected:
-  bool initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::srv::Init::Response &res);
+  bool initCallback(const std::shared_ptr<rmw_request_id_t> request_header,
+                    const std::shared_ptr<visp_tracker::srv::Init::Request> req,
+                    std::shared_ptr<visp_tracker::srv::Init::Response> res);
 
-  void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites::SharedPtr sites);
-  void updateKltPoints(visp_tracker::msg::KltPoints::SharedPtr klt);
+  void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites sites);
+  void updateKltPoints(visp_tracker::msg::KltPoints klt);
 
   void checkInputs();
   void waitForImage();

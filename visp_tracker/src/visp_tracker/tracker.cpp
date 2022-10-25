@@ -28,16 +28,18 @@
 
 namespace visp_tracker
 {
-bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::srv::Init::Response &res)
+bool Tracker::initCallback(const std::shared_ptr<rmw_request_id_t> /*request_header*/,
+                           const std::shared_ptr<visp_tracker::srv::Init::Request> req,
+                           std::shared_ptr<visp_tracker::srv::Init::Response> res)
 {
   RCLCPP_INFO(this->get_logger(), "Initialization request received.");
 
-  res.initialization_succeed = false;
+  res->initialization_succeed = false;
 
   // If something goes wrong, rollback all changes.
   // BOOST_SCOPE_EXIT((&res)(&tracker_)(&state_)(&lastTrackedImage_)(&trackerType_))
   {
-    if (!res.initialization_succeed) {
+    if (!res->initialization_succeed) {
       tracker_.resetTracker();
       state_ = WAITING_FOR_INITIALIZATION;
       lastTrackedImage_ = {};
@@ -108,7 +110,7 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
   RCLCPP_DEBUG(this->get_logger(), "Model has been successfully loaded.");
 
   // Load the initial cMo.
-  transformToVpHomogeneousMatrix(cMo_, req.initial_pose);
+  transformToVpHomogeneousMatrix(cMo_, req->initial_pose);
 
   // Enable covariance matrix.
   tracker_.setCovarianceComputation(true);
@@ -133,16 +135,13 @@ bool Tracker::initCallback(visp_tracker::srv::Init::Request &req, visp_tracker::
   }
 
   // Initialization is valid.
-  res.initialization_succeed = true;
+  res->initialization_succeed = true;
   state_ = TRACKING;
   return true;
 }
 
-void Tracker::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites::SharedPtr sites)
+void Tracker::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites sites)
 {
-  if (!sites)
-    return;
-
   std::list<vpMbtDistanceLine *> linesList;
 
   if (trackerType_ != "klt") { // For mbt and hybrid
@@ -185,7 +184,7 @@ void Tracker::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites::SharedPt
 #if VISP_VERSION_INT < VP_VERSION_INT(2, 10, 0) // ViSP < 2.10.0
               movingEdgeSite.suppress = sitesIterator->suppress;
 #endif
-              sites->moving_edge_sites.push_back(movingEdgeSite);
+              sites.moving_edge_sites.push_back(movingEdgeSite);
             }
             noVisibleLine = false;
           }
@@ -201,10 +200,8 @@ void Tracker::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites::SharedPt
   }
 }
 
-void Tracker::updateKltPoints(visp_tracker::msg::KltPoints::SharedPtr klt)
+void Tracker::updateKltPoints(visp_tracker::msg::KltPoints klt)
 {
-  if (!klt)
-    return;
 
 #if VISP_VERSION_INT < VP_VERSION_INT(2, 10, 0) // ViSP < 2.10.0
   vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
@@ -246,7 +243,7 @@ void Tracker::updateKltPoints(visp_tracker::msg::KltPoints::SharedPtr klt)
             kltPoint.id = it->first;
             kltPoint.i = it->second.get_i();
             kltPoint.j = it->second.get_j();
-            klt->klt_points_positions.push_back(kltPoint);
+            klt.klt_points_positions.push_back(kltPoint);
           }
         }
       }
@@ -438,9 +435,10 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
   RCLCPP_INFO_STREAM(this->get_logger(), cameraParameters_);
 
   // Service declaration.
-  initCallback_t initCallback = std::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2);
+//  initCallback_t initCallback = std::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
-  initService_ = nodeHandle_->create_service<visp_tracker::srv::Init>(visp_tracker::init_service, initCallback);
+  initService_ = nodeHandle_->create_service<visp_tracker::srv::Init>(visp_tracker::init_service, std::bind(&Tracker::initCallback, this, std::placeholders::_1,
+        std::placeholders::_2, std::placeholders::_3));
 
 }
 
@@ -486,31 +484,35 @@ void Tracker::spin()
 
       // If we can estimate the camera displacement using tf,
       // we update the cMo to compensate for robot motion.
-      if (compensateRobotMotion_)
+      if (compensateRobotMotion_) {
         try {
+          geometry_msgs::msg::TransformStamped stampedTransform;
 
-          geometry_msgs::msg::TransformStamped stampedTransform =
-              listener->lookupTransform(header_.frame_id,    // camera frame name
+          stampedTransform = buffer.lookupTransform( header_.frame_id,    // camera frame name
                                         lastHeader.frame_id, // last processed image time
                                         tf2_last_time);      // TODO check if not tf2_time
 
           vpHomogeneousMatrix newMold;
-          transformToVpHomogeneousMatrix(newMold, stampedTransform);
+          
+//          tf2::Stamped<tf2::Transform> listener;
+//          tf2::convert(stampedTransform, listener);  // note that stampedTransform is missing child_frame_id
+          transformToVpHomogeneousMatrix(newMold,stampedTransform.transform);
           cMo_ = newMold * cMo_;
 
           mutex_.lock();
           tracker_.setPose(image_, cMo_);
           mutex_.unlock();
-        } catch (tf2_ros::TransformException &e) {
+        }
+        catch (tf2::TransformException &e) {
           mutex_.unlock();
         }
-
+      }
       // If we are lost but an estimation of the object position
       // is provided, use it to try to reinitialize the system.
       if (state_ == LOST) {
         // If the last received message is recent enough,
         // use it otherwise do nothing.
-        if (rclcpp::Clock{}.now() - objectPositionHint_.header.stamp < rclcpp::Duration(1.))
+        if ((rclcpp::Clock{}.now() - objectPositionHint_.header.stamp) < rclcpp::Duration(std::chrono::seconds(1)))
           transformToVpHomogeneousMatrix(cMo_, objectPositionHint_.transform);
 
         mutex_.lock();
@@ -540,50 +542,50 @@ void Tracker::spin()
         vpHomogeneousMatrixToTransform(transformMsg, cMo_);
 
         // Publish position.
-        if (transformationPublisher_.getNumSubscribers() > 0) {
-          geometry_msgs::msg::TransformStamped::SharedPtr objectPosition(new geometry_msgs::msg::TransformStamped);
-          objectPosition->header = header_;
-          objectPosition->child_frame_id = childFrameId_;
-          objectPosition->transform = transformMsg;
-          transformationPublisher_.publish(objectPosition);
+        if (transformationPublisher_->get_subscription_count() > 0) {
+          geometry_msgs::msg::TransformStamped objectPosition;
+          objectPosition.header = header_;
+          objectPosition.child_frame_id = childFrameId_;
+          objectPosition.transform = transformMsg;
+          transformationPublisher_->publish (objectPosition);
         }
 
         // Publish result.
-        if (resultPublisher_.getNumSubscribers() > 0) {
-          geometry_msgs::PoseWithCovarianceStampedPtr result(new geometry_msgs::msg::PoseWithCovarianceStamped);
-          result->header = header_;
-          result->pose.pose.position.x = transformMsg.translation.x;
-          result->pose.pose.position.y = transformMsg.translation.y;
-          result->pose.pose.position.z = transformMsg.translation.z;
+        if (resultPublisher_->get_subscription_count() > 0) {
+          geometry_msgs::msg::PoseWithCovarianceStamped result;
+          result.header = header_;
+          result.pose.pose.position.x = transformMsg.translation.x;
+          result.pose.pose.position.y = transformMsg.translation.y;
+          result.pose.pose.position.z = transformMsg.translation.z;
 
-          result->pose.pose.orientation.x = transformMsg.rotation.x;
-          result->pose.pose.orientation.y = transformMsg.rotation.y;
-          result->pose.pose.orientation.z = transformMsg.rotation.z;
-          result->pose.pose.orientation.w = transformMsg.rotation.w;
+          result.pose.pose.orientation.x = transformMsg.rotation.x;
+          result.pose.pose.orientation.y = transformMsg.rotation.y;
+          result.pose.pose.orientation.z = transformMsg.rotation.z;
+          result.pose.pose.orientation.w = transformMsg.rotation.w;
           const vpMatrix &covariance = tracker_.getCovarianceMatrix();
           for (unsigned i = 0; i < covariance.getRows(); ++i)
             for (unsigned j = 0; j < covariance.getCols(); ++j) {
               unsigned idx = i * covariance.getCols() + j;
               if (idx >= 36)
                 continue;
-              result->pose.covariance[idx] = covariance[i][j];
+              result.pose.covariance[idx] = covariance[i][j];
             }
-          resultPublisher_.publish(result);
+          resultPublisher_->publish(result);
         }
 
         // Publish moving edge sites.
-        if (movingEdgeSitesPublisher_.getNumSubscribers() > 0) {
-          visp_tracker::MovingEdgeSitesPtr sites(new visp_tracker::msg::MovingEdgeSites);
-          updateMovingEdgeSites(sites);
-          sites->header = header_;
-          movingEdgeSitesPublisher_.publish(sites);
+        if (movingEdgeSitesPublisher_->get_subscription_count() > 0) {
+          visp_tracker::msg::MovingEdgeSites sites;
+         updateMovingEdgeSites(sites);
+          sites.header = header_;
+          movingEdgeSitesPublisher_->publish(sites);
         }
         // Publish KLT points.
-        if (kltPointsPublisher_.getNumSubscribers() > 0) {
-          visp_tracker::KltPointsPtr klt(new visp_tracker::msg::KltPoints);
+        if (kltPointsPublisher_->get_subscription_count() > 0) {
+          visp_tracker::msg::KltPoints klt;
           updateKltPoints(klt);
-          klt->header = header_;
-          kltPointsPublisher_.publish(klt);
+          klt.header = header_;
+          kltPointsPublisher_->publish(klt);
         }
 
         // Publish to tf.
@@ -606,15 +608,34 @@ ROS2
    transformTfGeom.child_frame_id = ...;
    tfb.sendTransform(transformTfGeom);
   */
-        if (transformBroadcaster) {
-          transformBroadcaster->sendTransform(
-              tf2::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
-        }
+// ROS1
+//     transformBroadcaster->sendTransform(
+//          tf2::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
+
+        geometry_msgs::msg::TransformStamped transformTfGeom;
+        transformTfGeom.header.stamp = header_.stamp;
+        transformTfGeom.header.frame_id = header_.frame_id;
+        geometry_msgs::msg::Vector3 out;
+        out.x = transform.getOrigin().getX();
+        out.y = transform.getOrigin().getY();
+        out.z = transform.getOrigin().getZ();
+        transformTfGeom.transform.translation = out;
+        
+        geometry_msgs::msg::Quaternion qt;
+        qt.w = transform.getRotation().getW();
+        qt.x = transform.getRotation().getX();
+        qt.y = transform.getRotation().getY();
+        qt.z = transform.getRotation().getZ();
+        transformTfGeom.transform.rotation = qt;
+
+        transformTfGeom.child_frame_id = header_.frame_id;
+        transformBroadcaster.sendTransform(transformTfGeom);
+
       }
     }
 
     lastHeader = header_;
-    spinOnce();
+    spinOnce(nodeHandle_);
     loopRateTracking.sleep();
   }
 }
@@ -630,7 +651,7 @@ void Tracker::waitForImage()
   while (!exiting() && (!image_.getWidth() || !image_.getHeight()) && (!info_ || info_->k[0] == 0.)) {
     // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,LOG_THROTTLE_PERIOD , "waiting for a rectified
     // image...");
-    spinOnce();
+    spinOnce(this);
     loop_rate.sleep();
   }
 #endif
