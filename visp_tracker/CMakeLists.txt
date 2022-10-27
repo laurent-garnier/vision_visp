@@ -120,13 +120,14 @@ target_include_directories(${PROJECT_NAME}_common PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
-########
-# Node #
-########
 target_link_libraries(${PROJECT_NAME}_common
   ${VISP_LIBRARIES}
   "${cpp_typesupport_target}"
 )
+
+########
+# Node #
+########
 
 add_executable(${PROJECT_NAME}_tracker
   src/nodes/tracker.cpp
@@ -182,9 +183,19 @@ target_include_directories(${PROJECT_NAME}_common PUBLIC
 #  "${cpp_typesupport_target}"
 #)
 
-#install(DIRECTORY models
-#  DESTINATION share/${PROJECT_NAME}
-#)
+install(
+  TARGETS
+  ${PROJECT_NAME}_viewer
+  ${PROJECT_NAME}_client
+  ${PROJECT_NAME}_tracker
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()
