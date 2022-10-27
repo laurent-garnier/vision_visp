@@ -18,7 +18,7 @@ find_package(image_proc REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(VISP REQUIRED COMPONENTS visp_core visp_vision)
+find_package(VISP REQUIRED COMPONENTS visp_core visp_vision visp_klt visp_mbt)
 
 
 # messages and services interface generation
@@ -108,48 +108,79 @@ ament_target_dependencies(${PROJECT_NAME}_common
   VISP
 )
 
+#target_link_libraries(${PROJECT_NAME}_common
+#  ${VISP_LIBRARIES}
+#  "${cpp_typesupport_target}"
+#)
 
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
-
-########
-# Node #
-########
-
-add_executable(tracker src/nodes/tracker.cpp)
-target_link_libraries(tracker
-  ${PROJECT_NAME}_common
-  "${cpp_typesupport_target}"
-  #  ${nodelet_LIBRARIES}
-)
-ament_target_dependencies(tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(${PROJECT_NAME}_client src/nodes/client.cpp)
-target_link_libraries(${PROJECT_NAME}_client
-  ${PROJECT_NAME}_common
-  "${cpp_typesupport_target}"
-#  ${nodelet_LIBRARIES}
-)
-ament_target_dependencies(${PROJECT_NAME}_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(${PROJECT_NAME}_viewer src/nodes/viewer.cpp)
-target_link_libraries(${PROJECT_NAME}_viewer
-  ${PROJECT_NAME}_common
-  "${cpp_typesupport_target}"
-#  ${nodelet_LIBRARIES}
-)
-
-
 
 target_include_directories(${PROJECT_NAME}_common PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
-
+########
+# Node #
+########
 target_link_libraries(${PROJECT_NAME}_common
   ${VISP_LIBRARIES}
   "${cpp_typesupport_target}"
 )
+
+add_executable(${PROJECT_NAME}_tracker
+  src/nodes/tracker.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_tracker
+  ${PROJECT_NAME}_common
+  "${cpp_typesupport_target}"
+  ${VISP_LIBRARIES}
+)
+
+ament_target_dependencies(${PROJECT_NAME}_tracker
+  rclcpp
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+)
+
+add_executable(${PROJECT_NAME}_client
+  src/nodes/client.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_client
+  ${PROJECT_NAME}_common
+  "${cpp_typesupport_target}"
+  ${VISP_LIBRARIES}
+)
+
+ament_target_dependencies(${PROJECT_NAME}_client
+  rclcpp
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+)
+
+add_executable(${PROJECT_NAME}_viewer
+  src/nodes/viewer.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}_viewer
+  ${PROJECT_NAME}_common
+  "${cpp_typesupport_target}"
+  ${VISP_LIBRARIES}
+)
+
+target_include_directories(${PROJECT_NAME}_common PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+
+#target_link_libraries(${PROJECT_NAME}_common
+#  ${VISP_LIBRARIES}
+#  "${cpp_typesupport_target}"
+#)
 
 #install(DIRECTORY models
 #  DESTINATION share/${PROJECT_NAME}
