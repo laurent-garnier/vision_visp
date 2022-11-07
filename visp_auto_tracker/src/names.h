@@ -1,6 +1,6 @@
 #ifndef __VISP_AUTO_TRACKER_NAMES_H__
 # define __VISP_AUTO_TRACKER_NAMES_H__
-# include <string>
+#include <string>
 
 namespace visp_auto_tracker
 {

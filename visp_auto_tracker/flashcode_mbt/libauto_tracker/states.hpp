@@ -1,9 +1,5 @@
 #ifndef __EVENTS_H__
 #define __EVENTS_H__
-// back-end
-#include <boost/msm/back/state_machine.hpp>
-//front-end
-#include <boost/msm/front/state_machine_def.hpp>
 #include <visp3/core/vpImage.h>
 #include <visp3/core/vpRGBa.h>
 #include <visp3/core/vpMeterPixelConversion.h>
@@ -13,9 +9,8 @@
 #include <vector>
 #include <cassert>
 #include <fstream>
-#include <boost/thread.hpp>
 #include "events.h"
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 
 namespace msm = boost::msm;

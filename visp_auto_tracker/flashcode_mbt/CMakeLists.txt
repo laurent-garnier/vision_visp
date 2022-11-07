@@ -9,9 +9,6 @@ ENDIF(VISP_FOUND)
 
 INCLUDE_DIRECTORIES(${OpenCV_DIR})
 
-find_package( Boost REQUIRED)
-link_directories ( ${Boost_LIBRARY_DIRS} )
-include_directories ( ${Boost_INCLUDE_DIRS} )
 
 add_subdirectory(cmd_line)
 add_subdirectory(detectors)
