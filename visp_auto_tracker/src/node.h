@@ -18,7 +18,7 @@
 namespace visp_auto_tracker{
   class Node{
   private:
-    boost::mutex lock_;
+    std::mutex lock_;
     rclcpp::node::Node n_;
     unsigned long queue_size_;
     std::string tracker_config_path_;

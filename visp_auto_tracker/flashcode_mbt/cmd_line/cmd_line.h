@@ -6,17 +6,21 @@
 #include <visp3/core/vpConfig.h>
 #include <visp3/core/vpPoint.h>
 
-namespace po = boost::program_options;
-
 class CmdLine
 {
 private:
-  boost::program_options::variables_map vm_;
+  std::string general_options;
+  std::string configuration_options;
+  int argc_;
+  char**argv_;
   bool verbose_;
   bool show_fps_;
   bool show_plot_;
   bool log_pose_;
   bool should_exit_;
+  bool video_camera_;
+  bool log_checkpoints;
+  bool log_pose;
   std::string video_channel_;
   double inner_ratio_;
   double outer_ratio_;
@@ -32,13 +36,14 @@ private:
   double mbt_dynamic_range_;
   std::string data_dir_;
   std::string pattern_name_;
+  std::string detector_type;
+  std::string tracker_type;
   std::string detector_subtype_;
   std::string var_file_;
   std::string single_image_name_;
   std::vector<vpPoint> flashcode_points_3D_;
   std::vector<vpPoint> inner_points_3D_,outer_points_3D_;
 
-  po::options_description prog_args;
   std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
   std::string log_file_pattern_,input_file_pattern_;
   std::string config_file;

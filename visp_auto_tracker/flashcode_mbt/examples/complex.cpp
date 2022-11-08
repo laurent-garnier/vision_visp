@@ -88,7 +88,7 @@ int main(int argc, char**argv)
 
   tracking::Tracker t(cmd,detector,tracker);
   TrackerThread tt(t);
-  boost::thread bt(tt);
+  std::thread bt(tt);
 
 
   //when we're using a camera, we can have a meaningless video feed
