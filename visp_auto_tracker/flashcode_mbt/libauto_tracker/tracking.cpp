@@ -1,4 +1,3 @@
-#include "rclcpp/rclcpp.h"
 #include <opencv2/highgui/highgui.hpp>
 #include "tracking.h"
 #include <visp3/core/vpImageConvert.h>

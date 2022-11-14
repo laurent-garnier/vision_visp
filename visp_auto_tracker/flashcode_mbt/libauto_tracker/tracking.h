@@ -23,8 +23,8 @@
 #include <vector>
 #include <fstream>
 
-#include "visp_tracker/MovingEdgeSites.h"
-#include "visp_tracker/KltPoints.h"
+//#include "visp_tracker/MovingEdgeSites.h"
+//#include "visp_tracker/KltPoints.h"
 
 #include "cmd_line/cmd_line.h"
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)

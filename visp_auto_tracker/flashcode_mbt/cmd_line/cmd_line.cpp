@@ -65,9 +65,10 @@ void CmdLine::common(){
   adhoc_recovery_size_ = 0.5;
   adhoc_recovery_treshold_ = 100;
   log_pose_ = false;
-
+  log_checkpoints_ = false;
+  help_ = false;
   
-  std::string general_options =
+  general_options =
       std::string("General options\n")+
       "dmtxonly,d: only detect the datamatrix \n" +
       "video-camera,C: video from camera  \n" +
@@ -86,10 +87,10 @@ void CmdLine::common(){
       "show-fps,f: show framerate\n" +
       "show-plot,p: show variances graph\n" +
       "code-message,m: Target code message\n" +
-      "help: produce help message\n";
+      "help:h produce help message\n";
 
   
-  std::string configuration_options =
+  configuration_options =
     std::string("Configuration") +
       "flashcode-coordinates,F: 3D coordinates of the flashcode in clockwise order\n" +
       "inner-coordinates,i: 3D coordinates of the inner region in clockwise order\n" +
@@ -100,7 +101,7 @@ void CmdLine::common(){
       "hinkley-range,H: pair of alpha, delta values describing the two hinkley tresholds\n" +
       "mbt-dynamic-range,R: Adapt mbt range to symbol size. The width of the outer black corner is multiplied by this value to get the mbt range. Try 0.2\n" +
       "ad-hoc-recovery,W: Enable or disable ad-hoc recovery\n" +
-      "ad-hoc-recovery-display,D", "Enable or disable ad-hoc recovery display\n" +
+      "ad-hoc-recovery-display,e: Enable or disable ad-hoc recovery display\n" +
       "ad-hoc-recovery-ratio,y: use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center\n" +
       "ad-hoc-recovery-size,w: fraction of the black outer band size. The control points (those that should be black and in that way check tracking is still there).\n" +
       "ad-hoc-recovery-threshold,Y: Threshold over which the point is considered out of the black area of the object\n" +
@@ -111,13 +112,13 @@ void CmdLine::common(){
     {
       const auto opt = getopt_long(argc_, argv_, short_opts, long_opts, nullptr);
 
-      if (-1 == opt)
-	break;
-
-      switch (opt)
+  if (-1 == opt)
+	  break;
+    
+  switch (opt)
         {
 	case 'd':
-	  dmtx_only = true;
+	  dmtxonly_ = true;
 	  break;
 	case 'C':
 	  video_camera_ = true;
@@ -153,7 +154,7 @@ void CmdLine::common(){
 	  verbose_ = optarg;
 	  break;
 	case 'T':
-	  dmx_timeout_ = optarg;
+	  dmx_timeout_ = std::stoi(optarg);
 	  break;
 	case 'c':
 	  config_file = optarg;
@@ -167,14 +168,20 @@ void CmdLine::common(){
 	case 'm':
 	  code_message_ = optarg;
 	  break;
+	case 'h':
+	  help_ = true;
+	  break;
 	case 'F':
-	  flashcode_coordinates = optarg;
+  // TODO : Port ROS2
+  //	  flashcode_coordinates = optarg; 
 	  break;
 	case 'i':
-	  inner_coordinates_ = optarg;
+// TODO : Port ROS2
+//	  inner_coordinates = optarg;
 	  break;
 	case 'o':
-	  outer_coordinates = optarg;
+// TODO : Port ROS2
+//	  outer_coordinates = optarg;
 	  break;
 	case 'V':
 	  var_file_ = optarg;
@@ -183,22 +190,24 @@ void CmdLine::common(){
 	  var_limit_ = std::stod(optarg);
 	  break;
 	case 'S':
-	  mbt_convergence_steps_ = optarg;
+// TODO : Port ROS2
+//	  mbt_convergence_steps_ = std::stoi(optarg);
 	  break;
 	case 'H':
-	  hinkley_range_ = optarg;
+// TODO : Port ROS2
+//	  hinkley_range_ = optarg;
 	  break;
 	case 'R':
-	  mbt_dynamic_range_ = optarg;
+	  mbt_dynamic_range_ = std::stod(optarg);
 	  break;
 	case 'W':
 	  adhoc_recovery_ = optarg;
 	  break;
-	case 'D':
+	case 'e':
 	  adhoc_recovery_display_ = optarg;
 	  break;
 	case 'y':
-	  adhoc_recovery_ratio_ = optarg;
+	  adhoc_recovery_ratio_ = std::stod(optarg);
 	  break;
 	case 'w':
 	  adhoc_recovery_size_ = std::stod(optarg);
@@ -207,24 +216,29 @@ void CmdLine::common(){
 	  adhoc_recovery_treshold_ = std::stoul(optarg);
 	  break;
 	case 'g':
-	  log_checkpoints = true;
+	  log_checkpoints_ = true;
 	  break;
 	case 'q':
-	  log_pose = true;
+	  log_pose_ = true;
 	  break;
       
-        default:
-	  std::cout << help_string << std::endl;
+  default:
+	  std::cout << general_options << std::endl;
+	  std::cout << configuration_options << std::endl;
 	  break;
 
+  }
   }
 }
 
 void CmdLine::loadConfig(std::string& config_file){
-  std::ifstream in( config_file.c_str() );
+/*  std::ifstream in( config_file.c_str() );
   po::store(po::parse_config_file(in,prog_args,false), vm_);
-  po::notify(vm_);
   in.close();
+*/
+  std::cout << "Have to be implemented without boost in ROS2" << std::endl;
+
+  return;
 
   for(unsigned int i =0;i<flashcode_coordinates.size()/3;i++){
     vpPoint p;
@@ -278,8 +292,9 @@ void CmdLine::loadConfig(std::string& config_file){
 
   if(using_var_file())
     std::cout << "Using variance file:" << get_var_file() << std::endl;
-  if (vm_.count("help")) {
-    std::cout << prog_args << std::endl;
+  if (help_) {
+	  std::cout << general_options << std::endl;
+	  std::cout << configuration_options << std::endl;
     should_exit_ = true;
 
   }
@@ -302,8 +317,7 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false), code_message_index
   common();
   argc_ = argc;
   argv_ = argv;
-  po::store(po::parse_command_line(argc, argv, prog_args), vm_);
-  po::notify(vm_);
+
   if(get_verbose())
     std::cout << "Loading config from:" << config_file << std::endl;
 
@@ -332,7 +346,7 @@ bool CmdLine:: show_plot() const{
 }
 
 bool CmdLine:: using_hinkley() const{
-  return vm_.count("hinkley-range")>0 && hinkley_range_.size()==2;
+  return hinkley_range_.size()==2;
 }
 
 double CmdLine:: get_hinkley_alpha() const{
@@ -356,7 +370,7 @@ double CmdLine:: get_mbt_dynamic_range() const{
 }
 
 bool CmdLine:: using_mbt_dynamic_range(){
-  return vm_.count("mbt-dynamic-range")>0;
+  return mbt_dynamic_range_ > 0;
 }
 
 double CmdLine:: get_var_limit() const{
@@ -364,7 +378,7 @@ double CmdLine:: get_var_limit() const{
 }
 
 bool CmdLine:: using_var_limit() const{
-  return vm_.count("variance-limit")>0;
+  return var_limit_ >0;
 }
 
 std::string CmdLine:: get_var_file() const{
@@ -372,15 +386,15 @@ std::string CmdLine:: get_var_file() const{
 }
 
 bool CmdLine:: using_var_file() const{
-  return vm_.count("variance-file")>0;
+  return var_file_!= "";
 }
 
 bool CmdLine:: logging_video() const{
-  return vm_.count("video-output-path")>0;
+  return log_file_pattern_!="";
 }
 
 bool CmdLine:: dmtx_only() const{
-  return vm_.count("dmtxonly")>0;
+  return dmtxonly_>0;
 }
 
 bool CmdLine:: should_exit() const{
@@ -412,11 +426,11 @@ double CmdLine:: get_outer_ratio() const{
 }
 
 bool CmdLine:: using_data_dir() const{
-  return vm_.count("data-directory")>0;
+  return data_dir_  != "";
 }
 
 bool CmdLine:: using_video_camera() const{
-  return vm_.count("video-camera")>0;
+  return video_camera_>0;
 }
 
 std::string CmdLine:: get_data_dir() const{
@@ -445,7 +459,7 @@ std::string CmdLine:: get_init_file() const{
 }
 
 bool CmdLine:: using_single_image() const{
-  return vm_.count("single-image")>0;
+  return single_image_name_  != "";
 }
 
 std::string CmdLine:: get_single_image_path() const{
@@ -465,9 +479,9 @@ std::vector<vpPoint>& CmdLine:: get_outer_points_3D() {
 }
 
 CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type() const{
-  if(vm_["detector-type"].as<std::string>()=="zbar")
+  if(detector_type == "zbar")
     return CmdLine::ZBAR;
-  else if(vm_["detector-type"].as<std::string>()=="april")
+  else if(detector_type == "april")
     return CmdLine::APRIL;
   else
     return CmdLine::DMTX;
@@ -478,9 +492,9 @@ std::string CmdLine:: get_detector_subtype() const{
 }
 
 CmdLine::TRACKER_TYPE CmdLine:: get_tracker_type() const{
-  if(vm_["tracker-type"].as<std::string>()=="mbt")
+  if(tracker_type == "mbt")
     return CmdLine::MBT;
-  else if(vm_["tracker-type"].as<std::string>()=="klt")
+  else if(tracker_type == "klt")
     return CmdLine::KLT;
   else
     return CmdLine::KLT_MBT;
@@ -515,7 +529,7 @@ bool CmdLine:: using_adhoc_recovery() const{
 }
 
 bool CmdLine:: log_checkpoints() const{
-  return vm_.count("log-checkpoints")>0;
+  return log_checkpoints_>0;
 }
 
 bool CmdLine:: log_pose() const{

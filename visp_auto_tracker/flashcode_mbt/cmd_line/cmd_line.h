@@ -16,11 +16,12 @@ private:
   bool verbose_;
   bool show_fps_;
   bool show_plot_;
-  bool log_pose_;
   bool should_exit_;
   bool video_camera_;
-  bool log_checkpoints;
-  bool log_pose;
+  bool log_checkpoints_;
+  bool log_pose_;
+  bool dmtxonly_;
+  bool help_;
   std::string video_channel_;
   double inner_ratio_;
   double outer_ratio_;

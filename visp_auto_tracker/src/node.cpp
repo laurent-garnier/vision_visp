@@ -10,8 +10,8 @@
 #include "libauto_tracker/threading.h"
 #include "libauto_tracker/events.h"
 
-#include "visp_tracker/MovingEdgeSites.h"
-#include "visp_tracker/KltPoints.h"
+//#include "visp_tracker/MovingEdgeSites.h"
+//#include "visp_tracker/KltPoints.h"
 
 //visp includes
 #include <visp3/gui/vpDisplayX.h>
