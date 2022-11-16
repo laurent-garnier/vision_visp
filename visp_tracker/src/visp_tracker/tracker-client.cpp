@@ -50,6 +50,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   frameSize_ = this->declare_parameter<double>("frame_size", 0.2);
   trackerType_ = this->declare_parameter<std::string>("tracker_type", "mtb");
   cameraPrefix_ = this->declare_parameter<std::string>("camera_prefix", "/wide_left/camera");
+  this->declare_parameter<std::string>(model_description_param, "");
 
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
@@ -340,7 +341,6 @@ void TrackerClient::loadModel()
 
 vpHomogeneousMatrix TrackerClient::loadInitialPose()
 {
-
   vpHomogeneousMatrix cMo;
   cMo.eye();
 
@@ -394,7 +394,7 @@ vpHomogeneousMatrix TrackerClient::loadInitialPose()
     return cMo;
   }
 
-  return cMo;
+  return cMo; // TODO CHECK IF WE DO NOT NEED TO SEND AN EXCEPTION INSTEAD
 }
 
 void TrackerClient::saveInitialPose(const vpHomogeneousMatrix &cMo)
