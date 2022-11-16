@@ -48,12 +48,12 @@ public:
     //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
   };
 
-  TrackerClient(std::shared_ptr<rclcpp::Node> nodeHandle_, std::shared_ptr<rclcpp::Node> privateNh,
-                volatile bool &exiting, unsigned queueSize = 5u);
+  TrackerClient();
 
-  ~TrackerClient();
+  virtual ~TrackerClient();
 
-  void spin(rclcpp::Node::SharedPtr node_ptr);
+  // void spin(rclcpp::Node::SharedPtr node_ptr);
+  void spin();
 
 protected:
   /// \brief Make sure the topics we subscribe already exist.
@@ -77,16 +77,14 @@ protected:
   bool makeModelFile(std::ofstream &modelStream, const std::string &resourcePath, std::string &fullModelPath);
 
 private:
-  bool exiting() { return exiting_ || !rclcpp::ok(); }
-
-  volatile bool &exiting_;
+  bool exiting() { return !rclcpp::ok(); }
 
   unsigned queueSize_;
 
   std::shared_ptr<rclcpp::Node> nodeHandle_;
   std::shared_ptr<rclcpp::Node> nodeHandlePrivate_;
 
-  image_transport::ImageTransport imageTransport_;
+  // image_transport::ImageTransport imageTransport_;
 
   image_t image_;
 
@@ -96,7 +94,7 @@ private:
 
   std::string cameraPrefix_;
   std::string rectifiedImageTopic_;
-  std::string cameraInfoTopic_;
+  // std::string cameraInfoTopic_;
   std::string trackerType_;
   double frameSize_;
 

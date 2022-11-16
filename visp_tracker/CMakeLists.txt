@@ -10,7 +10,8 @@ ament_auto_find_build_dependencies()
 
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
-#find_package(nodelet REQUIRED)
+
+# find_package(nodelet REQUIRED)
 find_package(resource_retriever REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -19,7 +20,6 @@ find_package(rclcpp REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(VISP REQUIRED COMPONENTS visp_core visp_vision visp_klt visp_mbt)
-
 
 # messages and services interface generation
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -34,57 +34,53 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES std_msgs sensor_msgs geometry_msgs
 )
 
-#get_cmake_property(_variableNames VARIABLES)
-#list (SORT _variableNames)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
-
+# get_cmake_property(_variableNames VARIABLES)
+# list (SORT _variableNames)
+# foreach (_variableName ${_variableNames})
+# message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
 
 # ???
 # Dynamic reconfigure.
-#generate_dynamic_reconfigure_options(
-#    cfg/ModelBasedSettings.cfg
-#    cfg/ModelBasedSettingsEdge.cfg
-#    cfg/ModelBasedSettingsKlt.cfg)
+# generate_dynamic_reconfigure_options(
+# cfg/ModelBasedSettings.cfg
+# cfg/ModelBasedSettingsEdge.cfg
+# cfg/ModelBasedSettingsKlt.cfg)
 
+# catkin_package(
+# LIBRARIES
+# trackerNodelet
+# ${PROJECT_NAME}
 
-#catkin_package(
-#  LIBRARIES
-#    trackerNodelet
-#    ${PROJECT_NAME}
+# CATKIN_DEPENDS
+# dynamic_reconfigure
+# geometry_msgs
+# message_runtime
+# nodelet
+# roscpp
+# sensor_msgs
+# std_msgs
+# tf
 
-#  CATKIN_DEPENDS
-#    dynamic_reconfigure
-#    geometry_msgs
-#    message_runtime
-#    nodelet
-#    roscpp
-#    sensor_msgs
-#    std_msgs
-#    tf
+# DEPENDS
+# VISP
+# )
 
-#  DEPENDS
-#    VISP
-#  )
+# include_directories(SYSTEM
+# ${VISP_INCLUDE_DIRS}
+# ${catkin_INCLUDE_DIRS}
+# )
 
-#include_directories(SYSTEM
-#  ${VISP_INCLUDE_DIRS}
-#  ${catkin_INCLUDE_DIRS}
-#  )
+# include_directories(
+# "${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}")
 
-#include_directories(
-#  "${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}")
-
-#############
+# ############
 # Libraries #
-#############
+# ############
 
 # Library gathering libvisp_tracker used by all nodes.
 
-
-#ament_export_dependencies(VISP)
-
+# ament_export_dependencies(VISP)
 add_library(${PROJECT_NAME}_common
   src/${PROJECT_NAME}/callbacks.cpp
   src/${PROJECT_NAME}/conversion.cpp
@@ -108,11 +104,10 @@ ament_target_dependencies(${PROJECT_NAME}_common
   VISP
 )
 
-#target_link_libraries(${PROJECT_NAME}_common
-#  ${VISP_LIBRARIES}
-#  "${cpp_typesupport_target}"
-#)
-
+# target_link_libraries(${PROJECT_NAME}_common
+# ${VISP_LIBRARIES}
+# "${cpp_typesupport_target}"
+# )
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
 target_include_directories(${PROJECT_NAME}_common PUBLIC
@@ -125,10 +120,9 @@ target_link_libraries(${PROJECT_NAME}_common
   "${cpp_typesupport_target}"
 )
 
-########
+# #######
 # Node #
-########
-
+# #######
 add_executable(${PROJECT_NAME}_tracker
   src/nodes/tracker.cpp
 )
@@ -178,11 +172,10 @@ target_include_directories(${PROJECT_NAME}_common PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
-#target_link_libraries(${PROJECT_NAME}_common
-#  ${VISP_LIBRARIES}
-#  "${cpp_typesupport_target}"
-#)
-
+# target_link_libraries(${PROJECT_NAME}_common
+# ${VISP_LIBRARIES}
+# "${cpp_typesupport_target}"
+# )
 install(
   TARGETS
   ${PROJECT_NAME}_viewer
@@ -192,11 +185,10 @@ install(
 )
 
 install(DIRECTORY
-  launch
+  launch models
   DESTINATION share/${PROJECT_NAME}
 )
 
 ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()
-

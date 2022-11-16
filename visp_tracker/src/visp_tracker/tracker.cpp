@@ -101,13 +101,14 @@ bool Tracker::initCallback(const std::shared_ptr<rmw_request_id_t> /*request_hea
   // Load the model.
   try {
     RCLCPP_DEBUG_STREAM(this->get_logger(), " Trying to load the model Tracker: " << fullModelPath);
-    tracker_.loadModel(fullModelPath.c_str());
+    tracker_.loadModel(fullModelPath);
+    RCLCPP_INFO_STREAM(this->get_logger(), "Model " << fullModelPath << " has been successfully loaded.");
     modelStream.close();
   } catch (...) {
-    RCLCPP_ERROR_STREAM(this->get_logger(), "Failed to load the model: " << fullModelPath);
-    return true;
+    std::stringstream fmt;
+    fmt << "Failed to load the model " << fullModelPath;
+    throw std::runtime_error(fmt.str());
   }
-  RCLCPP_DEBUG(this->get_logger(), "Model has been successfully loaded.");
 
   // Load the initial cMo.
   transformToVpHomogeneousMatrix(cMo_, req->initial_pose);
@@ -435,11 +436,12 @@ Tracker::Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, 
   RCLCPP_INFO_STREAM(this->get_logger(), cameraParameters_);
 
   // Service declaration.
-//  initCallback_t initCallback = std::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+  //  initCallback_t initCallback = std::bind(&Tracker::initCallback, this, std::placeholders::_1,
+  //  std::placeholders::_2, std::placeholders::_3);
 
-  initService_ = nodeHandle_->create_service<visp_tracker::srv::Init>(visp_tracker::init_service, std::bind(&Tracker::initCallback, this, std::placeholders::_1,
-        std::placeholders::_2, std::placeholders::_3));
-
+  initService_ = nodeHandle_->create_service<visp_tracker::srv::Init>(
+      visp_tracker::init_service,
+      std::bind(&Tracker::initCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
 Tracker::~Tracker()
@@ -488,22 +490,21 @@ void Tracker::spin()
         try {
           geometry_msgs::msg::TransformStamped stampedTransform;
 
-          stampedTransform = buffer.lookupTransform( header_.frame_id,    // camera frame name
-                                        lastHeader.frame_id, // last processed image time
-                                        tf2_last_time);      // TODO check if not tf2_time
+          stampedTransform = buffer.lookupTransform(header_.frame_id,    // camera frame name
+                                                    lastHeader.frame_id, // last processed image time
+                                                    tf2_last_time);      // TODO check if not tf2_time
 
           vpHomogeneousMatrix newMold;
-          
-//          tf2::Stamped<tf2::Transform> listener;
-//          tf2::convert(stampedTransform, listener);  // note that stampedTransform is missing child_frame_id
-          transformToVpHomogeneousMatrix(newMold,stampedTransform.transform);
+
+          //          tf2::Stamped<tf2::Transform> listener;
+          //          tf2::convert(stampedTransform, listener);  // note that stampedTransform is missing child_frame_id
+          transformToVpHomogeneousMatrix(newMold, stampedTransform.transform);
           cMo_ = newMold * cMo_;
 
           mutex_.lock();
           tracker_.setPose(image_, cMo_);
           mutex_.unlock();
-        }
-        catch (tf2::TransformException &e) {
+        } catch (tf2::TransformException &e) {
           mutex_.unlock();
         }
       }
@@ -547,7 +548,7 @@ void Tracker::spin()
           objectPosition.header = header_;
           objectPosition.child_frame_id = childFrameId_;
           objectPosition.transform = transformMsg;
-          transformationPublisher_->publish (objectPosition);
+          transformationPublisher_->publish(objectPosition);
         }
 
         // Publish result.
@@ -576,7 +577,7 @@ void Tracker::spin()
         // Publish moving edge sites.
         if (movingEdgeSitesPublisher_->get_subscription_count() > 0) {
           visp_tracker::msg::MovingEdgeSites sites;
-         updateMovingEdgeSites(sites);
+          updateMovingEdgeSites(sites);
           sites.header = header_;
           movingEdgeSitesPublisher_->publish(sites);
         }
@@ -594,23 +595,23 @@ void Tracker::spin()
         transform.setRotation(tf2::Quaternion(transformMsg.rotation.x, transformMsg.rotation.y, transformMsg.rotation.z,
                                               transformMsg.rotation.w));
 
-/* http://wiki.ros.org/tf2/Tutorials/Migration/TransformBroadcaster
-ROS1
-   geometry_msgs::TransformStamped transformGeom = ...;
-   tfb.sendTransform(transformGeom);
-   
-   tf::StampedTransform transformTf = ...;
-   tfb.sendTransform(transformTf);
+        /* http://wiki.ros.org/tf2/Tutorials/Migration/TransformBroadcaster
+        ROS1
+           geometry_msgs::TransformStamped transformGeom = ...;
+           tfb.sendTransform(transformGeom);
 
-ROS2
-   tf2::Stamped<Transform> transformTf = ...;
-   geometry_msgs::TransformStamped transformTfGeom = tf2::toMsg(transformTf);
-   transformTfGeom.child_frame_id = ...;
-   tfb.sendTransform(transformTfGeom);
-  */
-// ROS1
-//     transformBroadcaster->sendTransform(
-//          tf2::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
+           tf::StampedTransform transformTf = ...;
+           tfb.sendTransform(transformTf);
+
+        ROS2
+           tf2::Stamped<Transform> transformTf = ...;
+           geometry_msgs::TransformStamped transformTfGeom = tf2::toMsg(transformTf);
+           transformTfGeom.child_frame_id = ...;
+           tfb.sendTransform(transformTfGeom);
+          */
+        // ROS1
+        //     transformBroadcaster->sendTransform(
+        //          tf2::StampedTransform(transform, header_.stamp, header_.frame_id, childFrameId_));
 
         geometry_msgs::msg::TransformStamped transformTfGeom;
         transformTfGeom.header.stamp = header_.stamp;
@@ -620,7 +621,7 @@ ROS2
         out.y = transform.getOrigin().getY();
         out.z = transform.getOrigin().getZ();
         transformTfGeom.transform.translation = out;
-        
+
         geometry_msgs::msg::Quaternion qt;
         qt.w = transform.getRotation().getW();
         qt.x = transform.getRotation().getX();
@@ -630,7 +631,6 @@ ROS2
 
         transformTfGeom.child_frame_id = header_.frame_id;
         transformBroadcaster.sendTransform(transformTfGeom);
-
       }
     }
 

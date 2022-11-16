@@ -29,53 +29,28 @@
 
 using namespace std::chrono_literals;
 
+#define REMOVE
+
 namespace visp_tracker
 {
-TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<rclcpp::Node> privateNh,
-                             volatile bool &exiting, unsigned queueSize)
-  : Node("TrackerClient"), exiting_(exiting), queueSize_(queueSize), nodeHandle_(nh), nodeHandlePrivate_(privateNh),
-    imageTransport_(nodeHandle_), image_(), modelPath_(), modelPathAndExt_(), modelName_(), cameraPrefix_(),
-    rectifiedImageTopic_(), cameraInfoTopic_(), trackerType_("mbt"), frameSize_(0.1), bModelPath_(), bInitPath_(),
-    cameraSubscriber_(), mutex_(),
-    /*FIXME: RECONFIGURATION
-          reconfigureSrv_(NULL),
-          reconfigureKltSrv_(NULL),
-          reconfigureEdgeSrv_(NULL),
-    */
-    movingEdge_(), kltTracker_(), cameraParameters_(), tracker_(), startFromSavedPose_(),
-    // checkInputs_(),// TODO PORT ROS2
-    resourceRetriever_()
+TrackerClient::TrackerClient() : Node("TrackerClient")
+// , queueSize_(5u), image_(), modelPath_(), modelPathAndExt_(), modelName_(), cameraPrefix_(),
+//   rectifiedImageTopic_(), cameraInfoTopic_(), trackerType_("mbt"), frameSize_(0.1), bModelPath_(), bInitPath_(),
+//   cameraSubscriber_(), mutex_(), movingEdge_(), kltTracker_(), cameraParameters_(), tracker_()
+//,
+// resourceRetriever_()
 {
-
   // checks if param_name is exist the command pass the value of param in variable but if the param
   // doesn't exist then the command pass "default" to variable
 
-  if (modelPath_ != "") {
-    nodeHandlePrivate_->declare_parameter<std::string>("model_path", modelPath_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<std::string>("model_path", visp_tracker::default_model_path);
-  }
-  if (modelName_ != "") {
-    nodeHandlePrivate_->declare_parameter<std::string>("model_name", modelName_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<std::string>("model_name", "");
-  }
-  if (startFromSavedPose_ == true) {
-    nodeHandlePrivate_->declare_parameter<bool>("start_from_saved_pose", startFromSavedPose_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<bool>("start_from_saved_pose", false);
-  }
-  if (confirmInit_ == false) {
-    nodeHandlePrivate_->declare_parameter<bool>("confirm_init", confirmInit_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<bool>("confirm_init", true);
-  }
+  modelPath_ = this->declare_parameter<std::string>("model_path", visp_tracker::default_model_path);
+  modelName_ = this->declare_parameter<std::string>("model_name", "laas-box");
+  startFromSavedPose_ = this->declare_parameter<bool>("start_from_saved_pose", false);
+  confirmInit_ = this->declare_parameter<bool>("confirm_init", true);
+  frameSize_ = this->declare_parameter<double>("frame_size", 0.2);
+  trackerType_ = this->declare_parameter<std::string>("tracker_type", "mtb");
+  cameraPrefix_ = this->declare_parameter<std::string>("camera_prefix", "/wide_left/camera");
 
-  if (trackerType_ != "") {
-    nodeHandlePrivate_->declare_parameter<std::string>("tracker_type", trackerType_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<std::string>("tracker_type", "mtb");
-  }
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
   else if (trackerType_ == "klt")
@@ -83,23 +58,16 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   else
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
-  if (frameSize_ != 0.1) {
-    nodeHandlePrivate_->declare_parameter<double>("frame_size", frameSize_);
-  } else {
-    nodeHandlePrivate_->declare_parameter<double>("frame_size", 0.1);
-  }
-
   if (modelName_.empty())
-    throw std::runtime_error("empty model\n"
+    throw std::runtime_error("Error: empty model\n"
                              "Relaunch the client while setting the model_name parameter, i.e.\n"
-                             "$ rosrun visp_tracker client _model_name:=my-model");
+                             "$ ros2 run visp_tracker visp_tracker_client model_name:=my-model");
 
-  // Compute topic and services names.
-
+    // Compute topic and services names.
+#ifndef REMOVE
   rclcpp::Rate rate(1);
   while (cameraPrefix_.empty()) {
-    if (!nodeHandle_->get_parameter("camera_prefix", cameraPrefix_) &&
-        !this->get_parameter("~camera_prefix", cameraPrefix_)) {
+    if (!this->get_parameter("camera_prefix", cameraPrefix_) && !this->get_parameter("~camera_prefix", cameraPrefix_)) {
       RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
                                       "This may mean that:\n"
                                       "- the tracker is not launched,\n"
@@ -112,6 +80,14 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
       return;
     rate.sleep();
   }
+#else
+  // TOTO CHECK IF OK. DO WE NEED A WHILE LOOP ?
+  if (cameraPrefix_.empty()) {
+    RCLCPP_INFO(this->get_logger(), "Error: Tracker is not yet initialized...\n"
+                                    "You may want to launch the client to initialize the tracker.");
+    //    return;
+  }
+#endif
   // ros1   rectifiedImageTopic_ =        ros::names::resolve(cameraPrefix_ + "/image_rect");
   // ros1   cameraInfoTopic_ =        ros::names::resolve(cameraPrefix_ + "/camera_info");
   // ros::names::resolve - Resolve a graph resource name into a fully qualified graph resource name.
@@ -121,18 +97,27 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   // ROS2 FIXME
   // rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/image_rect");
   // cameraInfoTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix_ + "/camera_info");
+  // cameraInfoTopic_ = cameraPrefix_ + "/camera_info";
+
   rectifiedImageTopic_ = cameraPrefix_ + "/image_rect";
-  cameraInfoTopic_ = cameraPrefix_ + "/camera_info";
 
   // Check for subscribed topics.
   checkInputs();
 
+  RCLCPP_INFO(this->get_logger(), "Subscribe to image and camera_info topic");
+  cameraSubscriber_ = image_transport::create_camera_subscription(
+      this, rectifiedImageTopic_,
+      std::bind(&imageCallback, std::ref(image_), std::ref(header_), std::ref(info_), std::placeholders::_1,
+                std::placeholders::_2),
+      "raw");
+
+#ifndef REMOVE
   cameraSubscriber_ = imageTransport_.subscribeCamera(
 
       rectifiedImageTopic_, queueSize_,
       std::bind(imageCallback, std::ref(image_), std::ref(header_), std::ref(info_), std::placeholders::_1,
                 std::placeholders::_2));
-
+#endif
   // Model loading.
   bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
   bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
@@ -143,44 +128,18 @@ TrackerClient::TrackerClient(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
   // Load the 3d model.
   loadModel();
 
-  /* FIXME: RECONFIGURATION
-     // Dynamic reconfigure.
-      if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
-        reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_,
-     nodeHandlePrivate_); reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f
-     = boost::bind(&reconfigureCallback, std::ref(tracker_), std::ref(image_), std::ref(movingEdge_),
-     std::ref(kltTracker_), std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
-     reconfigureSrv_->setCallback(f);
-      }
-      else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
-        reconfigureEdgeSrv_ = new
-     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
-        reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
-            boost::bind(&reconfigureEdgeCallback, std::ref(tracker_),
-                        std::ref(image_), std::ref(movingEdge_),
-                        std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
-        reconfigureEdgeSrv_->setCallback(f);
-      }
-      else{ // KLT Tracker reconfigure
-        reconfigureKltSrv_ = new
-     reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
-        reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType f =
-            boost::bind(&reconfigureKltCallback, std::ref(tracker_),
-                        std::ref(image_), std::ref(kltTracker_),
-                        std::ref(mutex_), std::placeholders::_1, std::placeholders::_2);
-        reconfigureKltSrv_->setCallback(f);
-      }
-  */
   // Wait for the image to be initialized.
   waitForImage();
   if (this->exiting())
     return;
+
   if (!image_.getWidth() || !image_.getHeight())
     throw std::runtime_error("failed to retrieve image");
 
   // Tracker initialization.
   // - Camera
   initializeVpCameraFromCameraInfo(cameraParameters_, info_);
+
   tracker_.setCameraParameters(cameraParameters_);
   tracker_.setDisplayFeatures(true);
 
@@ -209,7 +168,7 @@ void TrackerClient::checkInputs()
   //    pub_mono_  = image_transport::create_publisher(this, image_mono);
 }
 
-void TrackerClient::spin(rclcpp::Node::SharedPtr node_ptr)
+void TrackerClient::spin()
 {
   std::string fmtWindowTitle("ViSP MBT tracker initialization");
 
@@ -250,7 +209,7 @@ void TrackerClient::spin(rclcpp::Node::SharedPtr node_ptr)
           vpDisplay::displayCharString(image_, point, "tracking, click to initialize tracker", vpColor::red);
           vpDisplay::flush(image_);
 
-          rclcpp::spin_some(node_ptr);
+          rclcpp::spin_some(this->get_node_base_interface());
           loop_rate_tracking.sleep();
           if (exiting())
             return;
@@ -280,33 +239,21 @@ void TrackerClient::spin(rclcpp::Node::SharedPtr node_ptr)
   }
 }
 
-TrackerClient::~TrackerClient()
-{
-  /* FIXME: RECONFIGURATION
-  if(reconfigureSrv_ != NULL)
-    delete reconfigureSrv_;
-
-  if(reconfigureKltSrv_ != NULL)
-    delete reconfigureKltSrv_;
-
-  if(reconfigureEdgeSrv_ != NULL)
-    delete reconfigureEdgeSrv_;
-    */
-}
+TrackerClient::~TrackerClient() {}
 
 void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
 {
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr client =
-      nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::init_service);
+      this->create_client<visp_tracker::srv::Init>(visp_tracker::init_service);
 
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr clientViewer =
-      nodeHandle_->create_client<visp_tracker::srv::Init>(visp_tracker::init_viewer_service);
+      this->create_client<visp_tracker::srv::Init>(visp_tracker::init_viewer_service);
   auto srv = std::make_shared<visp_tracker::srv::Init::Request>();
 
   // Load the model and send it to the parameter server.
   std::string modelDescription = fetchResource(modelPathAndExt_);
   rclcpp::Parameter str_param(model_description_param, modelDescription);
-  nodeHandle_->set_parameter(str_param);
+  this->set_parameter(str_param);
 
   vpHomogeneousMatrixToTransform(srv->initial_pose, cMo);
 
@@ -359,7 +306,7 @@ void TrackerClient::loadModel()
       throw std::runtime_error("failed to retrieve model");
 
     tracker_.loadModel(modelPath);
-    RCLCPP_INFO(this->get_logger(), "Model has been successfully loaded.");
+    RCLCPP_INFO_STREAM(this->get_logger(), "Model " << modelPath << " has been successfully loaded.");
 
     if (trackerType_ == "mbt") {
       RCLCPP_DEBUG_STREAM(this->get_logger(), " Nb faces: " << tracker_.getFaces().getPolygon().size());
@@ -384,7 +331,7 @@ void TrackerClient::loadModel()
       // RCLCPP_DEBUG_STREAM(this->get_logger()," nline: " << tracker_.nline);
     }
   } catch (...) {
-    std::string fmt = std::string("Failed to load the model ") + bModelPath_.string() + "\n" +
+    std::string fmt = std::string("Failed to load the model: ") + bModelPath_.string() + "\n" +
                       "Do you use resource_retriever syntax?\n" +
                       "I.e. replace /my/model/path by file:///my/model/path";
     throw std::runtime_error(fmt);
@@ -393,6 +340,7 @@ void TrackerClient::loadModel()
 
 vpHomogeneousMatrix TrackerClient::loadInitialPose()
 {
+
   vpHomogeneousMatrix cMo;
   cMo.eye();
 
@@ -445,6 +393,8 @@ vpHomogeneousMatrix TrackerClient::loadInitialPose()
 
     return cMo;
   }
+
+  return cMo;
 }
 
 void TrackerClient::saveInitialPose(const vpHomogeneousMatrix &cMo)
@@ -540,7 +490,6 @@ TrackerClient::points_t TrackerClient::loadInitializationPoints()
     point.setWorldCoordinates(X, Y, Z); // (X,Y,Z)
     points.push_back(point);
   }
-
   return points;
 }
 
@@ -588,8 +537,7 @@ void TrackerClient::init()
   }
   vpDisplayX *initHelpDisplay = NULL;
 
-  std::string helpImagePath = "";
-  nodeHandlePrivate_->get_parameter<std::string>("help_image_path", helpImagePath);
+  std::string helpImagePath = this->declare_parameter<std::string>("help_image_path", "");
 
   if (helpImagePath.empty()) {
 
@@ -711,7 +659,6 @@ void TrackerClient::initPoint(unsigned &i, points_t &points, imagePoints_t &imag
 
 void TrackerClient::waitForImage()
 {
-#if 0 // TODO PORT ROS2
   rclcpp::Rate loop_rate(10);
   rclcpp::Clock clock;
   constexpr size_t LOG_THROTTLE_PERIOD = 10;
@@ -720,13 +667,13 @@ void TrackerClient::waitForImage()
     rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
-#endif
 }
 
 std::string TrackerClient::fetchResource(const std::string &s)
 {
-  resource_retriever::MemoryResource resource = resourceRetriever_.get(s);
   std::string result;
+  resource_retriever::MemoryResource resource = resourceRetriever_.get(s);
+
   result.resize(resource.size);
   unsigned i = 0;
   for (; i < resource.size; ++i)
@@ -737,18 +684,19 @@ std::string TrackerClient::fetchResource(const std::string &s)
 bool TrackerClient::makeModelFile(std::ofstream &modelStream, const std::string &resourcePath,
                                   std::string &fullModelPath)
 {
-  std::string modelExt_ = ".wrl";
-  bool vrmlWorked = true;
+  std::string modelExt_ = ".cao";
+  bool caoWorked = true;
+
   resource_retriever::MemoryResource resource;
 
   try {
     resource = resourceRetriever_.get(resourcePath + modelExt_);
   } catch (...) {
-    vrmlWorked = false;
+    caoWorked = false;
   }
 
-  if (!vrmlWorked) {
-    modelExt_ = ".cao";
+  if (!caoWorked) {
+    modelExt_ = ".wrl";
 
     try {
       resource = resourceRetriever_.get(resourcePath + modelExt_);
@@ -759,7 +707,7 @@ bool TrackerClient::makeModelFile(std::ofstream &modelStream, const std::string 
 
   modelPathAndExt_ = resourcePath + modelExt_;
 
-  // RCLCPP_WARN_STREAM(this->get_logger(),"Model file Make Client: " << resourcePath << modelExt_);
+  RCLCPP_INFO_STREAM(this->get_logger(), "Use CAD model: " << resourcePath << modelExt_);
 
   // Crash after when model not found
   std::string result;

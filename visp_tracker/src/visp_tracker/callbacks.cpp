@@ -1,35 +1,30 @@
-#include <stdexcept>
 #include <image_transport/image_transport.hpp>
 #include <sensor_msgs/msg/image.hpp>
+#include <stdexcept>
 #include <visp3/core/vpImage.h>
 
 #include <visp_tracker/srv/init.hpp>
 
-#include "visp_tracker/names.h"
-#include "visp_tracker/conversion.h"
 #include "visp_tracker/callbacks.h"
+#include "visp_tracker/conversion.h"
+#include "visp_tracker/names.h"
 
 #include <visp3/mbt/vpMbGenericTracker.h>
 
-void imageCallback_master(vpImage<unsigned char>& image,
-                   const sensor_msgs::msg::Image::ConstSharedPtr& msg,
-                   const sensor_msgs::msg::CameraInfo::ConstSharedPtr& /*info*/)
+void imageCallback_master(vpImage<unsigned char> &image, const sensor_msgs::msg::Image::ConstSharedPtr &msg,
+                          const sensor_msgs::msg::CameraInfo::ConstSharedPtr & /*info*/)
 {
-  try
-  {
+  try {
     rosImageToVisp(image, msg);
-  }
-  catch(std::exception& e)
-  {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"dropping frame: " << e.what());
+  } catch (std::exception &e) {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "dropping frame: " << e.what());
   }
 }
 
-void imageCallback(vpImage<unsigned char>& image,
-                   std_msgs::msg::Header& header,
-                   sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
-                   const sensor_msgs::msg::Image::ConstSharedPtr& msg,
-                   const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst)
+void imageCallback(vpImage<unsigned char> &image, std_msgs::msg::Header &header,
+                   sensor_msgs::msg::CameraInfo::ConstSharedPtr &info,
+                   const sensor_msgs::msg::Image::ConstSharedPtr &msg,
+                   const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst)
 {
   imageCallback_master(image, msg, info);
   header = msg->header;
@@ -121,7 +116,8 @@ void reconfigureKltCallback(vpMbGenericTracker &tracker,
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Reconfigure Model Based KLT Tracker request received.");
 
     convertModelBasedSettingsConfigToVpMbTracker<visp_tracker::ModelBasedSettingsKltConfig>(config, tracker);
-    convertModelBasedSettingsConfigToVpKltOpencv<visp_tracker::ModelBasedSettingsKltConfig>(config, kltTracker, tracker);
+    convertModelBasedSettingsConfigToVpKltOpencv<visp_tracker::ModelBasedSettingsKltConfig>(config, kltTracker,
+tracker);
 
     // Check if the image is ready to use
     if (I.getHeight() != 0 && I.getWidth() != 0) {
@@ -141,20 +137,20 @@ void reconfigureKltCallback(vpMbGenericTracker &tracker,
 /*
 void reInitViewerCommonParameters(rclcpp::Node& nh,
                                   vpMbGenericTracker &tracker)
-{  
+{
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr clientViewer =
       nh.create_client<visp_tracker::srv::Init>(visp_tracker::Reconfigure_viewer_service);
-      
+
    auto srv = std::make_shared<visp_tracker::srv::Init::Request>();
   convertVpMbTrackerToInitRequest(tracker, srv);
-  
+
   // Call service
   auto srv_request = std::make_shared<visp_tracker::srv::Init::Request>();
 
    auto result = clientViewer->async_send_request(srv_request);
    // Wait for the result.
  //  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("add_two_ints_client");
- 
+
   //   if (srv.Response.initialization_succeed)
    if (rclcpp::spin_until_future_complete(nh, result) ==
     rclcpp::FutureReturnCode::SUCCESS)  // FIX ?
