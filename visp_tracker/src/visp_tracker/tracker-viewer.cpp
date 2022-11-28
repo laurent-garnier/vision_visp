@@ -30,7 +30,7 @@ bool TrackerViewer::initCallback(const std::shared_ptr<rmw_request_id_t> /*reque
   std::ofstream modelStream;
   std::string path;
 
-  if (!makeModelFile(nodeHandle_, modelStream, path))
+  if (!makeModelFile(this->get_node_parameters_interface(), modelStream, path))
     throw std::runtime_error("failed to load the model from the callback");
   // RCLCPP_WARN_STREAM(this->get_logger(),"Make model Viewer: " << path.c_str());
   RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Model loaded from the service.");
@@ -157,7 +157,7 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     rate.sleep();
   }
 
-  if (!makeModelFile(nodeHandle_, modelStream, path))
+  if (!makeModelFile(this->get_node_parameters_interface(), modelStream, path))
     throw std::runtime_error("failed to load the model from the parameter server");
 
   RCLCPP_INFO_STREAM(this->get_logger(), "Model loaded from the parameter server.");
