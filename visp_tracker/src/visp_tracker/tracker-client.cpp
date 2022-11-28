@@ -82,11 +82,11 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
     rate.sleep();
   }
 #else
-  // TOTO CHECK IF OK. DO WE NEED A WHILE LOOP ?
+  // TOTO CHECK IF OK. DO WE NEED A WHILE LOOP ? SEE SIMILAR CODE IN tracker-mbt.cpp
   if (cameraPrefix_.empty()) {
     RCLCPP_INFO(this->get_logger(), "Error: Tracker is not yet initialized...\n"
                                     "You may want to launch the client to initialize the tracker.");
-    //    return;
+    return;
   }
 #endif
   // ros1   rectifiedImageTopic_ =        ros::names::resolve(cameraPrefix_ + "/image_rect");
@@ -244,6 +244,8 @@ TrackerClient::~TrackerClient() {}
 
 void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
 {
+  RCLCPP_INFO(this->get_logger(), "DEBUG in TrackerClient::sendcMo() ------------------");
+
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr client =
       this->create_client<visp_tracker::srv::Init>(visp_tracker::init_service);
 
@@ -268,6 +270,9 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
     convertVpKltOpencvToInitRequest(kltTracker_, tracker_, srv);
   }
 
+  auto client_result = client->async_send_request(srv);
+  auto client_viewer_result = clientViewer->async_send_request(srv);
+
   // Wait for this service to be advertised and available.
   while (!client->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
@@ -277,21 +282,19 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Initialization service not available, waiting again...");
   }
 
-  auto client_result = client->async_send_request(srv);
   if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_result) ==
       rclcpp::FutureReturnCode::SUCCESS)
     RCLCPP_INFO(this->get_logger(), "Tracker initialized with success.");
   else
-    throw std::runtime_error("failed to initialize tracker.");
+    throw std::runtime_error("Failed to initialize tracker.");
   //  } else
   //    throw std::runtime_error("failed to call service init");
 
-  auto client_viewer_result = clientViewer->async_send_request(srv);
   if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_viewer_result) ==
       rclcpp::FutureReturnCode::SUCCESS)
     RCLCPP_INFO(this->get_logger(), "Tracker Viewer initialized with success.");
   else
-    throw std::runtime_error("failed to initialize tracker viewer.");
+    throw std::runtime_error("Failed to initialize tracker viewer.");
   //  } else
   //    RCLCPP_INFO(this->get_logger(), "No Tracker Viewer node to initialize from service");
 }
