@@ -590,19 +590,15 @@ void TrackerMbt::spin()
 
 // Make sure that we have an image *and* associated calibration
 // data.
-void TrackerMbt::waitForImage()
+void TrackerMbt::waitForImage() 
 {
-#if 0 // TODO PORT ROS2
   rclcpp::Rate loop_rate(10);
   rclcpp::Clock clock;
-  constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting() && (!image_.getWidth() || !image_.getHeight()) && (!info_ || info_->k[0] == 0.)) {
-    // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,LOG_THROTTLE_PERIOD , "waiting for a rectified
-    // image...");
-    spinOnce(this);
+    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"),clock,10 , "waiting for a rectified image...");
+    rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
-#endif
 }
 
 void TrackerMbt::objectPositionHintCallback(const geometry_msgs::msg::TransformStamped::SharedPtr transform)
