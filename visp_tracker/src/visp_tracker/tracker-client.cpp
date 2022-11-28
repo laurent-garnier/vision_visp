@@ -270,9 +270,6 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
     convertVpKltOpencvToInitRequest(kltTracker_, tracker_, srv);
   }
 
-  auto client_result = client->async_send_request(srv);
-  auto client_viewer_result = clientViewer->async_send_request(srv);
-
   // Wait for this service to be advertised and available.
   while (!client->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
@@ -281,6 +278,9 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Initialization service not available, waiting again...");
   }
+
+  auto client_result = client->async_send_request(srv);
+  auto client_viewer_result = clientViewer->async_send_request(srv);
 
   if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_result) ==
       rclcpp::FutureReturnCode::SUCCESS)
