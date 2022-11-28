@@ -88,7 +88,7 @@ add_library(${PROJECT_NAME}_common
   src/${PROJECT_NAME}/names.cpp
   src/${PROJECT_NAME}/tracker-client.cpp
   src/${PROJECT_NAME}/tracker-viewer.cpp
-  src/${PROJECT_NAME}/tracker.cpp
+  src/${PROJECT_NAME}/tracker-mbt.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}_common
@@ -121,19 +121,19 @@ target_link_libraries(${PROJECT_NAME}_common
 )
 
 # #######
-# Node #
+# Node
 # #######
-add_executable(${PROJECT_NAME}_tracker
-  src/nodes/tracker.cpp
+add_executable(${PROJECT_NAME}_mbt
+  src/nodes/mbt.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_tracker
+target_link_libraries(${PROJECT_NAME}_mbt
   ${PROJECT_NAME}_common
   "${cpp_typesupport_target}"
   ${VISP_LIBRARIES}
 )
 
-ament_target_dependencies(${PROJECT_NAME}_tracker
+ament_target_dependencies(${PROJECT_NAME}_mbt
   rclcpp
   std_msgs
   sensor_msgs
@@ -180,7 +180,7 @@ install(
   TARGETS
   ${PROJECT_NAME}_viewer
   ${PROJECT_NAME}_client
-  ${PROJECT_NAME}_tracker
+  ${PROJECT_NAME}_mbt
   DESTINATION lib/${PROJECT_NAME}
 )
 

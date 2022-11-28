@@ -14,16 +14,22 @@
 
   <!-- node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client" launch-prefix="gdb -ex run - -args" -->
   <node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client">
-    <param name="model_path" value="package://visp_tracker/models" />
-    <param name="model_name" value="laas-box" />
-    <param name="tracker_type" value="mbt+klt" />
-    <param name="frame_size" value="0.2" />
+    <param name="model_path"    value="package://visp_tracker/models" />
+    <param name="model_name"    value="laas-box" />
+    <param name="tracker_type"  value="mbt+klt" />
+    <param name="frame_size"    value="0.2" />
     <param name="camera_prefix" value="/wide_left/camera" />
 
     <!-- Load recommended settings for tracking initialization. They
       will be automatically forwarded to the tracking node if the
       initialization succeed. -->
     <!-- param from="$(find-pkg-share visp_tracker)/models/laas-box/tracker.yaml" / -->
+  </node>
+
+  <!-- Launch the tracking node -->
+  <node pkg="visp_tracker" name="visp_tracker_mbt" exec="visp_tracker_mbt" >
+    <param name="camera_prefix" value="/wide_left/camera" />
+    <param name="tracker_type"  value="mbt+klt" />
   </node>
 
 </launch>

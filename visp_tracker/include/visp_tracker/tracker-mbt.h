@@ -31,12 +31,12 @@
 
 namespace visp_tracker
 {
-class Tracker : public rclcpp::Node
+class TrackerMbt : public rclcpp::Node
 {
 public:
   typedef vpImage<unsigned char> image_t;
-//  typedef std::function<bool (const std::shared_ptr<visp_tracker::srv::Init::Request>,
-//                                  const std::shared_ptr<visp_tracker::srv::Init::Response> res)>  initCallback_t;
+  //  typedef std::function<bool (const std::shared_ptr<visp_tracker::srv::Init::Request>,
+  //                                  const std::shared_ptr<visp_tracker::srv::Init::Response> res)>  initCallback_t;
   template <class ConfigType> struct reconfigureSrvStruct {
     // TODO PORT ROS2
     //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
@@ -44,9 +44,9 @@ public:
 
   enum State { WAITING_FOR_INITIALIZATION, TRACKING, LOST };
 
-  Tracker(rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, bool &exiting, unsigned queueSize = 5u);
+  TrackerMbt();
 
-  ~Tracker();
+  ~TrackerMbt();
 
   void spin();
 
@@ -64,28 +64,19 @@ protected:
   void objectPositionHintCallback(const geometry_msgs::msg::TransformStamped::SharedPtr);
 
 private:
-  bool exiting() { return exiting_ || !rclcpp::ok(); }
-
-  void spinOnce(rclcpp::Node::SharedPtr node_ptr)
-  {
-    // callbackQueue_.callAvailable(ros::WallDuration(0));
-    rclcpp::spin_some(node_ptr);
-  }
-
-  volatile bool &exiting_;
+  bool exiting() { return !rclcpp::ok(); }
 
   unsigned queueSize_;
 
-  rclcpp::Node::SharedPtr nodeHandle_;
-  rclcpp::Node::SharedPtr nodeHandlePrivate_;
-  image_transport::ImageTransport imageTransport_;
-
   State state_;
   std::string trackerType_;
+  std::string cameraPrefix_;
+  std::string childFrameId_;
+  std::string worldFrameId_;
+  bool compensateRobotMotion_;
 
   image_t image_;
 
-  std::string cameraPrefix_;
   std::string rectifiedImageTopic_;
   std::string cameraInfoTopic_;
 
@@ -117,11 +108,6 @@ private:
   tf2::TimePoint lastTrackedImage_;
 
   vpHomogeneousMatrix cMo_;
-
-  std::string worldFrameId_;
-  bool compensateRobotMotion_;
-
-  std::string childFrameId_;
 
   rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr objectPositionHintSubscriber_; // ok
   // SUB ros::Subscriber objectPositionHintSubscriber_;

@@ -35,7 +35,8 @@ std::string getInitialPoseFileFromModelName(const std::string &modelName, const 
   return std::string() + defaultPath + "/" + modelName + "/" + modelName + ".0.pos";
 }
 
-bool makeModelFile(std::shared_ptr<rclcpp::Node> node, std::ofstream &modelStream, std::string &fullModelPath)
+bool makeModelFile(std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> node, std::ofstream &modelStream,
+                   std::string &fullModelPath)
 {
   std::string modelDescription;
   rclcpp::Parameter model_description_param;
@@ -47,7 +48,7 @@ bool makeModelFile(std::shared_ptr<rclcpp::Node> node, std::ofstream &modelStrea
 
   modelDescription = visp_tracker::model_description_param;
 
-  char *tmpname = strdup("/tmp/tmpXXXXXX");
+  char *tmpname = strdup("/tmp/tmpXXXXXX"); // TODO use visp vpIoTools::makeTempDirectory()
   if (mkdtemp(tmpname) == NULL) {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to create the temporary directory: " << strerror(errno));
     return false;

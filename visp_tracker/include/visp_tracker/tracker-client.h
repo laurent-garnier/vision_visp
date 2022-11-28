@@ -43,16 +43,10 @@ public:
   typedef std::vector<vpPoint> points_t;
   typedef std::vector<vpImagePoint> imagePoints_t;
 
-  template <class ConfigType> struct reconfigureSrvStruct {
-    // FIXME: RECONFIGURATION
-    //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
-  };
-
   TrackerClient();
 
   virtual ~TrackerClient();
 
-  // void spin(rclcpp::Node::SharedPtr node_ptr);
   void spin();
 
 protected:
@@ -79,23 +73,17 @@ protected:
 private:
   bool exiting() { return !rclcpp::ok(); }
 
-  unsigned queueSize_;
-
-  std::shared_ptr<rclcpp::Node> nodeHandle_;
-  std::shared_ptr<rclcpp::Node> nodeHandlePrivate_;
-
-  // image_transport::ImageTransport imageTransport_;
+  unsigned int queueSize_;
 
   image_t image_;
 
   std::string modelPath_;
-  std::string modelPathAndExt_;
+  std::string modelPathAndExt_; // TODO REMOVE
   std::string modelName_;
 
+  std::string trackerType_;
   std::string cameraPrefix_;
   std::string rectifiedImageTopic_;
-  // std::string cameraInfoTopic_;
-  std::string trackerType_;
   double frameSize_;
 
   std::filesystem::path bModelPath_;
@@ -104,11 +92,7 @@ private:
   image_transport::CameraSubscriber cameraSubscriber_;
 
   std::recursive_mutex mutex_;
-  /* FIXME: RECONFIGURATION
-      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t *reconfigureSrv_;
-      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
-      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
-  */
+
   std_msgs::msg::Header header_;
   sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
 
@@ -119,9 +103,6 @@ private:
 
   bool startFromSavedPose_;
   bool confirmInit_;
-
-  /// \brief Helper used to check that subscribed topics exist.
-  // image_proc::AdvertisementChecker checkInputs_; // TODO PORT ROS2
 
   resource_retriever::Retriever resourceRetriever_;
 };
