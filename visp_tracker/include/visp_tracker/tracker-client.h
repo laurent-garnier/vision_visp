@@ -73,8 +73,6 @@ protected:
 private:
   bool exiting() { return !rclcpp::ok(); }
 
-  unsigned int queueSize_;
-
   image_t image_;
 
   std::string modelPath_;

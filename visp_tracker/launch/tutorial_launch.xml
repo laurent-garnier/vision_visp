@@ -10,7 +10,7 @@
 
   -->
 <launch>
-  <executable cmd="ros2 bag play /home/fspindle/poub/rosbag2/tutorial-static-box --loop"/>
+  <executable cmd="ros2 bag play /home/vagrant/ros2_ws/tutorial-static-box --loop"/>
 
   <!-- node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client" launch-prefix="gdb -ex run - -args" -->
   <node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client">
@@ -30,6 +30,20 @@
   <node pkg="visp_tracker" name="visp_tracker_mbt" exec="visp_tracker_mbt" >
     <param name="camera_prefix" value="/wide_left/camera" />
     <param name="tracker_type"  value="mbt+klt" />
+  </node>
+
+
+  <!-- Launch the viewer (GUI)
+
+       This is totally optional. When the tracker is running on a
+       remote computer, it is highly recommended to rely on
+       image_transport to stream compressed images. You can use the
+       ~image_transport parameter to do so, see the image_transport
+       package documentation for more information.
+  -->
+  <node pkg="visp_tracker" name="visp_tracker_viewer" exec="visp_tracker_viewer">
+    <param name="frame_size" value="0.2" />
+    <param name="tracker_name" value="visp_tracker_client" />
   </node>
 
 </launch>

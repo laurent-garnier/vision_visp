@@ -57,23 +57,21 @@ bool TrackerViewer::reconfigureCallback(const std::shared_ptr<rmw_request_id_t> 
   return true;
 }
 
-TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<rclcpp::Node> privateNh,
-                             volatile bool &exiting, unsigned queueSize)
-  : Node("TrackerViewer"), exiting_(exiting), queueSize_(queueSize), nodeHandle_(nh), nodeHandlePrivate_(privateNh),
-    imageTransport_(nodeHandle_), frameSize_(0.1), rectifiedImageTopic_(), cameraInfoTopic_(),
+TrackerViewer::TrackerViewer() : Node("TrackerViewer"), 
+    /*imageTransport_(nodeHandle_), */frameSize_(0.1), rectifiedImageTopic_(), cameraInfoTopic_(),
     /*checkInputs_(nodeHandle_, get_name()), */ // TODO PORT ROS2
     init_viewer_service_(), reconfigure_viewer_service_(), trackerName_(), tracker_(), cameraParameters_(), image_(),
     info_(), cMo_(std::nullopt), sites_(), imageSubscriber_(), cameraInfoSubscriber_(), trackingResultSubscriber_(),
-    movingEdgeSitesSubscriber_(), kltPointsSubscriber_(), synchronizer_(syncPolicy_t(queueSize_)), countAll_(0u),
+    movingEdgeSitesSubscriber_(), kltPointsSubscriber_(), synchronizer_(syncPolicy_t(5u)), countAll_(0u),
     countImages_(0u), countCameraInfo_(0u), countTrackingResult_(0u), countMovingEdgeSites_(0u), countKltPoints_(0u)
 {
   // Compute topic and services names.
-  std::string cameraPrefix;
+  std::string cameraPrefix = this->declare_parameter<std::string>("camera_prefix", "/wide_left/camera");
 
   rclcpp::Rate rate(1);
   while (cameraPrefix.empty()) {
     // Check for the global parameter /camera_prefix set by visp_tracker node
-    nodeHandle_->get_parameter("camera_prefix", cameraPrefix);
+    this->get_parameter("camera_prefix", cameraPrefix);
     // TODO PORT ROS2 ??
     if (cameraPrefix.empty()) {
       this->get_parameter("~camera_prefix", cameraPrefix);
@@ -93,10 +91,10 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
     rate.sleep();
   }
   if (frameSize_ != 0.1) {
-    nodeHandlePrivate_->declare_parameter<double>("frame_size", frameSize_);
+    this->declare_parameter<double>("frame_size", frameSize_);
     ;
   } else {
-    nodeHandlePrivate_->declare_parameter<double>("frame_size", 0.1);
+    this->declare_parameter<double>("frame_size", 0.1);
   }
   // ROS2 FIXME
   // rectifiedImageTopic_ = this->get_node_base_interface()->resolve_topic_name(cameraPrefix + "/image_rect");
@@ -135,11 +133,12 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   std::ofstream modelStream;
   std::string path;
+  this->declare_parameter<std::string>(visp_tracker::model_description_param,"");
 
   unsigned int cpt = 0;
-  while (nodeHandle_->get_parameter(visp_tracker::model_description_param).get_type() ==
+  while (this->get_parameter(visp_tracker::model_description_param).get_type() ==
          rclcpp::ParameterType::PARAMETER_NOT_SET) {
-    if (!nodeHandle_->get_parameter(visp_tracker::model_description_param).get_type() ==
+    if (!this->get_parameter(visp_tracker::model_description_param).get_type() ==
         rclcpp::ParameterType::PARAMETER_NOT_SET) {
       if (cpt % 10 == 0) {
         RCLCPP_WARN_STREAM(this->get_logger(),
@@ -197,10 +196,10 @@ TrackerViewer::TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<r
 
   imageSubscriber_.subscribe(this, rectifiedImageTopic_, "raw"); // ROS2 : FIXME raw ?
 
-  cameraInfoSubscriber_.subscribe(nodeHandle_, cameraInfoTopic_);
-  trackingResultSubscriber_.subscribe(nodeHandle_, visp_tracker::object_position_covariance_topic);
-  movingEdgeSitesSubscriber_.subscribe(nodeHandle_, visp_tracker::moving_edge_sites_topic);
-  kltPointsSubscriber_.subscribe(nodeHandle_, visp_tracker::klt_points_topic);
+  cameraInfoSubscriber_.subscribe(this, cameraInfoTopic_);
+  trackingResultSubscriber_.subscribe(this, visp_tracker::object_position_covariance_topic);
+  movingEdgeSitesSubscriber_.subscribe(this, visp_tracker::moving_edge_sites_topic);
+  kltPointsSubscriber_.subscribe(this, visp_tracker::klt_points_topic);
 
   synchronizer_.connectInput(imageSubscriber_, cameraInfoSubscriber_, trackingResultSubscriber_,
                              movingEdgeSitesSubscriber_, kltPointsSubscriber_);
@@ -306,9 +305,9 @@ void TrackerViewer::checkInputs()
 void TrackerViewer::loadCommonParameters()
 {
   if (trackerName_ != "") {
-    nodeHandlePrivate_->declare_parameter<std::string>("tracker_name", trackerName_);
+    this->declare_parameter<std::string>("tracker_name", trackerName_);
   } else {
-    nodeHandlePrivate_->declare_parameter<std::string>("tracker_name", "");
+    this->declare_parameter<std::string>("tracker_name", "");
   }
 
   bool loadParam = false;

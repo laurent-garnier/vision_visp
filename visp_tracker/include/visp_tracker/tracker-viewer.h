@@ -51,8 +51,7 @@ public:
       syncPolicy_t;
 
   /// \brief Constructor.
-  TrackerViewer(std::shared_ptr<rclcpp::Node> nh, std::shared_ptr<rclcpp::Node> privateNh, volatile bool &exiting,
-                unsigned queueSize = 5u);
+  TrackerViewer();
 
   /// \brief Display camera image, tracked object position and moving
   /// edge sites.
@@ -94,18 +93,13 @@ protected:
   void displayKltPoints();
 
 private:
-  bool exiting() { return exiting_ || !rclcpp::ok(); }
-
-  volatile bool &exiting_;
+  bool exiting() { return !rclcpp::ok(); }
 
   /// \brief Queue size for all subscribers.
   unsigned queueSize_;
 
-  std::shared_ptr<rclcpp::Node> nodeHandle_;
-  std::shared_ptr<rclcpp::Node> nodeHandlePrivate_;
-
   /// \brief Image transport used to receive images.
-  image_transport::ImageTransport imageTransport_;
+//  image_transport::ImageTransport imageTransport_;
 
   double frameSize_;
 
