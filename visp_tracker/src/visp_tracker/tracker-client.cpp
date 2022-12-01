@@ -282,6 +282,9 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
   auto client_viewer_result = clientViewer->async_send_request(srv);
 
 
+  auto client_result = client->async_send_request(srv);
+  auto client_viewer_result = clientViewer->async_send_request(srv);
+
   if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_result) ==
       rclcpp::FutureReturnCode::SUCCESS)
     RCLCPP_INFO(this->get_logger(), "Tracker initialized with success.");
