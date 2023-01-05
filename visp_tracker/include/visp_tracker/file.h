@@ -18,7 +18,7 @@ std::string getConfigurationFileFromModelName(const std::string &modelName, cons
 
 std::string getInitialPoseFileFromModelName(const std::string &modelName, const std::string &defaultPath);
 
-bool makeModelFile(std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> node, std::ofstream &stream,
+bool makeModelFile(std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> node, std::string, std::ofstream &stream,
                    std::string &fullModelPath);
 
 #endif //! VISP_TRACKER_FILE_HH
