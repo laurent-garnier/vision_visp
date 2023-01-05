@@ -35,18 +35,10 @@ std::string getInitialPoseFileFromModelName(const std::string &modelName, const 
   return std::string() + defaultPath + "/" + modelName + "/" + modelName + ".0.pos";
 }
 
-bool makeModelFile(std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> node, std::ofstream &modelStream,
+bool makeModelFile(std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> node, std::string modelDescription, std::ofstream &modelStream,
                    std::string &fullModelPath)
 {
-  std::string modelDescription;
-  rclcpp::Parameter model_description_param;
-  if (!node->get_parameter(visp_tracker::model_description_param, model_description_param)) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to initialize: no model is provided.");
-    return false;
-  }
   RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), " Trying to load the model from the parameter server.");
-
-  modelDescription = visp_tracker::model_description_param;
 
   char *tmpname = strdup("/tmp/tmpXXXXXX"); // TODO use visp vpIoTools::makeTempDirectory()
   if (mkdtemp(tmpname) == NULL) {
@@ -64,7 +56,7 @@ bool makeModelFile(std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterf
   } else if (modelDescription.compare(0, 2, cao_header) == 0) {
     path /= "model.cao";
   } else {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to create the temporary model file: " << path);
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get model description from: " << path << " Given model description is -" << modelDescription << "-");
     free(tmpname);
     return false;
   }
