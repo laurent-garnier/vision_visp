@@ -47,11 +47,12 @@ bool TrackerMbt::initCallback(const std::shared_ptr<rmw_request_id_t> /*request_
   }
   // BOOST_SCOPE_EXIT_END;
 
-  std::string fullModelPath;
+    std::string fullModelPath;
   std::ofstream modelStream;
+  this->declare_parameter<std::string>(visp_tracker::model_description_param, req->model_description_param);
 
   // Load model from parameter.
-  if (!makeModelFile(this->get_node_parameters_interface(), modelStream, fullModelPath))
+  if (!makeModelFile(this->get_node_parameters_interface(), req->model_description_param, modelStream, fullModelPath))
     return true;
 
   tracker_.resetTracker();
@@ -261,15 +262,6 @@ void TrackerMbt::checkInputs()
 }
 
 TrackerMbt::TrackerMbt() : Node("TrackerMbt"), queueSize_(5u)
-// rclcpp::Node::SharedPtr nh, rclcpp::Node::SharedPtr privateNh, bool &exiting, unsigned queueSize)
-//   : Node("Tracker"), exiting_(exiting), queueSize_(queueSize), nodeHandle_(nh), nodeHandlePrivate_(privateNh),
-//     imageTransport_(nodeHandle_), state_(WAITING_FOR_INITIALIZATION), image_(), cameraPrefix_(),
-//     rectifiedImageTopic_(), cameraInfoTopic_(), modelPath_(), cameraSubscriber_(), mutex_(),
-//  resultPublisher_(), transformationPublisher_(), movingEdgeSitesPublisher_(), kltPointsPublisher_(), initService_(),
-//  header_(), info_(), kltTracker_(), movingEdge_(), cameraParameters_(), lastTrackedImage_(),
-//  // checkInputs_(nodeHandle_, get_name()), // TODO PORT ROS2
-//  cMo_(), worldFrameId_(), compensateRobotMotion_(false), childFrameId_(), objectPositionHintSubscriber_(),
-//  objectPositionHint_()
 {
   // Set cMo to identity.
   cMo_.eye();
@@ -348,11 +340,6 @@ TrackerMbt::TrackerMbt() : Node("TrackerMbt"), queueSize_(5u)
       std::bind(&imageCallback, std::ref(image_), std::ref(header_), std::ref(info_), std::placeholders::_1,
                 std::placeholders::_2),
       "raw");
-
-  // cameraSubscriber_ =
-  //     imageTransport_.subscribeCamera(rectifiedImageTopic_, queueSize_,
-  //                                     std::bind(imageCallback, std::ref(image_), std::ref(header_), std::ref(info_),
-  //                                               std::placeholders::_1, std::placeholders::_2));
 
   // Object position hint subscriber.
   //  typedef boost::function<void(const geometry_msgs::msg::TransformStampedConstPtr &)> objectPositionHintCallback_t;
@@ -576,8 +563,12 @@ void TrackerMbt::spin()
         qt.y = transform.getRotation().getY();
         qt.z = transform.getRotation().getZ();
         transformTfGeom.transform.rotation = qt;
+ // FIX Error:   TF_SELF_TRANSFORM: Ignoring transform from authority "Authority undetectable" with frame_id and  child_frame_id "camera_wide_left" because they are the same
+ // [visp_tracker_mbt-3]
 
-        transformTfGeom.child_frame_id = header_.frame_id;
+//       transformTfGeom.child_frame_id = header_.frame_id;
+        transformTfGeom.child_frame_id = childFrameId_;
+        
         transformBroadcaster.sendTransform(transformTfGeom);
       }
     }
