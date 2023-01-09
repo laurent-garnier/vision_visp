@@ -34,7 +34,7 @@ using namespace std::chrono_literals;
 namespace visp_tracker
 {
 TrackerClient::TrackerClient() : Node("TrackerClient")
-// , queueSize_(5u), image_(), modelPath_(), modelPathAndExt_(), modelName_(), cameraPrefix_(),
+// , image_(), modelPath_(), modelPathAndExt_(), modelName_(), cameraPrefix_(),
 //   rectifiedImageTopic_(), cameraInfoTopic_(), trackerType_("mbt"), frameSize_(0.1), bModelPath_(), bInitPath_(),
 //   cameraSubscriber_(), mutex_(), movingEdge_(), kltTracker_(), cameraParameters_(), tracker_()
 //,
@@ -50,7 +50,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   frameSize_ = this->declare_parameter<double>("frame_size", 0.2);
   trackerType_ = this->declare_parameter<std::string>("tracker_type", "mtb");
   cameraPrefix_ = this->declare_parameter<std::string>("camera_prefix", "/wide_left/camera");
-  this->declare_parameter<std::string>(model_description_param, "");
+  this->declare_parameter<std::string>(visp_tracker::model_description_param, "");
 
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
@@ -65,7 +65,6 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
                              "$ ros2 run visp_tracker visp_tracker_client model_name:=my-model");
 
     // Compute topic and services names.
-#ifndef REMOVE
   rclcpp::Rate rate(1);
   while (cameraPrefix_.empty()) {
     if (!this->get_parameter("camera_prefix", cameraPrefix_) && !this->get_parameter("~camera_prefix", cameraPrefix_)) {
@@ -81,14 +80,6 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
       return;
     rate.sleep();
   }
-#else
-  // TOTO CHECK IF OK. DO WE NEED A WHILE LOOP ? SEE SIMILAR CODE IN tracker-mbt.cpp
-  if (cameraPrefix_.empty()) {
-    RCLCPP_INFO(this->get_logger(), "Error: Tracker is not yet initialized...\n"
-                                    "You may want to launch the client to initialize the tracker.");
-    return;
-  }
-#endif
   // ros1   rectifiedImageTopic_ =        ros::names::resolve(cameraPrefix_ + "/image_rect");
   // ros1   cameraInfoTopic_ =        ros::names::resolve(cameraPrefix_ + "/camera_info");
   // ros::names::resolve - Resolve a graph resource name into a fully qualified graph resource name.
@@ -112,13 +103,6 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
                 std::placeholders::_2),
       "raw");
 
-#ifndef REMOVE
-  cameraSubscriber_ = imageTransport_.subscribeCamera(
-
-      rectifiedImageTopic_, queueSize_,
-      std::bind(imageCallback, std::ref(image_), std::ref(header_), std::ref(info_), std::placeholders::_1,
-                std::placeholders::_2));
-#endif
   // Model loading.
   bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
   bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
@@ -252,12 +236,13 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
   rclcpp::Client<visp_tracker::srv::Init>::SharedPtr clientViewer =
       this->create_client<visp_tracker::srv::Init>(visp_tracker::init_viewer_service);
   auto srv = std::make_shared<visp_tracker::srv::Init::Request>();
-
+ 
   // Load the model and send it to the parameter server.
   std::string modelDescription = fetchResource(modelPathAndExt_);
-  rclcpp::Parameter str_param(model_description_param, modelDescription);
+  rclcpp::Parameter str_param(visp_tracker::model_description_param, modelDescription);
   this->set_parameter(str_param);
-
+  srv->model_description_param = modelDescription;
+  
   vpHomogeneousMatrixToTransform(srv->initial_pose, cMo);
 
   convertVpMbTrackerToInitRequest(tracker_, srv);
@@ -278,28 +263,40 @@ void TrackerClient::sendcMo(const vpHomogeneousMatrix &cMo)
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Initialization service not available, waiting again...");
   }
-  auto client_result = client->async_send_request(srv);
-  auto client_viewer_result = clientViewer->async_send_request(srv);
+  
 
+  bool client_initialized = false;
+  bool client_viewer_initialized = false;
 
-  auto client_result = client->async_send_request(srv);
-  auto client_viewer_result = clientViewer->async_send_request(srv);
+  while (true) {
+    auto client_result = client->async_send_request(srv);
+    auto client_viewer_result = clientViewer->async_send_request(srv);
 
-  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_result) ==
-      rclcpp::FutureReturnCode::SUCCESS)
-    RCLCPP_INFO(this->get_logger(), "Tracker initialized with success.");
-  else
-    throw std::runtime_error("Failed to initialize tracker.");
-  //  } else
-  //    throw std::runtime_error("failed to call service init");
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_result) ==
+      rclcpp::FutureReturnCode::SUCCESS) {
+      RCLCPP_INFO(this->get_logger(), "Tracker initialized with success.");
+      client_initialized =  true;
+    } else {
+      RCLCPP_INFO(this->get_logger(), "Failed to initialize tracker.");
+      throw std::runtime_error("Failed to initialize tracker.");
+    }
 
-  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_viewer_result) ==
-      rclcpp::FutureReturnCode::SUCCESS)
-    RCLCPP_INFO(this->get_logger(), "Tracker Viewer initialized with success.");
-  else
-    throw std::runtime_error("Failed to initialize tracker viewer.");
-  //  } else
-  //    RCLCPP_INFO(this->get_logger(), "No Tracker Viewer node to initialize from service");
+    if (!rclcpp::ok())
+      return;
+    rclcpp::sleep_for(std::chrono::seconds(1));
+
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), client_viewer_result) ==
+      rclcpp::FutureReturnCode::SUCCESS){
+      RCLCPP_INFO(this->get_logger(), "Tracker Viewer initialized with success.");
+      client_viewer_initialized = true;
+    } else {
+      RCLCPP_INFO(this->get_logger(), "Failed to initialize tracker viewer.");
+      throw std::runtime_error("Failed to initialize tracker viewer.");
+    }
+    if (client_initialized && client_viewer_initialized ) {
+      break;
+    }
+  }
 }
 
 void TrackerClient::loadModel()
@@ -567,7 +564,8 @@ void TrackerClient::init()
         fwrite(resource.data.get(), resource.size, 1, f);
         fclose(f);
       }
-    } catch (...) {
+    } catch (vpException &e) {
+        RCLCPP_ERROR_STREAM(this->get_logger(), "Failed to init  " << e.what());
     }
 
     RCLCPP_WARN_STREAM(this->get_logger(), "Auto detection of help file: " << helpImagePath);
