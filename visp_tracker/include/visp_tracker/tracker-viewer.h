@@ -79,7 +79,7 @@ protected:
                            std::shared_ptr<visp_tracker::srv::Init::Response>res);
 
   /// \brief Callback used to received synchronized data.
-  void callback(const sensor_msgs::msg::Image::ConstSharedPtr &imageConst,
+  void viewerCallback(const sensor_msgs::msg::Image::ConstSharedPtr &imageConst,
                 const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst,
                 const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr &trackingResult,
                 const visp_tracker::msg::MovingEdgeSites::ConstSharedPtr &sitesConst,
@@ -110,6 +110,8 @@ private:
   std::string rectifiedImageTopic_;
   /// \brief Full topic name for camera information.
   std::string cameraInfoTopic_;
+
+  image_transport::CameraSubscriber cameraSubscriber_;
 
   /// \}
 
@@ -160,6 +162,7 @@ private:
 
   /// \name Synchronization check
   /// \{
+  rclcpp::TimerBase::SharedPtr timer_;
   unsigned countAll_;
   unsigned countImages_;
   unsigned countCameraInfo_;
