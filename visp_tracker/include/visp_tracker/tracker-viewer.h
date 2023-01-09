@@ -111,8 +111,6 @@ private:
   /// \brief Full topic name for camera information.
   std::string cameraInfoTopic_;
 
-  image_transport::CameraSubscriber cameraSubscriber_;
-
   /// \}
 
   /// \brief Service called when user ends tracker_client node
