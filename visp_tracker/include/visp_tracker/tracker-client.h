@@ -16,11 +16,6 @@
 
 #include <resource_retriever/retriever.hpp>
 
-//#include <visp_tracker/msg/model_based_settings_config.hpp>
-//#include <visp_tracker/ModelBasedSettingsKltConfig.h>
-//#include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
-//#include <visp_tracker/MovingEdgeSites.h>
-
 #include <visp3/core/vpCameraParameters.h>
 #include <visp3/core/vpHomogeneousMatrix.h>
 #include <visp3/core/vpImage.h>

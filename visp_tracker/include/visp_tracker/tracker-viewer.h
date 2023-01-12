@@ -35,21 +35,6 @@ public:
   /// \brief ViSP image type
   typedef vpImage<unsigned char> image_t;
 
-//  typedef std::function<bool (const std::shared_ptr<visp_tracker::srv::Init::Request>,
-//                                  const std::shared_ptr<visp_tracker::srv::Init::Response> res)>  initCallback_t;
-
-  /// \brief Synchronization policy
-  ///
-  /// This is used to make sure that the image, the object position
-  /// and the moving edge sites are synchronized. This may not be the
-  /// case as these informations are published on different topics.
-  /// The approximate time allows light differences in timestamps
-  /// which are not critical as this is only a viewer.
-  typedef message_filters::sync_policies::ApproximateTime<
-      sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo, geometry_msgs::msg::PoseWithCovarianceStamped,
-      visp_tracker::msg::MovingEdgeSites, visp_tracker::msg::KltPoints>
-      syncPolicy_t;
-
   /// \brief Constructor.
   TrackerViewer();
 
@@ -72,18 +57,18 @@ protected:
 
   bool initCallback(const std::shared_ptr<rmw_request_id_t> request_header,
                     const std::shared_ptr<visp_tracker::srv::Init::Request> req,
-                    std::shared_ptr<visp_tracker::srv::Init::Response>res);
+                    std::shared_ptr<visp_tracker::srv::Init::Response> res);
 
-  bool reconfigureCallback(const std::shared_ptr<rmw_request_id_t> request_header,
-                           const std::shared_ptr<visp_tracker::srv::Init::Request> req,
-                           std::shared_ptr<visp_tracker::srv::Init::Response>res);
+  // bool reconfigureCallback(const std::shared_ptr<rmw_request_id_t> request_header,
+  //                          const std::shared_ptr<visp_tracker::srv::Init::Request> req,
+  //                          std::shared_ptr<visp_tracker::srv::Init::Response> res);
 
   /// \brief Callback used to received synchronized data.
   void viewerCallback(const sensor_msgs::msg::Image::ConstSharedPtr &imageConst,
-                const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst,
-                const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr &trackingResult,
-                const visp_tracker::msg::MovingEdgeSites::ConstSharedPtr &sitesConst,
-                const visp_tracker::msg::KltPoints::ConstSharedPtr &kltConst);
+                      const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst,
+                      const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr &trackingResult,
+                      const visp_tracker::msg::MovingEdgeSites::ConstSharedPtr &sitesConst,
+                      const visp_tracker::msg::KltPoints::ConstSharedPtr &kltConst);
 
   void timerCallback();
 
@@ -99,19 +84,16 @@ private:
   unsigned queueSize_;
 
   /// \brief Image transport used to receive images.
-//  image_transport::ImageTransport imageTransport_;
+  //  image_transport::ImageTransport imageTransport_;
 
   double frameSize_;
 
   /// \name Topics and services strings.
   /// \{
-
   /// \brief Full topic name for rectified image.
   std::string rectifiedImageTopic_;
   /// \brief Full topic name for camera information.
   std::string cameraInfoTopic_;
-
-  /// \}
 
   /// \brief Service called when user ends tracker_client node
   rclcpp::Service<visp_tracker::srv::Init>::SharedPtr init_viewer_service_;
@@ -120,7 +102,7 @@ private:
   rclcpp::Service<visp_tracker::srv::Init>::SharedPtr reconfigure_viewer_service_;
 
   /// \brief Name of the tracker used in this viewer node
-  std::string trackerName_;
+  // std::string trackerName_;
 
   /// \brief Model path.
   std::filesystem::path modelPath_;
@@ -140,7 +122,8 @@ private:
   visp_tracker::msg::MovingEdgeSites::ConstSharedPtr sites_;
   /// \brief Shared pointer to latest received KLT point positions.
   visp_tracker::msg::KltPoints::ConstSharedPtr klt_;
-
+  /// \}
+  
   /// \name Subscribers and synchronizer.
   /// \{
   /// \brief Subscriber to image topic.
@@ -153,13 +136,26 @@ private:
   message_filters::Subscriber<visp_tracker::msg::MovingEdgeSites> movingEdgeSitesSubscriber_;
   /// \brief Subscriber to KLT point topics.
   message_filters::Subscriber<visp_tracker::msg::KltPoints> kltPointsSubscriber_;
+  ///}
 
-  /// \brief Synchronizer with approximate time policy.
-  message_filters::Synchronizer<syncPolicy_t> synchronizer_;
+  /// \brief Synchronization policy
+  //
+  /// This is used to make sure that the image, the object position
+  /// and the moving edge sites are synchronized. This may not be the
+  /// case as these informations are published on different topics.
+  /// The approximate time allows light differences in timestamps
+  /// which are not critical as this is only a viewer.
+  /// \{
+  using SyncPolicy =
+      message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo,
+                                                      geometry_msgs::msg::PoseWithCovarianceStamped,
+                                                      visp_tracker::msg::MovingEdgeSites, visp_tracker::msg::KltPoints>;
+
+  using Synchronizer = message_filters::Synchronizer<SyncPolicy>;
+  std::shared_ptr<Synchronizer> synchronizer_;
   ///}
 
   /// \name Synchronization check
-  /// \{
   rclcpp::TimerBase::SharedPtr timer_;
   unsigned countAll_;
   unsigned countImages_;
@@ -167,8 +163,6 @@ private:
   unsigned countTrackingResult_;
   unsigned countMovingEdgeSites_;
   unsigned countKltPoints_;
-  ///}
-
 };
 } // end of namespace visp_tracker
 

@@ -1,12 +1,12 @@
 #ifndef VISP_TRACKER_CONVERSION_HH
-# define VISP_TRACKER_CONVERSION_HH
+#define VISP_TRACKER_CONVERSION_HH
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <geometry_msgs/msg/transform.h>
 #include <geometry_msgs/msg/pose.hpp>
-#include <sensor_msgs/msg/image.hpp>
+#include <geometry_msgs/msg/transform.h>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
 #include <tf2/transform_datatypes.h>
 
 #include <visp_tracker/srv/init.hpp>
@@ -14,10 +14,10 @@
 #include <visp3/core/vpConfig.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
 
-#include <visp3/core/vpHomogeneousMatrix.h>
 #include <visp3/core/vpCameraParameters.h>
-#include <visp3/me/vpMe.h>
+#include <visp3/core/vpHomogeneousMatrix.h>
 #include <visp3/klt/vpKltOpencv.h>
+#include <visp3/me/vpMe.h>
 
 /// \brief Convert a ROS image into a ViSP one.
 ///
@@ -29,8 +29,7 @@
 ///
 /// \param dst ViSP destination image
 /// \param src ROS source image
-void rosImageToVisp(vpImage<unsigned char>& dst,
-                    const sensor_msgs::msg::Image::ConstSharedPtr& src);
+void rosImageToVisp(vpImage<unsigned char> &dst, const sensor_msgs::msg::Image::ConstSharedPtr &src);
 
 /// \brief Convert a ViSP image into a ROS one.
 ///
@@ -42,24 +41,21 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 ///
 /// \param dst ROS destination image
 /// \param src ViSP source image
-void vispImageToRos(sensor_msgs::msg::Image& dst,
-                    const vpImage<unsigned char>& src);
+void vispImageToRos(sensor_msgs::msg::Image &dst, const vpImage<unsigned char> &src);
 
 std::string convertVpMbTrackerToRosMessage(const vpMbGenericTracker &tracker);
 
-std::string convertVpMeToRosMessage(const vpMbGenericTracker &tracker, const vpMe& moving_edge);
+std::string convertVpMeToRosMessage(const vpMbGenericTracker &tracker, const vpMe &moving_edge);
 
-std::string convertVpKltOpencvToRosMessage(const vpMbGenericTracker &tracker, const vpKltOpencv& klt);
+std::string convertVpKltOpencvToRosMessage(const vpMbGenericTracker &tracker, const vpKltOpencv &klt);
 
-void vpHomogeneousMatrixToTransform(geometry_msgs::msg::Transform& dst,
-                                    const vpHomogeneousMatrix& src);
+void vpHomogeneousMatrixToTransform(geometry_msgs::msg::Transform &dst, const vpHomogeneousMatrix &src);
 
-void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const geometry_msgs::msg::Transform& src);
+void transformToVpHomogeneousMatrix(vpHomogeneousMatrix &dst, const geometry_msgs::msg::Transform &src);
 
+void transformToVpHomogeneousMatrix(vpHomogeneousMatrix &dst, const geometry_msgs::msg::Pose &src);
 
-void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const geometry_msgs::msg::Pose& src);
+// void transformToVpHomogeneousMatrix(vpHomogeneousMatrix &dst, const tf2::Transform &src);
 
 void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
                                      std::shared_ptr<visp_tracker::srv::Init::Request> srv);
@@ -67,66 +63,56 @@ void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
 void convertInitRequestToVpMbTracker(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
                                      vpMbGenericTracker &tracker);
 
-void convertVpMeToInitRequest(const vpMe& moving_edge,
-                              const vpMbGenericTracker &tracker,
+void convertVpMeToInitRequest(const vpMe &moving_edge, const vpMbGenericTracker &tracker,
                               std::shared_ptr<visp_tracker::srv::Init::Request> srv);
 
-void convertInitRequestToVpMe(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
-                              vpMbGenericTracker &tracker,
-                              vpMe& moving_edge);
+void convertInitRequestToVpMe(const std::shared_ptr<visp_tracker::srv::Init::Request> req, vpMbGenericTracker &tracker,
+                              vpMe &moving_edge);
 
-void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
-                                     const vpMbGenericTracker &tracker,
+void convertVpKltOpencvToInitRequest(const vpKltOpencv &klt, const vpMbGenericTracker &tracker,
                                      std::shared_ptr<visp_tracker::srv::Init::Request> srv);
 
 void convertInitRequestToVpKltOpencv(const std::shared_ptr<visp_tracker::srv::Init::Request> req,
-                                     vpMbGenericTracker &tracker,
-                                     vpKltOpencv& klt);
+                                     vpMbGenericTracker &tracker, vpKltOpencv &klt);
 
-void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
-                                      sensor_msgs::msg::CameraInfo::ConstSharedPtr info);
+void initializeVpCameraFromCameraInfo(vpCameraParameters &cam, sensor_msgs::msg::CameraInfo::ConstSharedPtr info);
 
 // Dynamic reconfigure template functions
-template<class ConfigType>
-void convertModelBasedSettingsConfigToVpMbTracker(const ConfigType& config,
-                                                  vpMbGenericTracker &tracker)
+template <class ConfigType>
+void convertModelBasedSettingsConfigToVpMbTracker(const ConfigType &config, vpMbGenericTracker &tracker)
 {
   tracker.setAngleAppear(vpMath::rad(config.angle_appear));
   tracker.setAngleDisappear(vpMath::rad(config.angle_disappear));
 }
 
-template<class ConfigType>
-void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbGenericTracker &tracker,
-                                                  ConfigType& config)
+template <class ConfigType>
+void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbGenericTracker &tracker, ConfigType &config)
 {
   config.angle_appear = vpMath::deg(tracker.getAngleAppear());
   config.angle_disappear = vpMath::deg(tracker.getAngleDisappear());
 }
 
-template<class ConfigType>
-void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
-                                           vpMe& moving_edge,
-                                           vpMbGenericTracker &tracker)
+template <class ConfigType>
+void convertModelBasedSettingsConfigToVpMe(const ConfigType &config, vpMe &moving_edge, vpMbGenericTracker &tracker)
 {
   tracker.setGoodMovingEdgesRatioThreshold(config.first_threshold);
-  moving_edge.setThreshold( config.threshold );
-  moving_edge.setMaskSize( config.mask_size );
-  moving_edge.setRange( config.range );
-  moving_edge.setMu1( config.mu1 );
-  moving_edge.setMu2( config.mu2 );
-  moving_edge.setSampleStep( config.sample_step );
-  moving_edge.setStrip( config.strip );
+  moving_edge.setThreshold(config.threshold);
+  moving_edge.setMaskSize(config.mask_size);
+  moving_edge.setRange(config.range);
+  moving_edge.setMu1(config.mu1);
+  moving_edge.setMu2(config.mu2);
+  moving_edge.setSampleStep(config.sample_step);
+  moving_edge.setStrip(config.strip);
 
-  //FIXME: not sure if this is needed.
+  // FIXME: not sure if this is needed.
   moving_edge.initMask();
-  //Reset the tracker and the node state.
+  // Reset the tracker and the node state.
   tracker.setMovingEdge(moving_edge);
 }
 
-template<class ConfigType>
-void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
-                                           const vpMbGenericTracker &tracker,
-                                           ConfigType& config)
+template <class ConfigType>
+void convertVpMeToModelBasedSettingsConfig(const vpMe &moving_edge, const vpMbGenericTracker &tracker,
+                                           ConfigType &config)
 {
   config.first_threshold = tracker.getGoodMovingEdgesRatioThreshold();
   config.threshold = moving_edge.getThreshold();
@@ -138,9 +124,8 @@ void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
   config.strip = moving_edge.getStrip();
 }
 
-template<class ConfigType>
-void convertModelBasedSettingsConfigToVpKltOpencv(const ConfigType& config,
-                                                  vpKltOpencv& klt,
+template <class ConfigType>
+void convertModelBasedSettingsConfigToVpKltOpencv(const ConfigType &config, vpKltOpencv &klt,
                                                   vpMbGenericTracker &tracker)
 {
   klt.setMaxFeatures(config.max_features);
@@ -155,10 +140,9 @@ void convertModelBasedSettingsConfigToVpKltOpencv(const ConfigType& config,
   tracker.setKltOpencv(klt);
 }
 
-template<class ConfigType>
-void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
-                                                  const vpMbGenericTracker &tracker,
-                                                  ConfigType& config)
+template <class ConfigType>
+void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv &klt, const vpMbGenericTracker &tracker,
+                                                  ConfigType &config)
 {
   config.max_features = klt.getMaxFeatures();
   config.window_size = klt.getWindowSize();

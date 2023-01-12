@@ -35,13 +35,6 @@ class TrackerMbt : public rclcpp::Node
 {
 public:
   typedef vpImage<unsigned char> image_t;
-  //  typedef std::function<bool (const std::shared_ptr<visp_tracker::srv::Init::Request>,
-  //                                  const std::shared_ptr<visp_tracker::srv::Init::Response> res)>  initCallback_t;
-  template <class ConfigType> struct reconfigureSrvStruct {
-    // TODO PORT ROS2
-    //      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
-  };
-
   enum State { WAITING_FOR_INITIALIZATION, TRACKING, LOST };
 
   TrackerMbt();
@@ -55,8 +48,8 @@ protected:
                     const std::shared_ptr<visp_tracker::srv::Init::Request> req,
                     std::shared_ptr<visp_tracker::srv::Init::Response> res);
 
-  void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites sites);
-  void updateKltPoints(visp_tracker::msg::KltPoints klt);
+  void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites &sites);
+  void updateKltPoints(visp_tracker::msg::KltPoints &klt);
 
   void checkInputs();
   void waitForImage();
@@ -86,11 +79,6 @@ private:
 
   std::recursive_mutex mutex_;
 
-  /* FIXME: RECONFIGURATION
-      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t *reconfigureSrv_;
-      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
-      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
-  */
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr resultPublisher_;
   rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transformationPublisher_;
   rclcpp::Publisher<visp_tracker::msg::MovingEdgeSites>::SharedPtr movingEdgeSitesPublisher_;
@@ -110,7 +98,6 @@ private:
   vpHomogeneousMatrix cMo_;
 
   rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr objectPositionHintSubscriber_; // ok
-  // SUB ros::Subscriber objectPositionHintSubscriber_;
   geometry_msgs::msg::TransformStamped objectPositionHint_;
 };
 } // end of namespace visp_tracker.
