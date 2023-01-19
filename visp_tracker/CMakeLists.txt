@@ -189,6 +189,42 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}
 )
 
+#############
+# Bag files #
+#############
+
+include(ExternalProject)
+ExternalProject_Add(
+    externals
+    PREFIX "externals"
+    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box.bag
+    DOWNLOAD_NO_EXTRACT true
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+)
+
+ExternalProject_Get_Property(externals DOWNLOADED_FILE)
+message("Successfully download ${DOWNLOADED_FILE}")
+
+set(MAKE_CMD "rosbags-convert")
+set(MAKE_ARGS "tutorial-static-box.bag")
+execute_process(COMMAND ${MAKE_CMD} ${MAKE_ARGS}
+                WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/externals/src"
+                RESULT_VARIABLE CMD_STATUS
+                OUTPUT_FILE CMD_OUTPUT)
+
+if(STATUS AND NOT CMD_STATUS EQUAL 0)
+    message("Failed to convert bagfile : ${CMD_STATUS}")
+else()
+    message("Successfully convert bagfile")
+endif()
+
+install(DIRECTORY
+  launch models ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box
+  DESTINATION share/${PROJECT_NAME}
+)
+
 ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()

@@ -10,7 +10,7 @@
 
   -->
 <launch>
-  <executable cmd="ros2 bag play /home/vagrant/ros2_ws/tutorial-static-box --loop"/>
+  <executable cmd="ros2 bag play install/visp_tracker/share/visp_tracker/externals/src/tutorial-static-box --loop"/>
 
   <!-- node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client" launch-prefix="gdb -ex run - -args" -->
   <node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client">
