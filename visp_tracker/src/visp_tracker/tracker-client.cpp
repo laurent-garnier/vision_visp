@@ -176,7 +176,7 @@ void TrackerClient::spin()
           tracker_.display(image_, cMo, cameraParameters_, vpColor::red, 2);
           vpDisplay::displayFrame(image_, cMo, cameraParameters_, frameSize_, vpColor::none, 2);
           mutex_.unlock();
-          vpDisplay::displayCharString(image_, point, "tracking, click to initialize tracker", vpColor::red);
+          vpDisplay::displayText(image_, point, std::string("tracking, click to initialize tracker"), vpColor::red);
           vpDisplay::flush(image_);
 
           rclcpp::spin_some(this->get_node_base_interface());
@@ -485,7 +485,7 @@ bool TrackerClient::validatePose(const vpHomogeneousMatrix &cMo)
   tracker_.setDisplayFeatures(false);
   tracker_.display(image_, cMo, cameraParameters_, vpColor::green);
   vpDisplay::displayFrame(image_, cMo, cameraParameters_, frameSize_, vpColor::none, 2);
-  vpDisplay::displayCharString(image_, 15, 10, "Left click to validate, right click to modify initial pose",
+  vpDisplay::displayText(image_, 15, 10, std::string("Left click to validate, right click to modify initial pose"),
                                vpColor::red);
   vpDisplay::flush(image_);
   tracker_.setDisplayFeatures(true);
@@ -623,7 +623,7 @@ void TrackerClient::initPoint(unsigned &i, points_t &points, imagePoints_t &imag
   vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
   do {
     vpDisplay::display(image_);
-    vpDisplay::displayCharString(image_, 15, 10, fmt.c_str(), vpColor::red);
+    vpDisplay::displayText(image_, 15, 10, fmt.c_str(), vpColor::red);
 
     for (unsigned j = 0; j < imagePoints.size(); ++j)
       vpDisplay::displayCross(image_, imagePoints[j], 5, vpColor::green);
