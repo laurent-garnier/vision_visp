@@ -49,7 +49,7 @@ bool TrackerViewer::initCallback(const std::shared_ptr<rmw_request_id_t> /*reque
 }
 
 TrackerViewer::TrackerViewer()
-  : Node("TrackerViewer"), frameSize_(0.1), rectifiedImageTopic_(), cameraInfoTopic_(), tracker_(), cameraParameters_(),
+  : Node("TrackerViewer"), queueSize_(5u), frameSize_(0.1), rectifiedImageTopic_(), cameraInfoTopic_(), tracker_(), cameraParameters_(),
     image_(), info_(), cMo_(std::nullopt), sites_(), imageSubscriber_(), cameraInfoSubscriber_(),
     trackingResultSubscriber_(), movingEdgeSitesSubscriber_(), kltPointsSubscriber_(), countAll_(0u), countImages_(0u),
     countCameraInfo_(0u), countTrackingResult_(0u), countMovingEdgeSites_(0u), countKltPoints_(0u)
@@ -111,7 +111,7 @@ TrackerViewer::TrackerViewer()
   kltPointsSubscriber_.subscribe(this, visp_tracker::klt_points_topic);
 
   synchronizer_ =
-      std::make_shared<Synchronizer>(SyncPolicy(5u), imageSubscriber_, cameraInfoSubscriber_, trackingResultSubscriber_,
+      std::make_shared<Synchronizer>(SyncPolicy(queueSize_), imageSubscriber_, cameraInfoSubscriber_, trackingResultSubscriber_,
                                      movingEdgeSitesSubscriber_, kltPointsSubscriber_);
   synchronizer_->registerCallback(std::bind(&TrackerViewer::viewerCallback, this, std::placeholders::_1,
                                             std::placeholders::_2, std::placeholders::_3, std::placeholders::_4,
