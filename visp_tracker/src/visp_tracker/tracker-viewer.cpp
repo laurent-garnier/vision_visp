@@ -61,7 +61,6 @@ TrackerViewer::TrackerViewer()
   while (cameraPrefix.empty()) {
     // Check for the global parameter /camera_prefix set by visp_tracker node
     this->get_parameter("camera_prefix", cameraPrefix);
-    // TODO PORT ROS2 ??
     if (cameraPrefix.empty()) {
       this->get_parameter("~camera_prefix", cameraPrefix);
       if (cameraPrefix.empty()) {

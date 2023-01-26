@@ -71,7 +71,7 @@ private:
   image_t image_;
 
   std::string modelPath_;
-  std::string modelPathAndExt_; // TODO REMOVE
+  std::string modelPathAndExt_;
   std::string modelName_;
 
   std::string trackerType_;
