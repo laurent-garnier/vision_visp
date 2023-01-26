@@ -98,10 +98,6 @@ TrackerViewer::TrackerViewer()
   if (this->exiting())
     return;
 
-  checkInputs();
-  if (this->exiting())
-    return;
-
   imageSubscriber_.subscribe(this, rectifiedImageTopic_, "raw"); // ROS2 : FIXME raw ?
 
   cameraInfoSubscriber_.subscribe(this, cameraInfoTopic_);
@@ -193,18 +189,6 @@ void TrackerViewer::waitForImage()
     rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
-}
-
-void TrackerViewer::checkInputs()
-{
-  // TODO PORT ROS2
-  // ros::V_string topics;
-  // topics.push_back(rectifiedImageTopic_);
-  // topics.push_back(cameraInfoTopic_);
-  // topics.push_back(visp_tracker::object_position_topic);
-  // topics.push_back(visp_tracker::moving_edge_sites_topic);
-  // topics.push_back(visp_tracker::klt_points_topic);
-  // checkInputs_.start(topics, 60.0);
 }
 
 void TrackerViewer::loadCommonParameters()

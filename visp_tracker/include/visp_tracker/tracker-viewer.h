@@ -49,9 +49,6 @@ protected:
   /// \brief Initialize the common parameters (visibility angles, etc)
   void loadCommonParameters();
 
-  /// \brief Make sure the topics we subscribe already exist.
-  void checkInputs();
-
   /// \brief Hang until the first image is received.
   void waitForImage();
 

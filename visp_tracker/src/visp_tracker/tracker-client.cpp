@@ -78,9 +78,6 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
 
   rectifiedImageTopic_ = cameraPrefix_ + "/image_rect";
 
-  // Check for subscribed topics.
-  checkInputs();
-
   RCLCPP_INFO(this->get_logger(), "Subscribe to image and camera_info topic");
   cameraSubscriber_ = image_transport::create_camera_subscription(
       this, rectifiedImageTopic_,
@@ -125,17 +122,6 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
 
   // Display camera parameters and moving edges settings.
   RCLCPP_INFO_STREAM(this->get_logger(), cameraParameters_);
-}
-
-void TrackerClient::checkInputs()
-{
-  // TODO PORT ROS2
-  // ros::V_string topics;
-  // topics.push_back(rectifiedImageTopic_);
-  // topics.push_back(cameraInfoTopic_);
-  // checkInputs_.start(topics, 60.0);
-  // get_topic_names_and_types
-  //    pub_mono_  = image_transport::create_publisher(this, image_mono);
 }
 
 void TrackerClient::spin()
