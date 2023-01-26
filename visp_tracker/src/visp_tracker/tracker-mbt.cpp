@@ -219,13 +219,6 @@ void TrackerMbt::updateKltPoints(visp_tracker::msg::KltPoints &klt)
 #endif
 }
 
-void TrackerMbt::checkInputs()
-{
-  // ros::V_string topics;
-  // topics.push_back(rectifiedImageTopic_);
-  // checkInputs_.start(topics, 60.0); // TODO PORT ROS2
-}
-
 TrackerMbt::TrackerMbt() : Node("TrackerMbt"), queueSize_(5u)
 {
   // Set cMo to identity.
@@ -267,9 +260,6 @@ TrackerMbt::TrackerMbt() : Node("TrackerMbt"), queueSize_(5u)
   childFrameId_ = this->declare_parameter<std::string>("frame_id", "object_position");
   worldFrameId_ = this->declare_parameter<std::string>("world_frame_id", "/odom");
   compensateRobotMotion_ = this->declare_parameter<bool>("compensate_robot_motion", false);
-
-  // Check for subscribed topics.
-  checkInputs();
 
   // Result publisher.
   resultPublisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(

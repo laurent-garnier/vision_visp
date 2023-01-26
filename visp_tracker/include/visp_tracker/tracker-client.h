@@ -45,9 +45,6 @@ public:
   void spin();
 
 protected:
-  /// \brief Make sure the topics we subscribe already exist.
-  void checkInputs();
-
   void loadModel();
 
   bool validatePose(const vpHomogeneousMatrix &cMo);

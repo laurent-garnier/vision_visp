@@ -51,7 +51,6 @@ protected:
   void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites &sites);
   void updateKltPoints(visp_tracker::msg::KltPoints &klt);
 
-  void checkInputs();
   void waitForImage();
 
   void objectPositionHintCallback(const geometry_msgs::msg::TransformStamped::SharedPtr);
