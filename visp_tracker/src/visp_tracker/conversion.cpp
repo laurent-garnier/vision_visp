@@ -160,21 +160,6 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
   dst[2][3] = src.position.z;
 }
 
-void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-                                    const tf2::Transform& src)
-{
-  // Copy the rotation component.
-  for(unsigned i = 0; i < 3; ++i)
-    for(unsigned j = 0; j < 3; ++j)
-    // FIX TODO
-      dst[i][j] = src.getBasis ()[i][j];
-
-  // Copy the translation component.
-  for (unsigned i = 0; i < 3; ++i)
-    dst[i][3] = src.getOrigin ()[i];
-  dst[3][3] = 1.;
-}
-
 void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
                                      std::shared_ptr<visp_tracker::srv::Init::Request> srv)
 { 

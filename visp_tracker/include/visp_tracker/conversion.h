@@ -55,7 +55,6 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix &dst, const geometry_msg
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix &dst, const geometry_msgs::msg::Pose &src);
 
-// void transformToVpHomogeneousMatrix(vpHomogeneousMatrix &dst, const tf2::Transform &src);
 
 void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
                                      std::shared_ptr<visp_tracker::srv::Init::Request> srv);
