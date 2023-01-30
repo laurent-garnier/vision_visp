@@ -203,7 +203,7 @@ void TrackerViewer::loadCommonParameters()
       RCLCPP_INFO(this->get_logger(), "visp_tracker_mbt parameters not available, waiting again...");
     }
     auto parameters = parameters_client->get_parameters({"angle_appear", "angle_disappear"});
-    std::stringstream ss;
+    // std::stringstream ss;
     // Get a few of the parameters just set.
     for (auto &parameter : parameters) {
       // ss << "\nParameter name: " << parameter.get_name();
