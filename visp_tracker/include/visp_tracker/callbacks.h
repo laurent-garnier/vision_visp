@@ -1,5 +1,5 @@
 #ifndef VISP_TRACKER_CALLBACKS_HH
-# define VISP_TRACKER_CALLBACKS_HH
+#define VISP_TRACKER_CALLBACKS_HH
 #include <image_transport/image_transport.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>

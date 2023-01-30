@@ -77,6 +77,7 @@ void convertInitRequestToVpKltOpencv(const std::shared_ptr<visp_tracker::srv::In
 void initializeVpCameraFromCameraInfo(vpCameraParameters &cam, sensor_msgs::msg::CameraInfo::ConstSharedPtr info);
 
 // Dynamic reconfigure template functions
+/*
 template <class ConfigType>
 void convertModelBasedSettingsConfigToVpMbTracker(const ConfigType &config, vpMbGenericTracker &tracker)
 {
@@ -152,5 +153,5 @@ void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv &klt, const 
   config.pyramid_lvl = klt.getPyramidLevels();
   config.mask_border = tracker.getKltMaskBorder();
 }
-
+*/
 #endif //! VISP_TRACKER_CONVERSION_HH
