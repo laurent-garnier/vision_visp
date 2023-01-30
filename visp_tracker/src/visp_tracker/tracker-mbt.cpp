@@ -53,6 +53,12 @@ bool TrackerMbt::initCallback(const std::shared_ptr<rmw_request_id_t> /*request_
   // Common parameters
   convertInitRequestToVpMbTracker(req, tracker_);
 
+  //  Replace default tracker parameters by default mbt
+  tracker_.setAngleAppear(
+      vpMath::rad(this->get_parameter("angle_appear").as_double()));
+  tracker_.setAngleDisappear(
+      vpMath::rad(this->get_parameter("angle_disappear").as_double()));
+ 
   if (trackerType_ != "klt") { // for mbt and hybrid
     convertInitRequestToVpMe(req, tracker_, movingEdge_);
   }

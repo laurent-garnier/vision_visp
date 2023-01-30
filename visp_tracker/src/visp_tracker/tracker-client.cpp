@@ -95,6 +95,30 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   // Load the 3d model.
   loadModel();
 
+  // set all parameters
+
+  auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt");
+  while (!parameters_client->wait_for_service(1s)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the visp_tracker_mbt parameters. Exiting.");
+      rclcpp::shutdown();
+    }
+    RCLCPP_INFO(this->get_logger(), "visp_tracker_mbt parameters not available, waiting again...");
+  }
+ auto parameters = parameters_client->get_parameters({"angle_appear", "angle_disappear"});
+  // Get a few of the parameters just set.
+  for (auto &parameter : parameters) {
+    if (parameter.get_name() == "angle_appear") {
+      tracker_.setAngleAppear(vpMath::rad(parameter.as_double()));
+      RCLCPP_WARN_STREAM(this->get_logger(), "Angle appear viewer: " << parameter.value_to_string());
+    } else if (parameter.get_name() == "angle_disappear") {
+      RCLCPP_WARN_STREAM(this->get_logger(), "Angle disappear viewer: " << parameter.value_to_string());
+      tracker_.setAngleDisappear(vpMath::rad(parameter.as_double()));
+    }
+  }
+
+  this->declare_parameter<double>("sample_step",3.);
+
   // Wait for the image to be initialized.
   waitForImage();
   if (this->exiting())
