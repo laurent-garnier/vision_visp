@@ -164,10 +164,10 @@ void ImageProcessing::init()
     disp->setTitle("Image processing initialisation interface");
     vpDisplay::flush(img_);
     vpDisplay::display(img_);
-    vpDisplay::displayCharString(img_, img_.getHeight() / 2 - 10, img_.getWidth() / 4, "Waiting for the camera feed.",
+    vpDisplay::displayText(img_, img_.getHeight() / 2 - 10, img_.getWidth() / 4, std::string("Waiting for the camera feed."),
                                  vpColor::red);
-    vpDisplay::displayCharString(img_, img_.getHeight() / 2 + 10, img_.getWidth() / 4,
-                                 "If you are using the example camera, you should click on it's window", vpColor::red);
+    vpDisplay::displayText(img_, img_.getHeight() / 2 + 10, img_.getWidth() / 4,
+                                 std::string("If you are using the example camera, you should click on it's window"), vpColor::red);
 
     vpDisplay::flush(img_);
 
@@ -222,7 +222,7 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::msg::Image::SharedPtr 
   if (!pause_at_each_frame) {
     vpImagePoint ip;
     vpDisplay::displayRectangle(img_, 0, 0, img_.getWidth(), 15, vpColor::black, true);
-    vpDisplay::displayCharString(img_, 10, 10, "Click on the window to select the current image", vpColor::red);
+    vpDisplay::displayText(img_, 10, 10, std::string("Click on the window to select the current image"), vpColor::red);
     vpDisplay::flush(img_);
     if (pause_image_) {
       pause_image_ = false;
@@ -338,7 +338,7 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::msg::Image::SharedPtr 
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Left click on the interface window to continue, right click to restart");
     vpDisplay::displayRectangle(img_, 0, 0, img_.getWidth(), 15, vpColor::black, true);
-    vpDisplay::displayCharString(img_, 10, 10, "Left click on the interface window to continue, right click to restart",
+    vpDisplay::displayText(img_, 10, 10, std::string("Left click on the interface window to continue, right click to restart"),
                                  vpColor::red);
     vpDisplay::flush(img_);
 

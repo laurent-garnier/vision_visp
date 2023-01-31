@@ -88,7 +88,7 @@ Camera::Camera(const rclcpp::NodeOptions &options)
   disp->setTitle("camera");
 
   vpDisplay::display(img_);
-  vpDisplay::displayCharString(img_, img_.getHeight() / 2, img_.getWidth() / 4, "Click to publish camera feed.",
+  vpDisplay::displayText(img_, img_.getHeight() / 2, img_.getWidth() / 4, std::string("Click to publish camera feed."),
                                vpColor::red);
   vpDisplay::flush(img_);
 }
@@ -120,8 +120,8 @@ void Camera::sendVideo()
 
   RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
               "When finished selecting points, click on the camera window for calibration");
-  vpDisplay::displayCharString(img_, img_.getHeight() / 2 + 30, img_.getWidth() / 4,
-                               "When finished selecting points, click here for calibration", vpColor::red);
+  vpDisplay::displayText(img_, img_.getHeight() / 2 + 30, img_.getWidth() / 4,
+                               std::string("When finished selecting points, click here for calibration"), vpColor::red);
   vpDisplay::flush(img_);
   while (rclcpp::ok() && !vpDisplay::getClick(img_, false))
     ;

@@ -45,7 +45,7 @@ bool TrackerMbt::initCallback(const std::shared_ptr<rmw_request_id_t> /*request_
   this->declare_parameter<std::string>(visp_tracker::model_description_param, req->model_description_param);
 
   // Load model from parameter.
-  if (!makeModelFile(this->get_node_parameters_interface(), req->model_description_param, modelStream, fullModelPath))
+  if (!makeModelFile(req->model_description_param, modelStream, fullModelPath))
     return true;
 
   tracker_.resetTracker();
@@ -358,6 +358,11 @@ void TrackerMbt::spin()
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(lastHeader.stamp.sec)));
     if (tf2_time < tf2_last_time)
       lastTrackedImage_ = {};
+
+    tracker_.setAngleAppear(
+        vpMath::rad(this->get_parameter("angle_appear").as_double()));
+    tracker_.setAngleDisappear(
+        vpMath::rad(this->get_parameter("angle_disappear").as_double()));
 
     if (lastTrackedImage_ < tf2_time) {
       lastTrackedImage_ = tf2_time;

@@ -137,7 +137,7 @@ namespace tracking{
       if(0){//fsm.get_flush_display()){
         vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
         if(polygon.size()==0){
-          vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
+          vpDisplay::displayText(evt.I,vpImagePoint(0,0),std::string("TRACKING LOST"),vpColor::red);
           vpDisplay::flush(evt.I);
           return;
         }
@@ -149,10 +149,10 @@ namespace tracking{
             ){
           vpDisplay::displayLine(evt.I,vpImagePoint(i->first.y,i->first.x),vpImagePoint(i->second.y,i->second.x),getColor(),2);
         }
-        vpDisplay::displayCharString(evt.I,corner0,"1",vpColor::blue);
-        vpDisplay::displayCharString(evt.I,corner1,"2",vpColor::yellow);
-        vpDisplay::displayCharString(evt.I,corner2,"3",vpColor::cyan);
-        vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
+        vpDisplay::displayText(evt.I,corner0,std::string("1"),vpColor::blue);
+        vpDisplay::displayText(evt.I,corner1,std::string("2"),vpColor::yellow);
+        vpDisplay::displayText(evt.I,corner2,std::string("3"),vpColor::cyan);
+        vpDisplay::displayText(evt.I,corner3,std::string("4"),vpColor::darkRed);
 
       }
 #endif
@@ -208,22 +208,22 @@ namespace tracking{
       }
       if(fsm.get_flush_display()){
         vpImage<vpRGBa>& I = fsm.get_I();
-        vpDisplay::displayCharString(I,model_inner_corner[0],"mi1",vpColor::blue);
+        vpDisplay::displayText(I,model_inner_corner[0],std::string("mi1"),vpColor::blue);
         vpDisplay::displayCross(I,model_inner_corner[0],2,vpColor::blue,2);
-        vpDisplay::displayCharString(I,model_inner_corner[1],"mi2",vpColor::yellow);
+        vpDisplay::displayText(I,model_inner_corner[1],std::string("mi2"),vpColor::yellow);
         vpDisplay::displayCross(I,model_inner_corner[1],2,vpColor::yellow,2);
-        vpDisplay::displayCharString(I,model_inner_corner[2],"mi3",vpColor::cyan);
+        vpDisplay::displayText(I,model_inner_corner[2],std::string("mi3"),vpColor::cyan);
         vpDisplay::displayCross(I,model_inner_corner[2],2,vpColor::cyan,2);
-        vpDisplay::displayCharString(I,model_inner_corner[3],"mi4",vpColor::darkRed);
+        vpDisplay::displayText(I,model_inner_corner[3],std::string("mi4"),vpColor::darkRed);
         vpDisplay::displayCross(I,model_inner_corner[3],2,vpColor::darkRed,2);
 
-        vpDisplay::displayCharString(I,model_outer_corner[0],"mo1",vpColor::blue);
+        vpDisplay::displayText(I,model_outer_corner[0],std::string("mo1"),vpColor::blue);
         vpDisplay::displayCross(I,model_outer_corner[0],2,vpColor::blue,2);
-        vpDisplay::displayCharString(I,model_outer_corner[1],"mo2",vpColor::yellow);
+        vpDisplay::displayText(I,model_outer_corner[1],std::string("mo2"),vpColor::yellow);
         vpDisplay::displayCross(I,model_outer_corner[1],2,vpColor::yellow,2);
-        vpDisplay::displayCharString(I,model_outer_corner[2],"mo3",vpColor::cyan);
+        vpDisplay::displayText(I,model_outer_corner[2],std::string("mo3"),vpColor::cyan);
         vpDisplay::displayCross(I,model_outer_corner[2],2,vpColor::cyan,2);
-        vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
+        vpDisplay::displayText(I,model_outer_corner[3],std::string("mo4"),vpColor::darkRed);
         vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
 
         try {

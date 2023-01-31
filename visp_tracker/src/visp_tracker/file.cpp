@@ -35,7 +35,7 @@ std::string getInitialPoseFileFromModelName(const std::string &modelName, const 
   return std::string() + defaultPath + "/" + modelName + "/" + modelName + ".0.pos";
 }
 
-bool makeModelFile(std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> node, std::string modelDescription, std::ofstream &modelStream,
+bool makeModelFile(std::string modelDescription, std::ofstream &modelStream,
                    std::string &fullModelPath)
 {
   RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), " Trying to load the model from the parameter server.");
