@@ -18,6 +18,8 @@
 
 #include "visp_tracker/conversion.h"
 
+using namespace std::chrono_literals;
+
 void rosImageToVisp(vpImage<unsigned char>& dst,
                     const sensor_msgs::msg::Image::ConstSharedPtr& src)
 {
@@ -275,4 +277,28 @@ void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
   }
 
   throw std::runtime_error ("unsupported distortion model");
+}
+
+bool initializeTrackerParametersForTrackerMbt (std::shared_ptr<rclcpp::SyncParametersClient> parameters_mbt, vpMbGenericTracker &tracker) {
+    // set all parameters
+
+  while (!parameters_mbt->wait_for_service(1s)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the  parameters. Exiting.");
+      return false;
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "parameters not available, waiting again...");
+  }
+ auto parameters = parameters_mbt->get_parameters({"angle_appear", "angle_disappear"});
+  // Get a few of the parameters just set.
+  for (auto &parameter : parameters) {
+    if (parameter.get_name() == "angle_appear") {
+      tracker.setAngleAppear(vpMath::rad(parameter.as_double()));
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"), "Angle appear viewer: " << parameter.value_to_string());
+    } else if (parameter.get_name() == "angle_disappear") {
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"), "Angle disappear viewer: " << parameter.value_to_string());
+      tracker.setAngleDisappear(vpMath::rad(parameter.as_double()));
+    }
+  }
+  return true;
 }
