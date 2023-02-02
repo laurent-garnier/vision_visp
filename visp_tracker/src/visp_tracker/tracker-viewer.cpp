@@ -149,6 +149,18 @@ void TrackerViewer::spin()
   rclcpp::Clock clock;
   constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting()) {
+
+    // set parameters
+    rclcpp::Parameter angle_appear_param;
+    rclcpp::Parameter angle_disappear_param;
+      
+    if (this->get_parameter("angle_appear", angle_appear_param)) {
+      tracker_.setAngleAppear(vpMath::rad(angle_appear_param.as_double()));
+    }
+    if (this->get_parameter("angle_disappear", angle_disappear_param)) {
+      tracker_.setAngleDisappear(vpMath::rad(angle_disappear_param.as_double()));
+    }
+
     vpDisplay::display(image_);
     displayMovingEdgeSites();
     displayKltPoints();
@@ -193,30 +205,9 @@ void TrackerViewer::waitForImage()
 
 void TrackerViewer::loadCommonParameters()
 {
-  {
-    auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt");
-    while (!parameters_client->wait_for_service(1s)) {
-      if (!rclcpp::ok()) {
-        RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the visp_tracker_mbt parameters. Exiting.");
-        rclcpp::shutdown();
-      }
-      RCLCPP_INFO(this->get_logger(), "visp_tracker_mbt parameters not available, waiting again...");
-    }
-    auto parameters = parameters_client->get_parameters({"angle_appear", "angle_disappear"});
-    // std::stringstream ss;
-    // Get a few of the parameters just set.
-    for (auto &parameter : parameters) {
-      // ss << "\nParameter name: " << parameter.get_name();
-      // ss << "\nParameter value (" << parameter.get_type_name() << "): " << parameter.value_to_string();
-      // RCLCPP_INFO_STREAM(this->get_logger(), ss.str());
-      if (parameter.get_name() == "angle_appear") {
-        tracker_.setAngleAppear(vpMath::rad(parameter.as_double()));
-        RCLCPP_WARN_STREAM(this->get_logger(), "Angle appear viewer: " << parameter.value_to_string());
-      } else if (parameter.get_name() == "angle_disappear") {
-        RCLCPP_WARN_STREAM(this->get_logger(), "Angle disappear viewer: " << parameter.value_to_string());
-        tracker_.setAngleDisappear(vpMath::rad(parameter.as_double()));
-      }
-    }
+  // set all parameters
+  if(! initializeTrackerParametersForTrackerMbt(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+      rclcpp::shutdown();
   }
 }
 

@@ -76,6 +76,8 @@ void convertInitRequestToVpKltOpencv(const std::shared_ptr<visp_tracker::srv::In
 
 void initializeVpCameraFromCameraInfo(vpCameraParameters &cam, sensor_msgs::msg::CameraInfo::ConstSharedPtr info);
 
+bool initializeTrackerParametersForTrackerMbt (std::shared_ptr<rclcpp::SyncParametersClient> parameters_mbt, vpMbGenericTracker &tracker);
+
 // Dynamic reconfigure template functions
 /*
 template <class ConfigType>

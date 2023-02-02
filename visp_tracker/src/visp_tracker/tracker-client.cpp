@@ -45,7 +45,8 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   frameSize_ = this->declare_parameter<double>("frame_size", 0.2);
   trackerType_ = this->declare_parameter<std::string>("tracker_type", "mtb");
   cameraPrefix_ = this->declare_parameter<std::string>("camera_prefix", "/wide_left/camera");
-  this->declare_parameter<std::string>(visp_tracker::model_description_param, "");
+  this->declare_parameter<double>("angle_appear", 89.);
+  this->declare_parameter<double>("angle_disappear" ,89.);
 
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
@@ -96,25 +97,8 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   loadModel();
 
   // set all parameters
-
-  auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt");
-  while (!parameters_client->wait_for_service(1s)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the visp_tracker_mbt parameters. Exiting.");
+  if(! initializeTrackerParametersForTrackerMbt(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
       rclcpp::shutdown();
-    }
-    RCLCPP_INFO(this->get_logger(), "visp_tracker_mbt parameters not available, waiting again...");
-  }
- auto parameters = parameters_client->get_parameters({"angle_appear", "angle_disappear"});
-  // Get a few of the parameters just set.
-  for (auto &parameter : parameters) {
-    if (parameter.get_name() == "angle_appear") {
-      tracker_.setAngleAppear(vpMath::rad(parameter.as_double()));
-      RCLCPP_WARN_STREAM(this->get_logger(), "Angle appear viewer: " << parameter.value_to_string());
-    } else if (parameter.get_name() == "angle_disappear") {
-      RCLCPP_WARN_STREAM(this->get_logger(), "Angle disappear viewer: " << parameter.value_to_string());
-      tracker_.setAngleDisappear(vpMath::rad(parameter.as_double()));
-    }
   }
 
   this->declare_parameter<double>("sample_step",3.);
@@ -160,6 +144,20 @@ void TrackerClient::spin()
   vpImagePoint point(10, 10);
   while (!ok && !exiting()) {
     try {
+      // set parameters
+      rclcpp::Parameter angle_appear_param;
+      rclcpp::Parameter angle_disappear_param;
+      
+      if (this->get_parameter("angle_appear", angle_appear_param)) {
+         if (vpMath::rad(angle_appear_param.as_double()) != tracker_.getAngleAppear()) {
+            RCLCPP_INFO_STREAM(this->get_logger(), "****Paremeter  different ***** " << angle_appear_param.as_double());
+         }
+       tracker_.setAngleAppear(vpMath::rad(angle_appear_param.as_double()));
+      }
+      if (this->get_parameter("angle_disappear", angle_disappear_param)) {
+        tracker_.setAngleDisappear(vpMath::rad(angle_disappear_param.as_double()));
+      }
+
       // Initialize.
       vpDisplay::display(image_);
       vpDisplay::flush(image_);
