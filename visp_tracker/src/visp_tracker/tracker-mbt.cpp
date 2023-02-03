@@ -53,13 +53,6 @@ bool TrackerMbt::initCallback(const std::shared_ptr<rmw_request_id_t> /*request_
   // Common parameters
   convertInitRequestToVpMbTracker(req, tracker_);
 
-  //  Replace default tracker parameters by default mbt
-  rclcpp::Parameter angle_appear_param("angle_appear", vpMath::deg(tracker_.getAngleAppear()));
-  rclcpp::Parameter angle_disappear_param("angle_disappear", vpMath::deg(tracker_.getAngleDisappear()));
-
-  this->set_parameter(angle_appear_param);
-  this->set_parameter(angle_disappear_param);
-
   if (trackerType_ != "klt") { // for mbt and hybrid
     convertInitRequestToVpMe(req, tracker_, movingEdge_);
   }
@@ -359,6 +352,7 @@ void TrackerMbt::spin()
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(lastHeader.stamp.sec)));
     if (tf2_time < tf2_last_time)
       lastTrackedImage_ = {};
+    RCLCPP_INFO_STREAM(this->get_logger(), "ang app " << this->get_parameter("angle_appear").as_double());
 
     tracker_.setAngleAppear(
         vpMath::rad(this->get_parameter("angle_appear").as_double()));
