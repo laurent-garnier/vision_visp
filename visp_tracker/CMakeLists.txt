@@ -208,8 +208,7 @@ ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
 message("Successfully download ${DOWNLOADED_FILE}")
 
 set(MAKE_CMD "rosbags-convert")
-set(MAKE_ARGS "tutorial-static-box.bag")
-execute_process(COMMAND ${MAKE_CMD} ${MAKE_ARGS}
+execute_process(COMMAND ${MAKE_CMD} ${DOWNLOADED_FILE}
                 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/externals/src"
                 RESULT_VARIABLE CMD_STATUS
                 OUTPUT_FILE CMD_OUTPUT)
