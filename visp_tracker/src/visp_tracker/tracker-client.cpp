@@ -45,6 +45,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   frameSize_ = this->declare_parameter<double>("frame_size", 0.2);
   trackerType_ = this->declare_parameter<std::string>("tracker_type", "mtb");
   cameraPrefix_ = this->declare_parameter<std::string>("camera_prefix", "/wide_left/camera");
+  this->declare_parameter<std::string>(visp_tracker::model_description_param, "");
   this->declare_parameter<double>("angle_appear", 89.);
   this->declare_parameter<double>("angle_disappear" ,89.);
 
@@ -97,7 +98,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   loadModel();
 
   // set all parameters
-  if(! initializeTrackerParametersForTrackerMbt(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+  if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
       rclcpp::shutdown();
   }
 
@@ -144,18 +145,9 @@ void TrackerClient::spin()
   vpImagePoint point(10, 10);
   while (!ok && !exiting()) {
     try {
-      // set parameters
-      rclcpp::Parameter angle_appear_param;
-      rclcpp::Parameter angle_disappear_param;
-      
-      if (this->get_parameter("angle_appear", angle_appear_param)) {
-         if (vpMath::rad(angle_appear_param.as_double()) != tracker_.getAngleAppear()) {
-            RCLCPP_INFO_STREAM(this->get_logger(), "****Paremeter  different ***** " << angle_appear_param.as_double());
-         }
-       tracker_.setAngleAppear(vpMath::rad(angle_appear_param.as_double()));
-      }
-      if (this->get_parameter("angle_disappear", angle_disappear_param)) {
-        tracker_.setAngleDisappear(vpMath::rad(angle_disappear_param.as_double()));
+      // set all parameters
+      if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+        rclcpp::shutdown();
       }
 
       // Initialize.
@@ -652,10 +644,7 @@ void TrackerClient::initPoint(unsigned &i, points_t &points, imagePoints_t &imag
 void TrackerClient::waitForImage()
 {
   rclcpp::Rate loop_rate(10);
-  rclcpp::Clock clock;
-  constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting() && (!image_.getWidth() || !image_.getHeight())) {
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"), clock, LOG_THROTTLE_PERIOD, "Waiting for a rectified image...");
     rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }

@@ -150,15 +150,9 @@ void TrackerViewer::spin()
   constexpr size_t LOG_THROTTLE_PERIOD = 10;
   while (!exiting()) {
 
-    // set parameters
-    rclcpp::Parameter angle_appear_param;
-    rclcpp::Parameter angle_disappear_param;
-      
-    if (this->get_parameter("angle_appear", angle_appear_param)) {
-      tracker_.setAngleAppear(vpMath::rad(angle_appear_param.as_double()));
-    }
-    if (this->get_parameter("angle_disappear", angle_disappear_param)) {
-      tracker_.setAngleDisappear(vpMath::rad(angle_disappear_param.as_double()));
+    // set all parameters
+    if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+      rclcpp::shutdown();
     }
 
     vpDisplay::display(image_);
@@ -194,19 +188,18 @@ void TrackerViewer::spin()
 void TrackerViewer::waitForImage()
 {
   rclcpp::Rate loop_rate(10);
-  rclcpp::Clock clock;
-  constexpr size_t LOG_THROTTLE_PERIOD = 10;
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for a rectified image...");
   while (!exiting() && (!image_.getWidth() || !image_.getHeight())) {
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"), clock, LOG_THROTTLE_PERIOD, "waiting for a rectified image...");
     rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Rectified image received ");
 }
 
 void TrackerViewer::loadCommonParameters()
 {
   // set all parameters
-  if(! initializeTrackerParametersForTrackerMbt(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+  if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
       rclcpp::shutdown();
   }
 }

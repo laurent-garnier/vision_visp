@@ -240,14 +240,14 @@ TrackerMbt::TrackerMbt() : Node("TrackerMbt"), queueSize_(5u)
     rcl_interfaces::msg::FloatingPointRange range;
     range.set__from_value(65.0).set__to_value(90.0).set__step(0.1);
     descriptor.floating_point_range = {range};
-    this->declare_parameter("angle_appear", 65.0, descriptor);
+    this->declare_parameter("angle_appear", vpMath::deg(tracker_.getAngleAppear()), descriptor);
   }
   {
     rcl_interfaces::msg::ParameterDescriptor descriptor;
     rcl_interfaces::msg::FloatingPointRange range;
     range.set__from_value(0.0).set__to_value(90.0).set__step(0.1);
     descriptor.floating_point_range = {range};
-    this->declare_parameter("angle_disappear", 75.0, descriptor);
+    this->declare_parameter("angle_disappear", vpMath::deg(tracker_.getAngleDisappear()), descriptor);
   }
 
   if (trackerType_ == "mbt")
@@ -511,12 +511,12 @@ void TrackerMbt::spin()
 void TrackerMbt::waitForImage()
 {
   rclcpp::Rate loop_rate(10);
-  rclcpp::Clock clock;
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for a rectified image...");
   while (!exiting() && (!image_.getWidth() || !image_.getHeight()) && (!info_ || info_->k[0] == 0.)) {
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"), clock, 10, "waiting for a rectified image...");
     rclcpp::spin_some(this->get_node_base_interface());
     loop_rate.sleep();
   }
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Rectified image received ");
 }
 
 void TrackerMbt::objectPositionHintCallback(const geometry_msgs::msg::TransformStamped::SharedPtr transform)

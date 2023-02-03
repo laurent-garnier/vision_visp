@@ -279,7 +279,7 @@ void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
   throw std::runtime_error ("unsupported distortion model");
 }
 
-bool initializeTrackerParametersForTrackerMbt (std::shared_ptr<rclcpp::SyncParametersClient> parameters_mbt, vpMbGenericTracker &tracker) {
+bool SetTrackerParametersFromRosParameters (std::shared_ptr<rclcpp::SyncParametersClient> parameters_mbt, vpMbGenericTracker &tracker) {
     // set all parameters
 
   while (!parameters_mbt->wait_for_service(1s)) {
