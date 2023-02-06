@@ -145,10 +145,6 @@ void TrackerClient::spin()
   vpImagePoint point(10, 10);
   while (!ok && !exiting()) {
     try {
-      // set all parameters
-      if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
-        rclcpp::shutdown();
-      }
 
       // Initialize.
       vpDisplay::display(image_);
@@ -169,6 +165,10 @@ void TrackerClient::spin()
         vpImagePoint ip;
         vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
         do {
+          // set all parameters
+          if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+            rclcpp::shutdown();
+          }
           vpDisplay::display(image_);
           mutex_.lock();
           tracker_.track(image_);
