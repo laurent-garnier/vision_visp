@@ -46,8 +46,6 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   trackerType_ = this->declare_parameter<std::string>("tracker_type", "mtb");
   cameraPrefix_ = this->declare_parameter<std::string>("camera_prefix", "/wide_left/camera");
   this->declare_parameter<std::string>(visp_tracker::model_description_param, "");
-  this->declare_parameter<double>("angle_appear", 89.);
-  this->declare_parameter<double>("angle_disappear" ,89.);
 
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
@@ -99,7 +97,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
 
   // set all parameters
   if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
-      rclcpp::shutdown();
+    rclcpp::shutdown();
   }
 
   this->declare_parameter<double>("sample_step",3.);

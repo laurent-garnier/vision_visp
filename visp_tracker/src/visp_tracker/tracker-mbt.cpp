@@ -167,6 +167,30 @@ void TrackerMbt::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites &sites
   }
 }
 
+void TrackerMbt::declareDoubleParameter(const double min, const double max, const double step, const double deflt, const std::string descr) {
+    RCLCPP_ERROR_STREAM(this->get_logger(), "declareDoubleParameter "<<  min << " => " << max << " Stp:" << step << " D:" << deflt << " Txt:" << descr);
+if (deflt > max) return;
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    descriptor.type=3;
+    descriptor.floating_point_range.resize(1);
+    auto& range = descriptor.floating_point_range.at(0);
+    range.step = step;
+    range.from_value = min;
+    range.to_value = max;
+
+    this->declare_parameter(descr, deflt, descriptor);
+}
+
+void TrackerMbt::declareIntegerParameter(const int min, const int max, const int step, const int deflt, std::string descr) {
+    RCLCPP_ERROR_STREAM(this->get_logger(), "declareIntParameter "<<  min << " => " << max << " Stp:" << step << " D:" << deflt << " Txt:" << descr);
+if (deflt > max) return;
+    rcl_interfaces::msg::ParameterDescriptor descriptor;
+    rcl_interfaces::msg::IntegerRange range;
+    range.set__from_value(min).set__to_value(max).set__step(step);
+    descriptor.integer_range = {range};
+    this->declare_parameter(descr, deflt, descriptor);
+}
+
 void TrackerMbt::updateKltPoints(visp_tracker::msg::KltPoints &klt)
 {
 
@@ -228,19 +252,28 @@ TrackerMbt::TrackerMbt() : Node("TrackerMbt"), queueSize_(5u)
   trackerType_ = this->declare_parameter<std::string>("tracker_type", "mbt");
   cameraPrefix_ = this->declare_parameter<std::string>("camera_prefix", "");
 
-  {
-    rcl_interfaces::msg::ParameterDescriptor descriptor;
-    rcl_interfaces::msg::FloatingPointRange range;
-    range.set__from_value(65.0).set__to_value(90.0).set__step(0.1);
-    descriptor.floating_point_range = {range};
-    this->declare_parameter("angle_appear", vpMath::deg(tracker_.getAngleAppear()), descriptor);
-  }
-  {
-    rcl_interfaces::msg::ParameterDescriptor descriptor;
-    rcl_interfaces::msg::FloatingPointRange range;
-    range.set__from_value(0.0).set__to_value(90.0).set__step(0.1);
-    descriptor.floating_point_range = {range};
-    this->declare_parameter("angle_disappear", vpMath::deg(tracker_.getAngleDisappear()), descriptor);
+  declareDoubleParameter(65.0, 90.0, 0.1, vpMath::deg(tracker_.getAngleAppear()), "angle_appear");
+  declareDoubleParameter(0.0, 90.0, 0.1, vpMath::deg(tracker_.getAngleDisappear()), "angle_disappear");
+
+  declareIntegerParameter(0, 50, 5, tracker_.getKltMaskBorder(), "mask_border");
+
+  if (trackerType_ != "mbt") { // for klt and hybrid
+    declareIntegerParameter(0, 30000, 100, kltTracker_.getMaxFeatures(), "max_features");
+    declareIntegerParameter(3, 10, 1, kltTracker_.getWindowSize(), "window_size");
+    declareDoubleParameter(0.0001, 0.1, 0.0001, kltTracker_.getQuality(), "quality");
+    declareDoubleParameter(1.0, 50.0, 1.0, kltTracker_.getMinDistance(), "min_distance");
+    declareDoubleParameter(0, 0.1, 0.01, kltTracker_.getHarrisFreeParameter(), "harris");
+    declareIntegerParameter(2, 10, 1, kltTracker_.getBlockSize(), "size_block");
+    declareIntegerParameter(0, 5, 1, kltTracker_.getPyramidLevels(), "pyramid_lvl");
+
+    declareIntegerParameter(3, 15, 1, tracker_.getMovingEdge().getMaskSize(), "mask_size");
+    declareIntegerParameter(0, 50, 1, tracker_.getMovingEdge().getRange(), "range");
+    declareDoubleParameter(0., 20000., 1, tracker_.getMovingEdge().getThreshold(), "threshold");
+    declareDoubleParameter(0., 1., 0.1, tracker_.getMovingEdge().getMu1(), "mu1");
+    declareDoubleParameter(0., 1., 0.1, tracker_.getMovingEdge().getMu2(), "mu2");
+    declareDoubleParameter(1., 50., 1, tracker_.getMovingEdge().getSampleStep(), "sample_step");
+    declareIntegerParameter(0, 10, 1, tracker_.getMovingEdge().getStrip(), "strip");
+    declareDoubleParameter(0., 1., 0.1, tracker_.getGoodMovingEdgesRatioThreshold(), "first_threshold");
   }
 
   if (trackerType_ == "mbt")
@@ -352,7 +385,6 @@ void TrackerMbt::spin()
         std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(lastHeader.stamp.sec)));
     if (tf2_time < tf2_last_time)
       lastTrackedImage_ = {};
-    RCLCPP_INFO_STREAM(this->get_logger(), "ang app " << this->get_parameter("angle_appear").as_double());
 
     tracker_.setAngleAppear(
         vpMath::rad(this->get_parameter("angle_appear").as_double()));

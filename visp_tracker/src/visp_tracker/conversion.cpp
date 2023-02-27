@@ -289,16 +289,99 @@ bool SetTrackerParametersFromRosParameters (std::shared_ptr<rclcpp::SyncParamete
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "parameters not available, waiting again...");
   }
- auto parameters = parameters_mbt->get_parameters({"angle_appear", "angle_disappear"});
-  // Get a few of the parameters just set.
+ std::vector<std::string> parameters_names = {"angle_appear", "angle_disappear",
+ "mask_border", "max_features", "window_size", "quality", "min_distance", "harris", "size_block", "pyramid_lvl",
+ "mask_size", "range", "threshold", "mu1", "mu2", "sample_step", "strip", "first_threshold" };
+ std::vector< rclcpp::Parameter > parameters = parameters_mbt->get_parameters(parameters_names);
+
+  vpMe me;
+  vpKltOpencv klt_settings;
+
+  // Defaults parameters for vpMe
+  if ((tracker.getTrackerType() == vpMbGenericTracker::EDGE_TRACKER) ||
+      (tracker.getTrackerType() == vpMbGenericTracker::KLT_TRACKER) || 
+      (tracker.getTrackerType() == (vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER))) {
+    auto me1 = tracker.getMovingEdge();
+//    me = tracker.getMovingEdge();
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "...." << me.getMu1());
+//  FIXME
+    tracker.setMovingEdge(tracker.getMovingEdge());
+
+/*    vpMbEdgeTracker *tracker_me = dynamic_cast<vpMbEdgeTracker*>(tracker);
+    if(tracker_me){
+        tracker_me->getMovingEdge(tracker_me_config_);
+        tracker_me_config_.setRange(range);
+        tracker_me->setMovingEdge(tracker_me_config_);
+    } else
+        std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
+*/
+  } else {
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Wrong type of tracker, aborting");
+    return false;
+  }
+
+/*  try
+	{
+    me = dynamic_cast<vpMbEdgeTracker&>(tracker);
+    me.setMaskSize(me_old.getMaskSize ());
+    me.setRange(me_old.getRange());
+    me.setThreshold(me_old.getThreshold());
+    me.setMu1(me_old.getMu1());
+    me.setMu2(me_old.getMu2());
+    me.setSampleStep(me_old.getSampleStep());
+    me.setStrip(me_old.getStrip());
+
+  }
+	catch (const std::bad_cast& e)
+	{
+		std::cerr << e.what() << std::endl;
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "tracker type is not a Edge tracker");
+    return false;
+	}
+*/
   for (auto &parameter : parameters) {
+    if (parameter.get_type() == rclcpp::PARAMETER_DOUBLE) 
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "=> BDL " << parameter.get_name() << "=" << parameter.as_double());
+    if (parameter.get_type() == rclcpp::PARAMETER_INTEGER) 
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "=> INT " << parameter.get_name() << "=" << parameter.as_int());
+
     if (parameter.get_name() == "angle_appear") {
       tracker.setAngleAppear(vpMath::rad(parameter.as_double()));
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"), "Angle appear viewer: " << parameter.value_to_string());
     } else if (parameter.get_name() == "angle_disappear") {
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"), "Angle disappear viewer: " << parameter.value_to_string());
       tracker.setAngleDisappear(vpMath::rad(parameter.as_double()));
+    } else if (parameter.get_name() == "mask_border") {
+      tracker.setKltMaskBorder(parameter.as_int());
+    } else if (parameter.get_name() == "max_features") {
+      klt_settings.setMaxFeatures(parameter.as_int());
+    } else if (parameter.get_name() == "window_size") {
+      klt_settings.setWindowSize(parameter.as_int());
+    } else if (parameter.get_name() == "quality") {
+      klt_settings.setQuality(parameter.as_double());
+    } else if (parameter.get_name() == "min_distance") {
+      klt_settings.setMinDistance(parameter.as_double());
+    } else if (parameter.get_name() == "harris") {
+      klt_settings.setHarrisFreeParameter(parameter.as_double());
+    } else if (parameter.get_name() == "size_block") {
+      klt_settings.setBlockSize(parameter.as_int());
+    } else if (parameter.get_name() == "pyramid_lvl") {
+      klt_settings.setPyramidLevels(parameter.as_int());
+    } else if (parameter.get_name() == "mask_size") {
+      me.setMaskSize(parameter.as_int());
+    } else if (parameter.get_name() == "range") {
+      me.setRange(parameter.as_int());
+    } else if (parameter.get_name() == "threshold") {
+      me.setThreshold(parameter.as_double());
+    } else if (parameter.get_name() == "mu1") {
+      me.setMu1(parameter.as_double());
+    } else if (parameter.get_name() == "mu2") {
+      me.setMu2(parameter.as_double());
+    } else if (parameter.get_name() == "sample_step") {
+      me.setSampleStep(parameter.as_double());
     }
   }
+  tracker.setKltOpencv(klt_settings);
+//  tracker.setMovingEdge(me);
+
   return true;
 }
+  

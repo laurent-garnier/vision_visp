@@ -58,6 +58,9 @@ protected:
 private:
   bool exiting() { return !rclcpp::ok(); }
 
+  void declareDoubleParameter(const double min, const double max, const double deflt, const double step, const std::string descr);
+  void declareIntegerParameter(const int min, const int max, const int deflt, const int step, const std::string descr);
+ 
   unsigned queueSize_;
 
   State state_;
