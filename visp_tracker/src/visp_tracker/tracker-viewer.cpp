@@ -159,6 +159,8 @@ void TrackerViewer::spin()
         vpHomogeneousMatrix cMo;
         tracker_.getPose(cMo);
         tracker_.initFromPose(image_, cMo);
+      } else {
+          RCLCPP_INFO_STREAM(this->get_logger(), "image size is null" );
       }
     }
 

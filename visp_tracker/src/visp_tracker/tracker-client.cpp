@@ -178,7 +178,7 @@ void TrackerClient::spin()
               tracker_.initFromPose(image_, cMo);
             }
           }
-      
+
           tracker_.track(image_);
           tracker_.getPose(cMo);
           tracker_.display(image_, cMo, cameraParameters_, vpColor::red, 2);
