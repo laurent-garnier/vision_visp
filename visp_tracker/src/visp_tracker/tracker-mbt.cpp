@@ -168,7 +168,7 @@ void TrackerMbt::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites &sites
 }
 
 void TrackerMbt::declareDoubleParameter(const double min, const double max, const double step, const double deflt, const std::string descr) {
-    RCLCPP_ERROR_STREAM(this->get_logger(), "declareDoubleParameter "<<  min << " => " << max << " Stp:" << step << " D:" << deflt << " Txt:" << descr);
+RCLCPP_INFO_STREAM(this->get_logger(), "declareDoubleParameter "<<  min << " => " << max << " Stp:" << step << " D:" << deflt << " Txt:" << descr);
 if (deflt > max) return;
     rcl_interfaces::msg::ParameterDescriptor descriptor;
     descriptor.type=3;
@@ -182,7 +182,7 @@ if (deflt > max) return;
 }
 
 void TrackerMbt::declareIntegerParameter(const int min, const int max, const int step, const int deflt, std::string descr) {
-    RCLCPP_ERROR_STREAM(this->get_logger(), "declareIntParameter "<<  min << " => " << max << " Stp:" << step << " D:" << deflt << " Txt:" << descr);
+RCLCPP_INFO_STREAM(this->get_logger(), "declareIntParameter "<<  min << " => " << max << " Stp:" << step << " D:" << deflt << " Txt:" << descr);
 if (deflt > max) return;
     rcl_interfaces::msg::ParameterDescriptor descriptor;
     rcl_interfaces::msg::IntegerRange range;

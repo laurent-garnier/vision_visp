@@ -96,7 +96,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   loadModel();
 
   // set all parameters
-  if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+  if(! setTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_, movingEdge_)) {
     rclcpp::shutdown();
   }
 
@@ -147,6 +147,10 @@ void TrackerClient::spin()
       // Initialize.
       vpDisplay::display(image_);
       vpDisplay::flush(image_);
+      // set all parameters
+      if(! setTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_, movingEdge_)) {
+        rclcpp::shutdown();
+      }
       if (!startFromSavedPose_)
         init();
       else {
@@ -163,10 +167,6 @@ void TrackerClient::spin()
         vpImagePoint ip;
         vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
         do {
-          // set all parameters
-          if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
-            rclcpp::shutdown();
-          }
           vpDisplay::display(image_);
           mutex_.lock();
           tracker_.track(image_);

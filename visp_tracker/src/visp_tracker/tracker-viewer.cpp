@@ -151,7 +151,7 @@ void TrackerViewer::spin()
   while (!exiting()) {
 
     // set all parameters
-    if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+    if(! setTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_, movingEdge_)) {
       rclcpp::shutdown();
     }
 
@@ -199,7 +199,8 @@ void TrackerViewer::waitForImage()
 void TrackerViewer::loadCommonParameters()
 {
   // set all parameters
-  if(! SetTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_)) {
+
+  if(! setTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_, movingEdge_)) {
       rclcpp::shutdown();
   }
 }

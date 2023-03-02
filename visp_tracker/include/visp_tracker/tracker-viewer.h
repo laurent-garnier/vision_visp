@@ -111,6 +111,7 @@ private:
   /// \brief ViSP image.
   image_t image_;
 
+  vpMe movingEdge_;
   /// \brief Shared pointer to latest received camera information.
   sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
   /// \brief Last tracked object position, set to none if tracking failed.
