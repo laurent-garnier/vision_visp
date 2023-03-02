@@ -147,10 +147,7 @@ void TrackerClient::spin()
       // Initialize.
       vpDisplay::display(image_);
       vpDisplay::flush(image_);
-      // set all parameters
-      if(! setTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_, movingEdge_)) {
-        rclcpp::shutdown();
-      }
+
       if (!startFromSavedPose_)
         init();
       else {
@@ -169,6 +166,19 @@ void TrackerClient::spin()
         do {
           vpDisplay::display(image_);
           mutex_.lock();
+
+          // set all parameters
+          if(! setTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_, movingEdge_)) {
+            rclcpp::shutdown();
+          } else {
+            // Check if the image is ready to use
+            if (image_ .getHeight() != 0 && image_.getWidth() != 0) {
+              vpHomogeneousMatrix cMo;
+              tracker_.getPose(cMo);
+              tracker_.initFromPose(image_, cMo);
+            }
+          }
+      
           tracker_.track(image_);
           tracker_.getPose(cMo);
           tracker_.display(image_, cMo, cameraParameters_, vpColor::red, 2);

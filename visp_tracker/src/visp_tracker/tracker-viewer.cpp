@@ -153,6 +153,13 @@ void TrackerViewer::spin()
     // set all parameters
     if(! setTrackerParametersFromRosParameters(std::make_shared<rclcpp::SyncParametersClient>(this, "visp_tracker_mbt"), tracker_, movingEdge_)) {
       rclcpp::shutdown();
+    } else {
+      // Check if the image is ready to use
+      if (image_ .getHeight() != 0 && image_.getWidth() != 0) {
+        vpHomogeneousMatrix cMo;
+        tracker_.getPose(cMo);
+        tracker_.initFromPose(image_, cMo);
+      }
     }
 
     vpDisplay::display(image_);

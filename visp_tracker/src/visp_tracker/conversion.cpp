@@ -280,20 +280,6 @@ void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
 }
 
 bool setTrackerParametersFromRosParameters (std::shared_ptr<rclcpp::SyncParametersClient> parameters_mbt, vpMbGenericTracker &tracker, vpMe& me) {
-    // set all parameters
-// TEST
-    me.setMaskSize(tracker.getMovingEdge().getMaskSize ());
-    me.setRange(tracker.getMovingEdge().getRange());
-    me.setThreshold(tracker.getMovingEdge().getThreshold());
-    me.setMu1(tracker.getMovingEdge().getMu1());
-    me.setMu2(tracker.getMovingEdge().getMu2());
-    me.setSampleStep(tracker.getMovingEdge().getSampleStep());
-    me.setStrip(tracker.getMovingEdge().getStrip());
-
-  me.initMask();
-  tracker.setMovingEdge(me);
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Chang Mu1 ...." << &tracker);
-// TEST
 
   while (!parameters_mbt->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
@@ -325,10 +311,6 @@ bool setTrackerParametersFromRosParameters (std::shared_ptr<rclcpp::SyncParamete
   vpKltOpencv klt_settings;
 
   for (auto &parameter : parameters) {
-    if (parameter.get_type() == rclcpp::PARAMETER_DOUBLE) 
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "=> BDL " << parameter.get_name() << "=" << parameter.as_double());
-    if (parameter.get_type() == rclcpp::PARAMETER_INTEGER) 
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "=> INT " << parameter.get_name() << "=" << parameter.as_int());
 
     if (parameter.get_name() == "angle_appear") {
       tracker.setAngleAppear(vpMath::rad(parameter.as_double()));
@@ -363,7 +345,7 @@ bool setTrackerParametersFromRosParameters (std::shared_ptr<rclcpp::SyncParamete
     } else if (parameter.get_name() == "sample_step") {
       me.setSampleStep(parameter.as_double());
     } else if (parameter.get_name() == "strip") {
-      me.setStrip(parameter.as_double());
+      me.setStrip(parameter.as_int());
     } else if (parameter.get_name() == "first_threshold") {
       tracker.setGoodMovingEdgesRatioThreshold(parameter.as_double());
     }
