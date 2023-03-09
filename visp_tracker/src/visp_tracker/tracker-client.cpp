@@ -37,6 +37,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
 {
   // checks if param_name is exist the command pass the value of param in variable but if the param
   // doesn't exist then the command pass "default" to variable
+      RCLCPP_INFO(this->get_logger(), "-------1------");
 
   modelPath_ = this->declare_parameter<std::string>("model_path", visp_tracker::default_model_path);
   modelName_ = this->declare_parameter<std::string>("model_name", "laas-box");
@@ -46,6 +47,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   trackerType_ = this->declare_parameter<std::string>("tracker_type", "mtb");
   cameraPrefix_ = this->declare_parameter<std::string>("camera_prefix", "/wide_left/camera");
   this->declare_parameter<std::string>(visp_tracker::model_description_param, "");
+      RCLCPP_INFO(this->get_logger(), "-------2------");
 
   if (trackerType_ == "mbt")
     tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
@@ -62,6 +64,7 @@ TrackerClient::TrackerClient() : Node("TrackerClient")
   // Compute topic and services names.
   rclcpp::Rate rate(1);
   while (cameraPrefix_.empty()) {
+      RCLCPP_INFO(this->get_logger(), "-------3.------");
     if (!this->get_parameter("camera_prefix", cameraPrefix_) && !this->get_parameter("~camera_prefix", cameraPrefix_)) {
       RCLCPP_WARN(this->get_logger(), "the camera_prefix parameter does not exist.\n"
                                       "This may mean that:\n"

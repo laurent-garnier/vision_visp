@@ -11,7 +11,6 @@ ament_auto_find_build_dependencies()
 find_package(geometry_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 
-# find_package(nodelet REQUIRED)
 find_package(resource_retriever REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -34,53 +33,12 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES std_msgs sensor_msgs geometry_msgs
 )
 
-# get_cmake_property(_variableNames VARIABLES)
-# list (SORT _variableNames)
-# foreach (_variableName ${_variableNames})
-# message(STATUS "${_variableName}=${${_variableName}}")
-# endforeach()
-
-# ???
-# Dynamic reconfigure.
-# generate_dynamic_reconfigure_options(
-# cfg/ModelBasedSettings.cfg
-# cfg/ModelBasedSettingsEdge.cfg
-# cfg/ModelBasedSettingsKlt.cfg)
-
-# catkin_package(
-# LIBRARIES
-# trackerNodelet
-# ${PROJECT_NAME}
-
-# CATKIN_DEPENDS
-# dynamic_reconfigure
-# geometry_msgs
-# message_runtime
-# nodelet
-# roscpp
-# sensor_msgs
-# std_msgs
-# tf
-
-# DEPENDS
-# VISP
-# )
-
-# include_directories(SYSTEM
-# ${VISP_INCLUDE_DIRS}
-# ${catkin_INCLUDE_DIRS}
-# )
-
-# include_directories(
-# "${CMAKE_CURRENT_SOURCE_DIR}/src/${PROJECT_NAME}")
-
 # ############
 # Libraries #
 # ############
 
 # Library gathering libvisp_tracker used by all nodes.
 
-# ament_export_dependencies(VISP)
 add_library(${PROJECT_NAME}_common
   src/${PROJECT_NAME}/callbacks.cpp
   src/${PROJECT_NAME}/conversion.cpp
@@ -104,10 +62,6 @@ ament_target_dependencies(${PROJECT_NAME}_common
   VISP
 )
 
-# target_link_libraries(${PROJECT_NAME}_common
-# ${VISP_LIBRARIES}
-# "${cpp_typesupport_target}"
-# )
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
 target_include_directories(${PROJECT_NAME}_common PUBLIC
@@ -172,10 +126,6 @@ target_include_directories(${PROJECT_NAME}_common PUBLIC
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
-# target_link_libraries(${PROJECT_NAME}_common
-# ${VISP_LIBRARIES}
-# "${cpp_typesupport_target}"
-# )
 install(
   TARGETS
   ${PROJECT_NAME}_viewer
@@ -220,9 +170,10 @@ else()
 endif()
 
 install(DIRECTORY
-  launch models ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box
+  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box
   DESTINATION share/bag
 )
+message("Bagfile instal in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box")
 
 ament_export_dependencies(rosidl_default_runtime)
 
