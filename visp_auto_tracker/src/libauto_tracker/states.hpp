@@ -12,9 +12,7 @@
 #include "events.h"
 #include <rclcpp/rclcpp.hpp>
 
-
 namespace msm = boost::msm;
-
 namespace tracking{
   struct WaitingForInput : public msm::front::state<>{
     template <class Event, class Fsm>
@@ -42,6 +40,17 @@ namespace tracking{
         typename Fsm::statistics_t& statistics = fsm.get_statistics();
         std::cout << "statistics:" << std::endl;
         std::cout << "\tglobal:" << std::endl;
+ /*       std::vector<int> v{5, 1, 2, 3, 4};    
+
+std::vector<int>::iterator b = statistics.var.begin();
+std::vector<int>::iterator e = statistics.var.end();
+
+std::vector<int>::iterator med = b;
+std::advance(med, statistics.var.size() / 2); 
+
+// This makes the 2nd position hold the median.
+std::nth_element(b, med, e);
+*/
         std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var) << std::endl;
         std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var) << std::endl;
         std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var) << std::endl;

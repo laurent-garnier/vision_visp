@@ -29,7 +29,7 @@ ament_target_dependencies(${PROJECT_NAME}_auto_tracker
 			VISP)
 		  
 ADD_EXECUTABLE( tracking examples/complex.cpp )
-TARGET_LINK_LIBRARIES( tracking auto_tracker ${OpenCV_LIBS} qrcode_detector datamatrix_detector dmtx zbar boost_program_options cmd_line boost_thread)
+TARGET_LINK_LIBRARIES( tracking auto_tracker ${OpenCV_LIBS} qrcode_detector datamatrix_detector dmtx zbar cmd_line)
 
 ADD_EXECUTABLE( tracking_simple examples/simple.cpp )
-TARGET_LINK_LIBRARIES( tracking_simple auto_tracker ${OpenCV_LIBS} qrcode_detector datamatrix_detector dmtx zbar boost_program_options cmd_line boost_thread)
+TARGET_LINK_LIBRARIES( tracking_simple auto_tracker ${OpenCV_LIBS} qrcode_detector datamatrix_detector dmtx zbar cmd_line )

@@ -1,4 +1,4 @@
-#include "names.h"
+#include "visp_auto_tracker/names.h"
 
 namespace visp_auto_tracker
 {

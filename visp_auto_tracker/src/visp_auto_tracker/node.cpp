@@ -1,5 +1,5 @@
-#include "node.h"
-#include "names.h"
+#include "visp_auto_tracker/node.h"
+#include "visp_auto_tracker/names.h"
 
 //command line parameters
 #include "cmd_line/cmd_line.h"

@@ -1,22 +1,17 @@
 cmake_minimum_required(VERSION 3.5)
 project(visp_auto_tracker)
 
-# Since visp 3.5.0 to avoid the following warning that makes build unstable
-#
-# /usr/include/OGRE/OgreMemorySTLAllocator.h:130:23: warning: ISO C++17 does not allow
-#   ‘register’ storage class specifier [-Wregister]
-#
-# we try to add -Wno-register option
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-Wno-register" COMPILER_SUPPORTS_W_NO_REGISTER)
-
-if(COMPILER_SUPPORTS_W_NO_REGISTER)
-  set(EXTRA_CXX_FLAGS "-Wno-register")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
 endif()
 
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
+set(Boost_INCLUDE_DIR /usr/include/boost)
+set(BOOST_LIBRARYDIR /usr/lib/x86_64-linux-gnu/)
+
+#find_package(boost REQUIRED) 
 find_package(geometry_msgs REQUIRED) 
 find_package(message_filters REQUIRED )
 find_package(resource_retriever REQUIRED) 
@@ -25,33 +20,20 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(visp_bridge REQUIRED) 
 find_package(visp_tracker REQUIRED) 
+find_package(rosidl_default_generators REQUIRED)
 
 find_package(VISP REQUIRED COMPONENTS visp_core)
 
 if(VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG)
-
-
 include_directories(
   ${VISP_INCLUDE_DIRS}
 )
 
-# catkin_package(
-#   LIBRARIES auto_tracker
-
-#   CATKIN_DEPENDS
-#     geometry_msgs
-#     message_filters
-#     roscpp
-#     sensor_msgs
-#     std_msgs
-#     visp_tracker
-
-#   DEPENDS
-#     VISP
-# )
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/flashcode_mbt)
 
+# ############
+# Libraries #
+# ############
 # Library gathering libauto_tracker used by all nodes.
 add_library(${PROJECT_NAME}_cmd_line
   flashcode_mbt/cmd_line/cmd_line.cpp
@@ -61,7 +43,6 @@ target_link_libraries(${PROJECT_NAME}_cmd_line
   ${resource_retriever_LIBRARIES}
 )
 
-#catkin_lint: ignore unquoted_string_op
 if(VISP_VERSION VERSION_LESS "2.10.0")
   add_library(${PROJECT_NAME}_qrcode_detector
     flashcode_mbt/detectors/detector_base.cpp
@@ -84,7 +65,7 @@ if(VISP_VERSION VERSION_LESS "2.10.0")
     dmtx)
 endif()
 
-add_library(auto_tracker
+add_library(${PROJECT_NAME}
   flashcode_mbt/libauto_tracker/events.h
   flashcode_mbt/libauto_tracker/logfilewriter.hpp
   flashcode_mbt/libauto_tracker/states.hpp
@@ -93,43 +74,58 @@ add_library(auto_tracker
   flashcode_mbt/libauto_tracker/tracking.cpp
   flashcode_mbt/libauto_tracker/tracking.h)
 
-#catkin_lint: ignore unquoted_string_op
+
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+)
+
 if(VISP_VERSION VERSION_LESS "2.10.0")
-  target_link_libraries(auto_tracker
+  target_link_libraries(visp_auto_tracker
       ${PROJECT_NAME}_cmd_line
       ${PROJECT_NAME}_qrcode_detector
       ${PROJECT_NAME}_datamatrix_detector
       ${resource_retriever_LIBRARIES}
   )
 else()
-  target_link_libraries(auto_tracker
+  target_link_libraries(${PROJECT_NAME}
       ${PROJECT_NAME}_cmd_line
       ${resource_retriever_LIBRARIES}
   )
 endif()
 
-add_executable(${PROJECT_NAME}
-  src/main.cpp
-  src/names.cpp
-  src/names.h
-  src/node.cpp
-  src/node.h
+
+add_executable(${PROJECT_NAME}_main
+  src/${PROJECT_NAME}/main.cpp
+  src/${PROJECT_NAME}/names.cpp
+  src/${PROJECT_NAME}/node.cpp
   )
+target_link_libraries(${PROJECT_NAME}_main
+  "${cpp_typesupport_target}"
+#  ${VISP_LIBRARIES}
+)
+
+ament_target_dependencies(${PROJECT_NAME}_main
+  rclcpp
+)
+
+target_include_directories(${PROJECT_NAME}_main PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
 
 if(EXTRA_CXX_FLAGS)
     set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
     set_target_properties(${PROJECT_NAME}_cmd_line PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
-    set_target_properties(auto_tracker PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
 endif()
 
 if(COLCON_ENABLE_TESTING)
   add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_bag)
 endif()
 
-#catkin_lint: ignore unquoted_string_op
 if(VISP_VERSION VERSION_LESS "2.10.0")
   target_link_libraries(${PROJECT_NAME}
-    auto_tracker
+    ${PROJECT_NAME}
     ${PROJECT_NAME}_qrcode_detector
     ${PROJECT_NAME}_datamatrix_detector
     ${PROJECT_NAME}_cmd_line
@@ -140,7 +136,7 @@ if(VISP_VERSION VERSION_LESS "2.10.0")
 
   install(
     TARGETS
-      auto_tracker
+      ${PROJECT_NAME}
       ${PROJECT_NAME}
       ${PROJECT_NAME}_cmd_line
       ${PROJECT_NAME}_datamatrix_detector
@@ -150,15 +146,14 @@ if(VISP_VERSION VERSION_LESS "2.10.0")
     RUNTIME DESTINATION bin/${PROJECT_NAME}
   )
 else()
-  target_link_libraries(${PROJECT_NAME}
-    auto_tracker
-    ${resource_retriever_LIBRARIES})
+#  target_link_libraries(${PROJECT_NAME}
+#    ${PROJECT_NAME}
+#    ${resource_retriever_LIBRARIES})
 
   install(
     TARGETS
-      auto_tracker
-      ${PROJECT_NAME}
-      ${PROJECT_NAME}_cmd_line
+      ${PROJECT_NAME}_main
+#      ${PROJECT_NAME}_cmd_line
     ARCHIVE DESTINATION lib/${PROJECT_NAME}
     LIBRARY DESTINATION lib/${PROJECT_NAME}
     RUNTIME DESTINATION bin/${PROJECT_NAME}

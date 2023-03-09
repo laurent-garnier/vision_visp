@@ -334,7 +334,7 @@ namespace tracking{
       {
         vpCameraParameters cam;
         tracker_->getCameraParameters(cam);
-        if (cam.get_px() != 558) RCLCPP_INFO_STREAM(this->get_logger(),("detection Camera parameters: \n" << cam_);
+        if (cam.get_px() != 558) RCLCPP_INFO_STREAM(this->get_logger(),"detection Camera parameters: \n" << cam_);
       }
 
       tracker_->initFromPose(Igray_,cMo_);
