@@ -43,7 +43,6 @@
 
 #include <stdexcept>
 
-#include <boost/format.hpp>
 #include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
