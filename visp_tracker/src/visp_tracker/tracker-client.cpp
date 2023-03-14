@@ -177,6 +177,7 @@ void TrackerClient::spin()
             // Check if the image is ready to use
             if (image_ .getHeight() != 0 && image_.getWidth() != 0) {
               vpHomogeneousMatrix cMo;
+              this->get_parameter("frame_size", frameSize_);
               tracker_.getPose(cMo);
               tracker_.initFromPose(image_, cMo);
             }
