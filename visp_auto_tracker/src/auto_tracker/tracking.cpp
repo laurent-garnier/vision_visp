@@ -1,5 +1,5 @@
 #include <opencv2/highgui/highgui.hpp>
-#include "tracking.h"
+#include "auto_tracker/tracking.h"
 #include <visp3/core/vpImageConvert.h>
 #include <visp3/core/vpPixelMeterConversion.h>
 #include <visp3/core/vpImagePoint.h>
@@ -11,7 +11,7 @@
 #include <visp3/core/vpRect.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
 
-#include "logfilewriter.hpp"
+#include "auto_tracker/logfilewriter.hpp"
 
 namespace tracking{
 
@@ -174,11 +174,11 @@ namespace tracking{
         for (size_t i=0; i<detector_->getNbObjects(); i++) {
           if (detector_->getMessage(i) == cmd.get_code_message()) {
             cmd.set_code_message_index(i);
-            RCLCPP_WARN_STREAM(this->get_logger(),"Code with message \"" << cmd.get_code_message() << "\" found");
+            RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Code with message \"" << cmd.get_code_message() << "\" found");
             return true;
           }
         }
-        RCLCPP_WARN_STREAM(this->get_logger(),"Code with message \"" << cmd.get_code_message() << "\" not found");
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Code with message \"" << cmd.get_code_message() << "\" not found");
         return false;
       }
     }
@@ -230,11 +230,11 @@ namespace tracking{
         for (size_t i=0; i<detector_->getNbObjects(); i++) {
           if (detector_->getMessage(i) == cmd.get_code_message()) {
             cmd.set_code_message_index(i);
-            RCLCPP_WARN_STREAM(this->get_logger(),"Code with message \"" << cmd.get_code_message() << "\" found");
+            RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Code with message \"" << cmd.get_code_message() << "\" found");
             return true;
           }
         }
-        RCLCPP_WARN_STREAM(this->get_logger(),"Code with message \"" << cmd.get_code_message() << "\" not found");
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Code with message \"" << cmd.get_code_message() << "\" not found");
         return false;
       }
     }
@@ -513,7 +513,7 @@ namespace tracking{
   }
 
   void
-  Tracker_::updateMovingEdgeSites(visp_tracker::MovingEdgeSites sites)
+  Tracker_::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites& sites)
   {
     if (!sites)
       return;
@@ -561,7 +561,7 @@ namespace tracking{
         for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
 #endif
         {
-          visp_tracker::MovingEdgeSite movingEdgeSite;
+          visp_tracker::msg::MovingEdgeSite movingEdgeSite;
           movingEdgeSite.x = sitesIterator->ifloat;
           movingEdgeSite.y = sitesIterator->jfloat;
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)// ViSP < 2.10.0
@@ -581,7 +581,7 @@ ROS_DEBUG_THROTTLE(10, "no distance lines");
 }
 
 void
-Tracker_::updateKltPoints(visp_tracker::KltPointsPtr klt)
+Tracker_::updateKltPoints(visp_tracker::msg::KltPoints& klt)
 {
   if (!klt)
     return;

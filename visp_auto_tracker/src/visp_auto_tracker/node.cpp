@@ -6,12 +6,12 @@
 
 
 //tracking
-#include "libauto_tracker/tracking.h"
-#include "libauto_tracker/threading.h"
-#include "libauto_tracker/events.h"
+#include "auto_tracker/tracking.h"
+#include "auto_tracker/threading.h"
+#include "auto_tracker/events.h"
 
-//#include "visp_tracker/MovingEdgeSites.h"
-//#include "visp_tracker/KltPoints.h"
+#include <visp_tracker/msg/moving_edge_sites.hpp>
+#include <visp_tracker/msg/klt_point.hpp>
 
 //visp includes
 #include <visp3/gui/vpDisplayX.h>
@@ -32,9 +32,9 @@
 #include <visp_bridge/image.h>
 #include <visp_bridge/3dpose.h>
 
-#include "libauto_tracker/tracking.h"
+#include "auto_tracker/tracking.h"
 
-#include <resource_retriever/retriever.h>
+#include <resource_retriever/retriever.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include "std_msgs/msg/int8.hpp"
@@ -289,7 +289,7 @@ namespace visp_auto_tracker{
       // Publish moving edge sites.
       if (moving_edge_sites_publisher.getNumSubscribers	() > 0)
       {
-        visp_tracker::MovingEdgeSitesPtr sites (new visp_tracker::msg::MovingEdgeSites);
+        visp_tracker::msg::MovingEdgeSites& sites (new visp_tracker::msg::MovingEdgeSites);
         // Test if we are in the state tracking::TrackModel. In that case the pose is good;
         // we can send the moving edges. Otherwise we send an empty list of features
         if (*(t_->current_state()) == 3) {
@@ -303,7 +303,7 @@ namespace visp_auto_tracker{
       // Publish KLT points.
       if (klt_points_publisher.getNumSubscribers	() > 0)
       {
-        visp_tracker::KltPointsPtr klt (new visp_tracker::msg::KltPoints);
+        visp_tracker::msg::KltPoints& klt (new visp_tracker::msg::KltPoints);
         // Test if we are in the state tracking::TrackModel. In that case the pose is good;
         // we can send the klt points. Otherwise we send an empty list of features
         if (*(t_->current_state()) == 3) {

@@ -6,9 +6,9 @@
 #include "detectors/qrcode/detector.h"
 
 //tracking
-#include "libauto_tracker/tracking.h"
-#include "libauto_tracker/threading.h"
-#include "libauto_tracker/events.h"
+#include "auto_tracker/tracking.h"
+#include "auto_tracker/threading.h"
+#include "auto_tracker/events.h"
 
 //visp includes
 #include <visp/vpImageIo.h>

@@ -1,25 +1,25 @@
 #ifndef __VISP_AUTO_TRACKER_NODE_H__
 #define __VISP_AUTO_TRACKER_NODE_H__
-#include "rclcpp/rclcpp.h"
+#include <rclcpp/rclcpp.hpp>
 
 #include <visp3/core/vpConfig.h>
-#include "libauto_tracker/tracking.h"
+#include "auto_tracker/tracking.h"
 #include <string>
 
-#include "message_filters/subscriber.h"
-#include "message_filters/time_synchronizer.h"
-#include "sensor_msgs/msg/camera_info.hpp"
-#include "sensor_msgs/msg/image.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
-#include "std_msgs/msg/header.hpp"
+#include <message_filters/subscriber.h>
+#include <message_filters/time_synchronizer.h>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <std_msgs/msg/header.hpp>
 #include <sstream>
 
 namespace visp_auto_tracker{
   class Node{
   private:
     std::mutex lock_;
-    rclcpp::node::Node n_;
+    rclcpp::Node n_;
     unsigned long queue_size_;
     std::string tracker_config_path_;
     std::string model_description_;

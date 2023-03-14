@@ -14,6 +14,7 @@ set(BOOST_LIBRARYDIR /usr/lib/x86_64-linux-gnu/)
 #find_package(boost REQUIRED) 
 find_package(geometry_msgs REQUIRED) 
 find_package(message_filters REQUIRED )
+find_package(std_msgs REQUIRED)
 find_package(resource_retriever REQUIRED) 
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED) 
@@ -29,15 +30,14 @@ include_directories(
   ${VISP_INCLUDE_DIRS}
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/flashcode_mbt)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # ############
 # Libraries #
 # ############
 # Library gathering libauto_tracker used by all nodes.
 add_library(${PROJECT_NAME}_cmd_line
-  flashcode_mbt/cmd_line/cmd_line.cpp
-  flashcode_mbt/cmd_line/cmd_line.h
+    src/flashcode_mbt/cmd_line/cmd_line.cpp
 )
 target_link_libraries(${PROJECT_NAME}_cmd_line
   ${resource_retriever_LIBRARIES}
@@ -45,20 +45,16 @@ target_link_libraries(${PROJECT_NAME}_cmd_line
 
 if(VISP_VERSION VERSION_LESS "2.10.0")
   add_library(${PROJECT_NAME}_qrcode_detector
-    flashcode_mbt/detectors/detector_base.cpp
-    flashcode_mbt/detectors/detector_base.h
-    flashcode_mbt/detectors/qrcode/detector.cpp
-    flashcode_mbt/detectors/qrcode/detector.h
+    src/flashcode_mbt/detectors/detector_base.cpp
+    src/flashcode_mbt/detectors/qrcode/detector.cpp
   )
   target_link_libraries(${PROJECT_NAME}_qrcode_detector
     ${resource_retriever_LIBRARIES}
     zbar)
 
   add_library(${PROJECT_NAME}_datamatrix_detector
-    flashcode_mbt/detectors/datamatrix/detector.cpp
-    flashcode_mbt/detectors/datamatrix/detector.h
-    flashcode_mbt/detectors/detector_base.cpp
-    flashcode_mbt/detectors/detector_base.h
+    src/flashcode_mbt/detectors/datamatrix/detector.cpp
+    src/flashcode_mbt/detectors/detector_base.cpp
   )
   target_link_libraries(${PROJECT_NAME}_datamatrix_detector
     ${resource_retriever_LIBRARIES}
@@ -66,17 +62,14 @@ if(VISP_VERSION VERSION_LESS "2.10.0")
 endif()
 
 add_library(${PROJECT_NAME}
-  flashcode_mbt/libauto_tracker/events.h
-  flashcode_mbt/libauto_tracker/logfilewriter.hpp
-  flashcode_mbt/libauto_tracker/states.hpp
-  flashcode_mbt/libauto_tracker/threading.cpp
-  flashcode_mbt/libauto_tracker/threading.h
-  flashcode_mbt/libauto_tracker/tracking.cpp
-  flashcode_mbt/libauto_tracker/tracking.h)
+  src/auto_tracker/threading.cpp
+  src/auto_tracker/tracking.cpp
+)
 
 
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
+  visp_tracker
 )
 
 if(VISP_VERSION VERSION_LESS "2.10.0")
@@ -93,7 +86,6 @@ else()
   )
 endif()
 
-
 add_executable(${PROJECT_NAME}_main
   src/${PROJECT_NAME}/main.cpp
   src/${PROJECT_NAME}/names.cpp
@@ -101,11 +93,16 @@ add_executable(${PROJECT_NAME}_main
   )
 target_link_libraries(${PROJECT_NAME}_main
   "${cpp_typesupport_target}"
-#  ${VISP_LIBRARIES}
+  ${VISP_LIBRARIES}
 )
 
 ament_target_dependencies(${PROJECT_NAME}_main
   rclcpp
+  message_filters
+  sensor_msgs
+  visp_tracker
+  visp_bridge
+  resource_retriever
 )
 
 target_include_directories(${PROJECT_NAME}_main PUBLIC

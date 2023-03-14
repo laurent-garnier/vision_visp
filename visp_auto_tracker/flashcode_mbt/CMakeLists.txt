@@ -16,13 +16,13 @@ include_directories(detectors)
 include_directories(auto_tracker)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(${PROJECT_NAME}_auto_tracker 
-			libauto_tracker/states.hpp 
-			libauto_tracker/events.h 
-			libauto_tracker/tracking.h 
-			libauto_tracker/tracking.cpp 
-			libauto_tracker/logfilewriter.hpp 
-			libauto_tracker/threading.h 
-			libauto_tracker/threading.cpp)
+			auto_tracker/states.hpp 
+			auto_tracker/events.h 
+			auto_tracker/tracking.h 
+			auto_tracker/tracking.cpp 
+			auto_tracker/logfilewriter.hpp 
+			auto_tracker/threading.h 
+			auto_tracker/threading.cpp)
 
 ament_target_dependencies(${PROJECT_NAME}_auto_tracker
 			rclcpp

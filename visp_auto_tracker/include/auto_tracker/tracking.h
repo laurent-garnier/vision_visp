@@ -23,8 +23,9 @@
 #include <vector>
 #include <fstream>
 
-//#include "visp_tracker/MovingEdgeSites.h"
-//#include "visp_tracker/KltPoints.h"
+#include <visp_tracker/msg/klt_points.hpp>
+#include <visp_tracker/msg/klt_settings.hpp>
+#include <visp_tracker/msg/moving_edge_sites.hpp>
 
 #include "cmd_line/cmd_line.h"
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
@@ -34,8 +35,8 @@
 #endif
 
 #include <visp/vpMbEdgeTracker.h>
-#include "states.hpp"
-#include "events.h"
+#include "auto_tracker/states.hpp"
+#include "auto_tracker/events.h"
 
 using namespace boost::accumulators;
 namespace msm = boost::msm;
@@ -136,8 +137,8 @@ namespace tracking{
     //gets statistics about the last tracking experience
     statistics_t& get_statistics();
 
-    void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
-    void updateKltPoints(visp_tracker::KltPointsPtr klt);
+    void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites& sites);
+    void updateKltPoints(visp_tracker::msg::KltPoints& klt);
 
     //here is how the tracker works
     struct transition_table : mpl::vector<

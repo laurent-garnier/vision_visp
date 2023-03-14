@@ -1,4 +1,4 @@
-#include "threading.h"
+#include "auto_tracker/threading.h"
 
 TrackerThread::TrackerThread(tracking::Tracker& tracker) : tracker_(tracker){
 }
