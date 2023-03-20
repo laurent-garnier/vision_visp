@@ -34,9 +34,9 @@ namespace visp_tracker
 class TrackerClient : public rclcpp::Node
 {
 public:
-  typedef vpImage<unsigned char> image_t;
-  typedef std::vector<vpPoint> points_t;
-  typedef std::vector<vpImagePoint> imagePoints_t;
+  typedef vpImage< unsigned char > image_t;
+  typedef std::vector< vpPoint > points_t;
+  typedef std::vector< vpImagePoint > imagePoints_t;
 
   TrackerClient();
 
@@ -47,20 +47,20 @@ public:
 protected:
   void loadModel();
 
-  bool validatePose(const vpHomogeneousMatrix &cMo);
+  bool validatePose( const vpHomogeneousMatrix &cMo );
   vpHomogeneousMatrix loadInitialPose();
-  void saveInitialPose(const vpHomogeneousMatrix &cMo);
+  void saveInitialPose( const vpHomogeneousMatrix &cMo );
   points_t loadInitializationPoints();
 
   void init();
-  void initPoint(unsigned &i, points_t &points, imagePoints_t &imagePoints, rclcpp::Rate &rate, vpPose &pose);
+  void initPoint( unsigned &i, points_t &points, imagePoints_t &imagePoints, rclcpp::Rate &rate, vpPose &pose );
 
   void waitForImage();
 
-  void sendcMo(const vpHomogeneousMatrix &cMo);
+  void sendcMo( const vpHomogeneousMatrix &cMo );
 
-  std::string fetchResource(const std::string &);
-  bool makeModelFile(std::ofstream &modelStream, const std::string &resourcePath, std::string &fullModelPath);
+  std::string fetchResource( const std::string & );
+  bool makeModelFile( std::ofstream &modelStream, const std::string &resourcePath, std::string &fullModelPath );
 
 private:
   bool exiting() { return !rclcpp::ok(); }

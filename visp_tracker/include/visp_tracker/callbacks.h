@@ -4,31 +4,28 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
 
-#include <string>
 #include "rclcpp/rclcpp.hpp"
+#include <string>
 #include <visp3/core/vpImage.h>
+#include <visp3/klt/vpKltOpencv.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
 #include <visp3/me/vpMe.h>
-#include <visp3/klt/vpKltOpencv.h>
 
 /* TODO PORT ROS2
 #include <visp_tracker/msg/model_based_settings_config.hpp>
 
-#include <visp_tracker/ModelBasedSettingsKltConfig.h>
 #include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
+#include <visp_tracker/ModelBasedSettingsKltConfig.h>
 */
 
 void
-imageCallback_master(vpImage<unsigned char>& image,
-              const sensor_msgs::msg::Image::ConstSharedPtr& msg,
-              const sensor_msgs::msg::CameraInfo::ConstSharedPtr& info);
+imageCallback_master( vpImage< unsigned char > &image, const sensor_msgs::msg::Image::ConstSharedPtr &msg,
+                      const sensor_msgs::msg::CameraInfo::ConstSharedPtr &info );
 
 void
-imageCallback(vpImage<unsigned char>& image,
-              std_msgs::msg::Header& header,
-              sensor_msgs::msg::CameraInfo::ConstSharedPtr& info,
-              const sensor_msgs::msg::Image::ConstSharedPtr& msg,
-              const sensor_msgs::msg::CameraInfo::ConstSharedPtr& infoConst);
+imageCallback( vpImage< unsigned char > &image, std_msgs::msg::Header &header,
+               sensor_msgs::msg::CameraInfo::ConstSharedPtr &info, const sensor_msgs::msg::Image::ConstSharedPtr &msg,
+               const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst );
 
 /*
 void reconfigureCallback(vpMbGenericTracker &tracker,

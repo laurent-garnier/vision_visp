@@ -12,7 +12,6 @@
 <launch>
   <executable cmd="ros2 bag play install/visp_tracker/share/bag/tutorial-static-box --loop"/>
 
-  <!-- node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client" launch-prefix="gdb -ex run - -args" -->
   <node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client">
     <param name="model_path"    value="package://visp_tracker/models" />
     <param name="model_name"    value="laas-box" />

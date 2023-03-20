@@ -10,63 +10,80 @@
 #include "visp_tracker/file.h"
 #include "visp_tracker/names.h"
 
-std::string getInitFileFromModelName(const std::string &modelName, const std::string &defaultPath)
+std::string
+getInitFileFromModelName( const std::string &modelName, const std::string &defaultPath )
 {
   return std::string() + defaultPath + "/" + modelName + "/" + modelName + ".init";
 }
 
-std::string getHelpImageFileFromModelName(const std::string &modelName, const std::string &defaultPath)
+std::string
+getHelpImageFileFromModelName( const std::string &modelName, const std::string &defaultPath )
 {
   return std::string() + defaultPath + "/" + modelName + "/" + modelName + ".ppm";
 }
 
-std::string getModelFileFromModelName(const std::string &modelName, const std::string &defaultPath)
+std::string
+getModelFileFromModelName( const std::string &modelName, const std::string &defaultPath )
 {
   return std::string() + defaultPath + "/" + modelName + "/" + modelName;
 }
 
-std::string getConfigurationFileFromModelName(const std::string &modelName, const std::string &defaultPath)
+std::string
+getConfigurationFileFromModelName( const std::string &modelName, const std::string &defaultPath )
 {
   return std::string() + defaultPath + "/" + modelName + "/" + modelName + ".xml";
 }
 
-std::string getInitialPoseFileFromModelName(const std::string &modelName, const std::string &defaultPath)
+std::string
+getInitialPoseFileFromModelName( const std::string &modelName, const std::string &defaultPath )
 {
   return std::string() + defaultPath + "/" + modelName + "/" + modelName + ".0.pos";
 }
 
-bool makeModelFile(std::string modelDescription, std::ofstream &modelStream,
-                   std::string &fullModelPath)
+bool
+makeModelFile( std::string modelDescription, std::ofstream &modelStream, std::string &fullModelPath )
 {
-  RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), " Trying to load the model from the parameter server.");
+  RCLCPP_DEBUG_STREAM( rclcpp::get_logger( "rclcpp" ), " Trying to load the model from the parameter server." );
 
-  char *tmpname = strdup("/tmp/tmpXXXXXX"); // TODO use visp vpIoTools::makeTempDirectory()
-  if (mkdtemp(tmpname) == NULL) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to create the temporary directory: " << strerror(errno));
+  char *tmpname = strdup( "/tmp/tmpXXXXXX" ); // TODO use visp vpIoTools::makeTempDirectory()
+  if ( mkdtemp( tmpname ) == NULL )
+  {
+    RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
+                         "Failed to create the temporary directory: " << strerror( errno ) );
     return false;
   }
   // From the content of the model description check if the model is in vrml or in cao format
-  std::string vrml_header("#VRML #vrml");
-  std::string cao_header("V1");
-  std::filesystem::path path(tmpname);
-  if (modelDescription.compare(0, 5, vrml_header, 0, 5) == 0) {
+  std::string vrml_header( "#VRML #vrml" );
+  std::string cao_header( "V1" );
+  std::filesystem::path path( tmpname );
+  if ( modelDescription.compare( 0, 5, vrml_header, 0, 5 ) == 0 )
+  {
     path /= "model.wrl";
-  } else if (modelDescription.compare(0, 5, vrml_header, 6, 5) == 0) {
+  }
+  else if ( modelDescription.compare( 0, 5, vrml_header, 6, 5 ) == 0 )
+  {
     path /= "model.wrl";
-  } else if (modelDescription.compare(0, 2, cao_header) == 0) {
+  }
+  else if ( modelDescription.compare( 0, 2, cao_header ) == 0 )
+  {
     path /= "model.cao";
-  } else {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get model description from: " << path << " Given model description is -" << modelDescription << "-");
-    free(tmpname);
+  }
+  else
+  {
+    RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
+                         "Failed to get model description from: " << path << " Given model description is -"
+                                                                  << modelDescription << "-" );
+    free( tmpname );
     return false;
   }
-  free(tmpname);
+  free( tmpname );
 
   fullModelPath = path.native();
 
-  modelStream.open(path);
-  if (!modelStream.good()) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to create the temporary file: " << path);
+  modelStream.open( path );
+  if ( !modelStream.good() )
+  {
+    RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ), "Failed to create the temporary file: " << path );
     return false;
   }
   modelStream << modelDescription;

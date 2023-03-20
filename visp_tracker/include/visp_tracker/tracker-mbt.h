@@ -34,8 +34,13 @@ namespace visp_tracker
 class TrackerMbt : public rclcpp::Node
 {
 public:
-  typedef vpImage<unsigned char> image_t;
-  enum State { WAITING_FOR_INITIALIZATION, TRACKING, LOST };
+  typedef vpImage< unsigned char > image_t;
+  enum State
+  {
+    WAITING_FOR_INITIALIZATION,
+    TRACKING,
+    LOST
+  };
 
   TrackerMbt();
 
@@ -44,23 +49,25 @@ public:
   void spin();
 
 protected:
-  bool initCallback(const std::shared_ptr<rmw_request_id_t> request_header,
-                    const std::shared_ptr<visp_tracker::srv::Init::Request> req,
-                    std::shared_ptr<visp_tracker::srv::Init::Response> res);
+  bool initCallback( const std::shared_ptr< rmw_request_id_t > request_header,
+                     const std::shared_ptr< visp_tracker::srv::Init::Request > req,
+                     std::shared_ptr< visp_tracker::srv::Init::Response > res );
 
-  void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites &sites);
-  void updateKltPoints(visp_tracker::msg::KltPoints &klt);
+  void updateMovingEdgeSites( visp_tracker::msg::MovingEdgeSites &sites );
+  void updateKltPoints( visp_tracker::msg::KltPoints &klt );
 
   void waitForImage();
 
-  void objectPositionHintCallback(const geometry_msgs::msg::TransformStamped::SharedPtr);
+  void objectPositionHintCallback( const geometry_msgs::msg::TransformStamped::SharedPtr );
 
 private:
   bool exiting() { return !rclcpp::ok(); }
 
-  void declareDoubleParameter(const double min, const double max, const double deflt, const double step, const std::string descr);
-  void declareIntegerParameter(const int min, const int max, const int deflt, const int step, const std::string descr);
- 
+  void declareDoubleParameter( const double min, const double max, const double deflt, const double step,
+                               const std::string descr );
+  void declareIntegerParameter( const int min, const int max, const int deflt, const int step,
+                                const std::string descr );
+
   unsigned queueSize_;
 
   State state_;
@@ -81,12 +88,12 @@ private:
 
   std::recursive_mutex mutex_;
 
-  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr resultPublisher_;
-  rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transformationPublisher_;
-  rclcpp::Publisher<visp_tracker::msg::MovingEdgeSites>::SharedPtr movingEdgeSitesPublisher_;
-  rclcpp::Publisher<visp_tracker::msg::KltPoints>::SharedPtr kltPointsPublisher_;
+  rclcpp::Publisher< geometry_msgs::msg::PoseWithCovarianceStamped >::SharedPtr resultPublisher_;
+  rclcpp::Publisher< geometry_msgs::msg::TransformStamped >::SharedPtr transformationPublisher_;
+  rclcpp::Publisher< visp_tracker::msg::MovingEdgeSites >::SharedPtr movingEdgeSitesPublisher_;
+  rclcpp::Publisher< visp_tracker::msg::KltPoints >::SharedPtr kltPointsPublisher_;
 
-  rclcpp::Service<visp_tracker::srv::Init>::SharedPtr initService_;
+  rclcpp::Service< visp_tracker::srv::Init >::SharedPtr initService_;
   std_msgs::msg::Header header_;
   sensor_msgs::msg::CameraInfo::ConstSharedPtr info_;
 
@@ -99,7 +106,7 @@ private:
 
   vpHomogeneousMatrix cMo_;
 
-  rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr objectPositionHintSubscriber_; // ok
+  rclcpp::Subscription< geometry_msgs::msg::TransformStamped >::SharedPtr objectPositionHintSubscriber_; // ok
   geometry_msgs::msg::TransformStamped objectPositionHint_;
 };
 } // end of namespace visp_tracker.
