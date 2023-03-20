@@ -1,4 +1,4 @@
-#include "visp_auto_tracker/node.h"
+#include "visp_auto_tracker/autotracker.h"
 #include "visp_auto_tracker/names.h"
 
 //command line parameters
@@ -19,14 +19,9 @@
 #include <visp3/core/vpTime.h>
 
 //detectors
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-#  include "detectors/datamatrix/detector.h"
-#  include "detectors/qrcode/detector.h"
-#else
 #  include <visp3/detection/vpDetectorDataMatrixCode.h>
 #  include <visp3/detection/vpDetectorQRCode.h>
 #  include <visp3/detection/vpDetectorAprilTag.h>
-#endif
 
 #include <visp_bridge/camera.h>
 #include <visp_bridge/image.h>
@@ -37,12 +32,12 @@
 #include <resource_retriever/retriever.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
-#include "std_msgs/msg/int8.hpp"
-#include "std_msgs/msg/string.hpp"
-
+#include <std_msgs/msg/int8.hpp>
+#include <std_msgs/msg/string.hpp>
 namespace visp_auto_tracker{
-  Node::Node() :
-    n_("~"),
+  AutoTracker::AutoTracker()
+  :Node("visp_auto_tracker_node"),
+  
     queue_size_(1),
     tracker_config_path_(),
     model_description_(),
@@ -59,40 +54,40 @@ namespace visp_auto_tracker{
     //get the tracker configuration file
     //this file contains all of the tracker's parameters, they are not passed to ros directly.
     if (tracker_config_path_!= "") {
-      n_.declare_parameter<std::string>("tracker_config_path", tracker_config_path_, "");
+      this->declare_parameter<std::string>("tracker_config_path", tracker_config_path_);
     } else {
-      n_.declare_parameter<std::string>("tracker_config_path", "");
+      this->declare_parameter<std::string>("tracker_config_path");
     }
     if (debug_display_!= NULL) {
-      n_.declare_parameter<bool>("debug_display", debug_display_);
+      this->declare_parameter<bool>("debug_display", debug_display_);
     } else {
-      n_.declare_parameter<<bool>("debug_display", false);
+      this->declare_parameter<bool>("debug_display", false);
     }
     std::string model_full_path;
     if (model_path_!= "") {
-      n_.declare_parameter<std::string>("model_path", model_path_);
+      this->declare_parameter<std::string>("model_path", model_path_);
     } else {
-      n_.declare_parameter<std::string>("model_path", "");
+      this->declare_parameter<std::string>("model_path", "");
     }
     if (model_name_!= "") {
-      n_.declare_parameter<std::string>("model_name", model_name_);
+      this->declare_parameter<std::string>("model_name", model_name_);
     } else {
-      n_.declare_parameter<std::string>("model_name", "");
+      this->declare_parameter<std::string>("model_name", "");
     }
     if (code_message_!= "") {
-      n_.declare_parameter<std::string>("code_message", code_message_);
+      this->declare_parameter<std::string>("code_message", code_message_);
     } else {
-      n_.declare_parameter<std::string>("code_message", "");
+      this->declare_parameter<std::string>("code_message", "");
     }
     if (tracker_ref_frame_!= "") {
-      n_.declare_parameter<std::string>("tracker_ref_frame", tracker_ref_frame_);
+      this->declare_parameter<std::string>("tracker_ref_frame", tracker_ref_frame_);
     } else {
-      n_.declare_parameter<std::string>("tracker_ref_frame", "/map");
+      this->declare_parameter<std::string>("tracker_ref_frame", "/map");
     }
     model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
     model_full_path = model_path_+model_name_;
     tracker_config_path_ = model_full_path+".cfg";
-    RCLCPP_INFO(this->get_logger(),"model full path=%s",model_full_path.c_str());
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"model full path="<< model_full_path.c_str());
 
     //Parse command line arguments from config file (as ros param)
     cmd_.init(tracker_config_path_);
@@ -100,7 +95,7 @@ namespace visp_auto_tracker{
     cmd_.set_pattern_name(model_name_); //force model name
     cmd_.set_show_fps(false);
     if (! code_message_.empty()) {
-      RCLCPP_WARN_STREAM(this->get_logger(),"Track only code with message: \"" << code_message_ << "\"");
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Track only code with message: \"" << code_message_ << "\"");
       cmd_.set_code_message(code_message_);
     }
 
@@ -110,29 +105,29 @@ namespace visp_auto_tracker{
       res = r.get(std::string("file://")+cmd_.get_mbt_cad_file());
     }
     catch(...) {
-      RCLCPP_ERROR_STREAM(this->get_logger(),"Unable to read wrl or cao model file as resource: " << std::string("file://")+cmd_.get_mbt_cad_file());
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Unable to read wrl or cao model file as resource: " << std::string("file://")+cmd_.get_mbt_cad_file());
     }
 
     model_description_.resize(res.size);
     for (unsigned int i=0; i < res.size; ++i)
       model_description_[i] = res.data.get()[i];
 
-    RCLCPP_INFO(this->get_logger(),"Model content=%s",model_description_.c_str());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Model content=%s",model_description_.c_str());
 
     rclcpp::Parameter str_param("/model_description", model_description_);
-    n_->set_parameter(str_param);
+    set_parameter(str_param);
   }
 
-  void Node::waitForImage(){
+  void AutoTracker::waitForImage(){
     while ( rclcpp::ok()){
       if(got_image_) return;
-      ros::spin_some(n_);
+        rclcpp::spin_some( this->get_node_base_interface() );
     }
   }
 
   //records last recieved image
-  void Node::frameCallback(const sensor_msgs::msg::Image::ConstPtr& image, const sensor_msgs::msg::CameraInfo::ConstSharedPtr& cam_info){
-    std::mutex::scoped_lock(lock_);
+  void AutoTracker::frameCallback(const sensor_msgs::msg::Image::ConstPtr& image, const sensor_msgs::msg::CameraInfo::ConstSharedPtr& cam_info){
+    std::scoped_lock(lock_);
     image_header_ = image->header;
     I_ = visp_bridge::toVispImageRGBa(*image); //make sure the image isn't worked on by locking a mutex
     cam_ = visp_bridge::toVispCameraParameters(*cam_info);
@@ -140,7 +135,7 @@ namespace visp_auto_tracker{
     got_image_ = true;
   }
 
-  void Node::spin(){
+  void AutoTracker::spin(){
 
     if(cmd_.should_exit()) return; //exit if needed
 
@@ -152,19 +147,6 @@ namespace visp_auto_tracker{
       d = new vpDisplayX();
 
     //init detector based on user preference
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-    detectors::DetectorBase* detector = NULL;
-#if defined(VISP_HAVE_ZBAR) && defined(VISP_HAVE_DMTX)
-    if (cmd_.get_detector_type() == CmdLine::ZBAR)
-      detector = new detectors::qrcode::Detector;
-    else if(cmd_.get_detector_type() == CmdLine::DMTX)
-      detector = new detectors::datamatrix::Detector;
-#elif defined(VISP_HAVE_ZBAR)
-    detector = new detectors::qrcode::Detector;
-#elif defined(VISP_HAVE_DMTX)
-    detector = new detectors::datamatrix::Detector;
-#endif
-#else // ViSP >= 2.10.0. In that case we use the detectors from ViSP
     vpDetectorBase *detector = NULL;
 #if defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_APRILTAG)
     detector = new vpDetectorQRCode;
@@ -195,7 +177,6 @@ namespace visp_auto_tracker{
       detector = new vpDetectorAprilTag(tag_family);
     }
 #endif
-#endif
 
     // Use the best tracker
     int trackerType = vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER;
@@ -208,23 +189,38 @@ namespace visp_auto_tracker{
     t_->start(); //start the state machine
 
     //subscribe to ros topics and prepare a publisher that will publish the pose
-    message_filters::Subscriber<sensor_msgs::msg::image> raw_image_subscriber(n_, image_topic, queue_size_);
-    message_filters::Subscriber<sensor_msgs::msg::CameraInfo> camera_info_subscriber(n_, camera_info_topic, queue_size_);
-    message_filters::TimeSynchronizer<sensor_msgs::msg::image, sensor_msgs::msg::CameraInfo> image_info_sync(raw_image_subscriber, camera_info_subscriber, queue_size_);
-    image_info_sync.registerCallback(boost::bind(&Node::frameCallback,this, std::placeholders::_1, std::placeholders::_2));
-    // FIX TODO
-    rclcpp::Publisher object_pose_publisher<geometry_msgs::PoseStamped>::SharedPtr = n_.advertise<geometry_msgs::PoseStamped>(object_position_topic, queue_size_);
-    rclcpp::Publisher object_pose_covariance_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr = n_.advertise<geometry_msgs::msg::PoseWithCovarianceStamped>(object_position_covariance_topic, queue_size_);
-    rclcpp::Publisher moving_edge_sites_publisher<visp_tracker::msg::MovingEdgeSites>::SharedPtr = n_.advertise<visp_tracker::msg::MovingEdgeSites>(moving_edge_sites_topic, queue_size_);
-    rclcpp::Publisher klt_points_publisher<visp_tracker::msg::KltPoints>::SharedPtr = n_.advertise<visp_tracker::msg::KltPoints>(klt_points_topic, queue_size_);
-    rclcpp::Publisher status_publisher<std_msgs::Int8>::SharedPtr = n_.advertise<std_msgs::Int8>(status_topic, queue_size_);
-    rclcpp::Publisher<std_msgs::String>::::SharedPtr code_message_publisher = n_.advertise<std_msgs::String>(code_message_topic, queue_size_);
+    rclcpp::QoS qos(10);
+    auto rmw_qos_profile = qos.get_rmw_qos_profile();
 
+    message_filters::Subscriber<sensor_msgs::msg::Image> raw_image_subscriber;
+    message_filters::Subscriber<sensor_msgs::msg::CameraInfo> camera_info_subscriber;
+
+
+    raw_image_subscriber.subscribe(this, image_topic, rmw_qos_profile);
+    camera_info_subscriber.subscribe(this, camera_info_topic, rmw_qos_profile);
+
+    std::shared_ptr<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo>> image_info_sync;
+    image_info_sync = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo>>(raw_image_subscriber, camera_info_subscriber, queue_size_);
+    image_info_sync->registerCallback(std::bind(&AutoTracker::frameCallback,this, std::placeholders::_1, std::placeholders::_2));
+
+    rclcpp::Publisher <geometry_msgs::msg::PoseStamped>::SharedPtr object_pose_publisher;
+    rclcpp::Publisher <geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr object_pose_covariance_publisher;
+    rclcpp::Publisher <visp_tracker::msg::MovingEdgeSites>::SharedPtr moving_edge_sites_publisher;
+    rclcpp::Publisher <visp_tracker::msg::KltPoints>::SharedPtr klt_points_publisher;
+    rclcpp::Publisher <std_msgs::msg::Int8>::SharedPtr status_publisher;
+    rclcpp::Publisher <std_msgs::msg::String>::SharedPtr code_message_publisher;
+
+    object_pose_publisher = this->create_publisher<geometry_msgs::msg::PoseStamped>(object_position_topic, queue_size_);
+    object_pose_covariance_publisher = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(object_position_covariance_topic, queue_size_);
+    moving_edge_sites_publisher = this->create_publisher<visp_tracker::msg::MovingEdgeSites>(moving_edge_sites_topic, queue_size_);
+    klt_points_publisher = this->create_publisher<visp_tracker::msg::KltPoints>(klt_points_topic, queue_size_);
+    status_publisher = this->create_publisher<std_msgs::msg::Int8>(status_topic, queue_size_);
+    code_message_publisher = this->create_publisher<std_msgs::msg::String>(code_message_topic, queue_size_);
     //wait for an image to be ready
     waitForImage();
     {
       //when an image is ready tell the tracker to start searching for patterns
-      std::mutex::scoped_lock(lock_);
+      std::scoped_lock(lock_);
       if(debug_display_) {
         d->init(I_); //also init display
         vpDisplay::setTitle(I_, "visp_auto_tracker debug display");
@@ -234,13 +230,13 @@ namespace visp_auto_tracker{
     }
 
     unsigned int iter=0;
-    geometry_msgs::PoseStamped ps;
+    geometry_msgs::msg::PoseStamped ps;
     geometry_msgs::msg::PoseWithCovarianceStamped ps_cov;
 
     rclcpp::Rate rate(30); //init 25fps publishing frequency
     while(rclcpp::ok()){
       double t = vpTime::measureTimeMs();
-      std::mutex::scoped_lock(lock_);
+      std::scoped_lock(lock_);
       //process the new frame with the tracker
       t_->process_event(tracking::input_ready(I_,cam_,iter));
       //When the tracker is tracking, it's in the tracking::TrackModel state
@@ -250,15 +246,16 @@ namespace visp_auto_tracker{
       ps.pose = visp_bridge::toGeometryMsgsPose(track_model.cMo); //convert
 
       // Publish resulting pose.
-      if (object_pose_publisher.getNumSubscribers	() > 0)
+      // count_subscribers
+      if (this->count_subscribers(object_position_topic) > 0)
       {
         ps.header = image_header_;
         ps.header.frame_id = tracker_ref_frame_;
-        object_pose_publisher.publish(ps);
+        object_pose_publisher->publish(ps);
       }
 
       // Publish resulting pose covariance matrix.
-      if (object_pose_covariance_publisher.getNumSubscribers	() > 0)
+      if (this->count_subscribers(object_position_covariance_topic) > 0)
       {
         ps_cov.pose.pose = ps.pose;
         ps_cov.header = image_header_;
@@ -275,62 +272,58 @@ namespace visp_auto_tracker{
           }
         }
 
-        object_pose_covariance_publisher.publish(ps_cov);
+        object_pose_covariance_publisher->publish(ps_cov);
       }
 
       // Publish state machine status.
-      if (status_publisher.getNumSubscribers	() > 0)
+      if (this->count_subscribers(status_topic) > 0)
       {
-        std_msgs::Int8 status;
+        std_msgs::msg::Int8 status;
         status.data = (unsigned char)(*(t_->current_state()));
-        status_publisher.publish(status);
+        status_publisher->publish(status);
       }
 
       // Publish moving edge sites.
-      if (moving_edge_sites_publisher.getNumSubscribers	() > 0)
+      if (this->count_subscribers(moving_edge_sites_topic) > 0)
       {
-        visp_tracker::msg::MovingEdgeSites& sites (new visp_tracker::msg::MovingEdgeSites);
+        visp_tracker::msg::MovingEdgeSites sites;
         // Test if we are in the state tracking::TrackModel. In that case the pose is good;
         // we can send the moving edges. Otherwise we send an empty list of features
         if (*(t_->current_state()) == 3) {
           t_->updateMovingEdgeSites(sites);
         }
 
-        sites->header = image_header_;
-        moving_edge_sites_publisher.publish(sites);
+        sites.header = image_header_;
+        moving_edge_sites_publisher->publish(sites);
       }
 
       // Publish KLT points.
-      if (klt_points_publisher.getNumSubscribers	() > 0)
+      if (this->count_subscribers(klt_points_topic) > 0)
       {
-        visp_tracker::msg::KltPoints& klt (new visp_tracker::msg::KltPoints);
+        visp_tracker::msg::KltPoints klt;
         // Test if we are in the state tracking::TrackModel. In that case the pose is good;
         // we can send the klt points. Otherwise we send an empty list of features
         if (*(t_->current_state()) == 3) {
           t_->updateKltPoints(klt);
         }
-        klt->header = image_header_;
-        klt_points_publisher.publish(klt);
+        klt.header = image_header_;
+        klt_points_publisher->publish(klt);
       }
 
-      if (code_message_publisher.getNumSubscribers() > 0)
+      if (this->count_subscribers(code_message_topic) > 0)
       {
-        std_msgs::String message;
+        std_msgs::msg::String message;
         if (*(t_->current_state()) == 3) { // Tracking successful
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-          message.data = detector->get_message();
-#else
           message.data = detector->getMessage( cmd_.get_code_message_index() );
-#endif
         }
         else {
           message.data = std::string();
         }
-        code_message_publisher.publish(message);
-        RCLCPP_INFO_STREAM(this->get_logger(),("Code with message \"" <<  message.data << "\" under tracking");
+        code_message_publisher->publish(message);
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Code with message \"" <<  message.data << "\" under tracking");
       }
 
-      rclcpp::spin_some(this);
+      rclcpp::spin_some(this->get_node_base_interface());
       rate.sleep();
       if (cmd_.show_fps())
         std::cout << "Tracking done in " << vpTime::measureTimeMs() - t << " ms" << std::endl;

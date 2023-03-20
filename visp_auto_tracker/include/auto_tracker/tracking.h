@@ -28,11 +28,7 @@
 #include <visp_tracker/msg/moving_edge_sites.hpp>
 
 #include "cmd_line/cmd_line.h"
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-#include "detectors/detector_base.h"
-#else
 #  include <visp/vpDetectorBase.h>
-#endif
 
 #include <visp/vpMbEdgeTracker.h>
 #include "auto_tracker/states.hpp"
@@ -61,11 +57,7 @@ namespace tracking{
     int iter_;
     vpImagePoint flashcode_center_;
     std::ofstream varfile_;
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-    detectors::DetectorBase* detector_;
-#else
     vpDetectorBase *detector_;
-#endif
     typedef boost::array<vpHinkley,6> hinkley_array_t;
     hinkley_array_t hink_;
 
@@ -94,11 +86,7 @@ namespace tracking{
     //getters to access useful members
     void set_flush_display(bool val);
     bool get_flush_display();
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-    detectors::DetectorBase& get_detector();
-#else
     vpDetectorBase& get_detector();
-#endif
     vpMbTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();
     std::vector<vpPoint>& get_points3D_outer();

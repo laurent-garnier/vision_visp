@@ -1,5 +1,5 @@
-#ifndef __VISP_AUTO_TRACKER_NODE_H__
-#define __VISP_AUTO_TRACKER_NODE_H__
+#ifndef __VISP_AUTO_TRACKER_H__
+#define __VISP_AUTO_TRACKER_H__
 #include <rclcpp/rclcpp.hpp>
 
 #include <visp3/core/vpConfig.h>
@@ -16,10 +16,10 @@
 #include <sstream>
 
 namespace visp_auto_tracker{
-  class Node{
+  class AutoTracker : public rclcpp::Node 
+  {
   private:
     std::mutex lock_;
-    rclcpp::Node n_;
     unsigned long queue_size_;
     std::string tracker_config_path_;
     std::string model_description_;
@@ -43,7 +43,7 @@ namespace visp_auto_tracker{
     void frameCallback(const sensor_msgs::msg::Image::ConstPtr& image, const sensor_msgs::msg::CameraInfo::ConstSharedPtr& cam_info);
 
   public:
-    Node();
+    AutoTracker();
     void spin();
   };
 };

@@ -34,7 +34,7 @@ namespace tracking{
 
   struct Finished : public msm::front::state<>{
     template <class Event, class Fsm>
-    void on_entry(Event const& evt, Fsm& fsm){
+    void on_entry(Event const& /*evt*/, Fsm& fsm){
       if(fsm.get_cmd().get_verbose())
       {
         typename Fsm::statistics_t& statistics = fsm.get_statistics();
@@ -99,7 +99,7 @@ std::nth_element(b, med, e);
     void on_entry(finished const& evt, Fsm& fsm){}
 
     template <class Fsm>
-    void on_exit(finished const& evt, Fsm& fsm){}
+    void on_exit(finished const& /*evt*/, Fsm& /*fsm*/){}
 
     template <class Event, class Fsm>
     void on_entry(Event const&, Fsm& fsm)
@@ -115,17 +115,7 @@ std::nth_element(b, med, e);
       if(fsm.get_flush_display()) {
         vpDisplay::display(evt.I);
       }
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-      std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
-      if(polygon.size()!=4) {
-        if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
-        return;
-      }
-      corner0 = vpImagePoint (polygon[0].y,polygon[0].x);
-      corner1 = vpImagePoint (polygon[1].y,polygon[1].x);
-      corner2 = vpImagePoint (polygon[2].y,polygon[2].x);
-      corner3 = vpImagePoint (polygon[3].y,polygon[3].x);
-#else
+
       // TODO: add a parameter to be able to select the QRcode from it's message
       // For the moment we get the position of the first code that is the largest in the image
       std::vector< std::vector< vpImagePoint > > polygons = fsm.get_detector().getPolygon();
@@ -140,31 +130,7 @@ std::nth_element(b, med, e);
       corner1 = polygon[1];
       corner2 = polygon[2];
       corner3 = polygon[3];
-#endif
 
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-      if(0){//fsm.get_flush_display()){
-        vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
-        if(polygon.size()==0){
-          vpDisplay::displayText(evt.I,vpImagePoint(0,0),std::string("TRACKING LOST"),vpColor::red);
-          vpDisplay::flush(evt.I);
-          return;
-        }
-
-        std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_detector().get_lines();
-        for(std::vector<std::pair<cv::Point,cv::Point> >::iterator i = lines.begin();
-            i!=lines.end();
-            i++
-            ){
-          vpDisplay::displayLine(evt.I,vpImagePoint(i->first.y,i->first.x),vpImagePoint(i->second.y,i->second.x),getColor(),2);
-        }
-        vpDisplay::displayText(evt.I,corner0,std::string("1"),vpColor::blue);
-        vpDisplay::displayText(evt.I,corner1,std::string("2"),vpColor::yellow);
-        vpDisplay::displayText(evt.I,corner2,std::string("3"),vpColor::cyan);
-        vpDisplay::displayText(evt.I,corner3,std::string("4"),vpColor::darkRed);
-
-      }
-#endif
       vpDisplay::flush(evt.I);
     }
   };
@@ -193,7 +159,7 @@ std::nth_element(b, med, e);
     void on_entry(finished const& evt, Fsm& fsm){}
 
     template <class Fsm>
-    void on_exit(finished const& evt, Fsm& fsm){}
+    void on_exit(finished const& /*evt*/, Fsm& /*fsm*/){}
 
     template <class Event, class Fsm>
     void on_entry(Event const&, Fsm& fsm)
@@ -202,7 +168,7 @@ std::nth_element(b, med, e);
         std::cout <<"entering: DetectModel" << std::endl;
     }
     template <class Event, class Fsm>
-    void on_exit(Event const& evt, Fsm& fsm)
+    void on_exit(Event const& /*evt*/, Fsm& fsm)
     {
       if(fsm.get_cmd().get_verbose())
         std::cout <<"leaving: DetectModel" << std::endl;
@@ -271,10 +237,10 @@ std::nth_element(b, med, e);
     }
 
     template <class Fsm>
-    void on_exit(finished const& evt, Fsm& fsm){}
+    void on_exit(finished const& /*evt*/, Fsm& /*fsm*/ ){}
 
     template <class Event, class Fsm>
-    void on_entry(Event const& evt, Fsm& fsm)
+    void on_entry(Event const& /*evt*/, Fsm& fsm)
     {
       if(fsm.get_cmd().show_plot() && plot_ == NULL){
         plot_ = new vpPlot(1, 700, 700, 100, 200, "Variances");

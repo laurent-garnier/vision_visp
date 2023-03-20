@@ -84,11 +84,7 @@ namespace tracking{
     tracker_->setCameraParameters(cam_); // Set the good camera parameters coming from camera_info message
   }
 
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-  detectors::DetectorBase& Tracker_:: get_detector(){
-#else
   vpDetectorBase& Tracker_:: get_detector(){
-#endif
     return *detector_;
   }
 
@@ -145,24 +141,7 @@ namespace tracking{
   }
 
   bool Tracker_:: flashcode_detected(input_ready const& evt){
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-    //this->cam_ = evt.cam_;
 
-    cv::Mat rgba = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
-
-    cv::Mat bgr = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC3);
-    cv::Mat alpha((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC1);
-
-    cv::Mat out[] = {bgr, alpha};
-    // rgba[0] -> bgr[2], rgba[1] -> bgr[1],
-    // rgba[2] -> bgr[0], rgba[3] -> alpha[0]
-    int from_to[] = { 0,2,  1,1,  2,0,  3,3 };
-    cv::mixChannels(&rgba, 1, out, 2, from_to, 4);
-
-    //vpImageConvert::convert(evt.I,bgr);
-
-    return detector_->detect(bgr,cmd.get_dmx_timeout(),0,0);
-#else
     vpImageConvert::convert(evt.I, Igray_);
     detector_->detect(Igray_);
     if (detector_->getNbObjects()) {
@@ -183,7 +162,6 @@ namespace tracking{
       }
     }
     return false;
-#endif
   }
 
   /*
@@ -191,33 +169,7 @@ namespace tracking{
    * The timeout is the default timeout times the surface ratio
    */
   bool Tracker_:: flashcode_redetected(input_ready const& evt){
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-    //this->cam_ = evt.cam_;
 
-    //vpImageConvert::convert(evt.I,cvI);
-    cv::Mat rgba = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
-
-    cv::Mat bgr = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC3);
-    cv::Mat alpha((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC1);
-
-    cv::Mat out[] = {bgr, alpha};
-    // rgba[0] -> bgr[2], rgba[1] -> bgr[1],
-    // rgba[2] -> bgr[0], rgba[3] -> alpha[0]
-    int from_to[] = { 0,2,  1,1,  2,0,  3,3 };
-    cv::mixChannels(&rgba, 1, out, 2, from_to, 4);
-
-    if (cvTrackingBox_init_)
-    {
-      cv::Mat subImage = cv::Mat(bgr,get_tracking_box<cv::Rect>()).clone();
-
-      double timeout = cmd.get_dmx_timeout()*(double)(get_tracking_box<cv::Rect>().width*get_tracking_box<cv::Rect>().height)/(double)(bgr.cols*bgr.rows);
-      return detector_->detect(subImage,(unsigned int)timeout,get_tracking_box<cv::Rect>().x,get_tracking_box<cv::Rect>().y);
-    }
-    else
-    {
-      return detector_->detect(bgr,cmd.get_dmx_timeout(),0,0);
-    }
-#else
     // TODO, use boundig box as for ViSP < 2.10.0
     vpImageConvert::convert(evt.I, Igray_);
     detector_->detect(Igray_);
@@ -239,27 +191,12 @@ namespace tracking{
       }
     }
     return false;
-#endif
   }
 
   void Tracker_:: find_flashcode_pos(input_ready const& evt){
     this->cam_ = evt.cam_;
 
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-    std::vector<cv::Point> polygon = detector_->get_polygon();
-    double centerX = (double)(polygon[0].x+polygon[1].x+polygon[2].x+polygon[3].x)/4.;
-    double centerY = (double)(polygon[0].y+polygon[1].y+polygon[2].y+polygon[3].y)/4.;
-    vpPixelMeterConversion::convertPoint(cam_, flashcode_center_, centerX, centerY);
 
-    for(unsigned int i=0;i<f_.size();i++){
-      double x=0, y=0;
-      vpImagePoint poly_pt(polygon[i].y,polygon[i].x);
-
-      vpPixelMeterConversion::convertPoint(cam_, poly_pt, x, y);
-      f_[i].set_x(x);
-      f_[i].set_y(y);
-    }
-#else
     // TODO: add a parameter to be able to select the QRcode from it's message
     // For the moment we get the position of the first code that is the largest in the image
     std::vector< std::vector< vpImagePoint > > polygons = detector_->getPolygon();
@@ -279,7 +216,6 @@ namespace tracking{
       f_[i].set_x(x);
       f_[i].set_y(y);
     }
-#endif
 
     I_ = _I = &(evt.I);
   }
@@ -334,7 +270,7 @@ namespace tracking{
       {
         vpCameraParameters cam;
         tracker_->getCameraParameters(cam);
-        if (cam.get_px() != 558) RCLCPP_INFO_STREAM(this->get_logger(),"detection Camera parameters: \n" << cam_);
+        if (cam.get_px() != 558) RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"detection Camera parameters: \n" << cam_);
       }
 
       tracker_->initFromPose(Igray_,cMo_);
@@ -515,9 +451,8 @@ namespace tracking{
   void
   Tracker_::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites& sites)
   {
-    if (!sites)
-      return;
 
+    rclcpp::Clock clock;
     std::list<vpMbtDistanceLine*> linesList;
 
     if(cmd.get_tracker_type() != CmdLine::KLT) // For mbt and hybrid
@@ -525,7 +460,7 @@ namespace tracking{
 
     std::list<vpMbtDistanceLine*>::iterator linesIterator = linesList.begin();
     if (linesList.empty())
-      ROS_DEBUG_THROTTLE(10, "no distance lines");
+      RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("rclcpp"), clock, 10, "no distance lines");
     bool noVisibleLine = true;
     for (; linesIterator != linesList.end(); ++linesIterator)
     {
@@ -543,18 +478,18 @@ namespace tracking{
           if(line->meline[a] != NULL) {
             std::list<vpMeSite>::const_iterator sitesIterator = line->meline[a]->getMeList().begin();
             if (line->meline[a]->getMeList().empty())
-              ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+              RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("rclcpp"), clock, 10, "no moving edge for a line");
             for (; sitesIterator != line->meline[a]->getMeList().end(); ++sitesIterator)
 #elif VISP_VERSION_INT >= VP_VERSION_INT(2,10,0) // ViSP >= 2.10.0
         if (line->meline->getMeList().empty()) {
-          ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+          RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("rclcpp"), clock, 10, "no moving edge for a line");
         }
         std::list<vpMeSite>::const_iterator sitesIterator = line->meline->getMeList().begin();
 
         for (; sitesIterator != line->meline->getMeList().end(); ++sitesIterator)
 #else
         if (line->meline->list.empty()) {
-          ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+          RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("rclcpp"), clock, 10, "no moving edge for a line");
         }
         std::list<vpMeSite>::const_iterator sitesIterator = line->meline->list.begin();
 
@@ -564,10 +499,7 @@ namespace tracking{
           visp_tracker::msg::MovingEdgeSite movingEdgeSite;
           movingEdgeSite.x = sitesIterator->ifloat;
           movingEdgeSite.y = sitesIterator->jfloat;
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)// ViSP < 2.10.0
-          movingEdgeSite.suppress = sitesIterator->suppress;
-#endif
-          sites->moving_edge_sites.push_back (movingEdgeSite);
+          sites.moving_edge_sites.push_back (movingEdgeSite);
         }
         noVisibleLine = false;
       }
@@ -577,42 +509,13 @@ namespace tracking{
 #endif
 }
 if (noVisibleLine)
-ROS_DEBUG_THROTTLE(10, "no distance lines");
+RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("rclcpp"),clock, 10, "no distance lines");
 }
 
 void
 Tracker_::updateKltPoints(visp_tracker::msg::KltPoints& klt)
 {
-  if (!klt)
-    return;
 
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)// ViSP < 2.10.0
-  vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
-  std::map<int, vpImagePoint> *map_klt;
-
-  if(cmd.get_tracker_type() != CmdLine::MBT) // For klt and hybrid
-    poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFaces();
-
-  for(unsigned int i = 0 ; i < poly_lst->size() ; i++)
-  {
-    if((*poly_lst)[i])
-    {
-      map_klt = &((*poly_lst)[i]->getCurrentPoints());
-
-      if(map_klt->size() > 3)
-      {
-        for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
-        {
-          visp_tracker::msg::KltPoint kltPoint;
-          kltPoint.id = it->first;
-          kltPoint.i = it->second.get_i();
-          kltPoint.j = it->second.get_j();
-          klt->klt_points_positions.push_back (kltPoint);
-        }
-      }
-    }
-  }
-#else // ViSP >= 2.10.0
   std::list<vpMbtDistanceKltPoints*> *poly_lst;
   std::map<int, vpImagePoint> *map_klt;
 
@@ -631,13 +534,12 @@ Tracker_::updateKltPoints(visp_tracker::msg::KltPoints& klt)
             kltPoint.id = it->first;
             kltPoint.i = it->second.get_i();
             kltPoint.j = it->second.get_j();
-            klt->klt_points_positions.push_back (kltPoint);
+            klt.klt_points_positions.push_back (kltPoint);
           }
         }
       }
     }
   }
-#endif
 }
 }
 

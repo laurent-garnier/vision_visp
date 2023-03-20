@@ -25,84 +25,61 @@ find_package(rosidl_default_generators REQUIRED)
 
 find_package(VISP REQUIRED COMPONENTS visp_core)
 
-if(VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG)
-include_directories(
-  ${VISP_INCLUDE_DIRS}
-)
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # ############
 # Libraries #
 # ############
 # Library gathering libauto_tracker used by all nodes.
-add_library(${PROJECT_NAME}_cmd_line
+
+add_library(${PROJECT_NAME}_common
     src/flashcode_mbt/cmd_line/cmd_line.cpp
-)
-target_link_libraries(${PROJECT_NAME}_cmd_line
-  ${resource_retriever_LIBRARIES}
-)
-
-if(VISP_VERSION VERSION_LESS "2.10.0")
-  add_library(${PROJECT_NAME}_qrcode_detector
-    src/flashcode_mbt/detectors/detector_base.cpp
-    src/flashcode_mbt/detectors/qrcode/detector.cpp
+    src/auto_tracker/threading.cpp
+    src/auto_tracker/tracking.cpp
   )
-  target_link_libraries(${PROJECT_NAME}_qrcode_detector
-    ${resource_retriever_LIBRARIES}
-    zbar)
 
-  add_library(${PROJECT_NAME}_datamatrix_detector
-    src/flashcode_mbt/detectors/datamatrix/detector.cpp
-    src/flashcode_mbt/detectors/detector_base.cpp
-  )
-  target_link_libraries(${PROJECT_NAME}_datamatrix_detector
-    ${resource_retriever_LIBRARIES}
-    dmtx)
-endif()
-
-add_library(${PROJECT_NAME}
-  src/auto_tracker/threading.cpp
-  src/auto_tracker/tracking.cpp
-)
-
-
-ament_target_dependencies(${PROJECT_NAME}
+ament_target_dependencies(${PROJECT_NAME}_common
+  geometry_msgs
   rclcpp
+  sensor_msgs
+  std_msgs
+  rclcpp
+  resource_retriever
   visp_tracker
+  VISP
 )
 
-if(VISP_VERSION VERSION_LESS "2.10.0")
-  target_link_libraries(visp_auto_tracker
-      ${PROJECT_NAME}_cmd_line
-      ${PROJECT_NAME}_qrcode_detector
-      ${PROJECT_NAME}_datamatrix_detector
-      ${resource_retriever_LIBRARIES}
-  )
-else()
-  target_link_libraries(${PROJECT_NAME}
-      ${PROJECT_NAME}_cmd_line
-      ${resource_retriever_LIBRARIES}
-  )
-endif()
+target_include_directories(${PROJECT_NAME}_common PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+
+target_link_libraries(${PROJECT_NAME}_common
+  ${VISP_LIBRARIES}
+#  "${cpp_typesupport_target}"
+)
+
 
 add_executable(${PROJECT_NAME}_main
   src/${PROJECT_NAME}/main.cpp
   src/${PROJECT_NAME}/names.cpp
-  src/${PROJECT_NAME}/node.cpp
+  src/${PROJECT_NAME}/autotracker.cpp
   )
 target_link_libraries(${PROJECT_NAME}_main
   "${cpp_typesupport_target}"
   ${VISP_LIBRARIES}
-)
+  ${PROJECT_NAME}_common
+  )
 
 ament_target_dependencies(${PROJECT_NAME}_main
   rclcpp
   message_filters
+  std_msgs
+  geometry_msgs
+  resource_retriever
   sensor_msgs
   visp_tracker
   visp_bridge
-  resource_retriever
 )
 
 target_include_directories(${PROJECT_NAME}_main PUBLIC
@@ -120,68 +97,58 @@ if(COLCON_ENABLE_TESTING)
   add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_bag)
 endif()
 
-if(VISP_VERSION VERSION_LESS "2.10.0")
-  target_link_libraries(${PROJECT_NAME}
-    ${PROJECT_NAME}
-    ${PROJECT_NAME}_qrcode_detector
-    ${PROJECT_NAME}_datamatrix_detector
-    ${PROJECT_NAME}_cmd_line
-    dmtx zbar)
 
-  target_link_libraries(${PROJECT_NAME}
-    ${resource_retriever_LIBRARIES})
-
-  install(
-    TARGETS
-      ${PROJECT_NAME}
-      ${PROJECT_NAME}
-      ${PROJECT_NAME}_cmd_line
-      ${PROJECT_NAME}_datamatrix_detector
-      ${PROJECT_NAME}_qrcode_detector
-    ARCHIVE DESTINATION lib/${PROJECT_NAME}
-    LIBRARY DESTINATION lib/${PROJECT_NAME}
-    RUNTIME DESTINATION bin/${PROJECT_NAME}
-  )
-else()
 #  target_link_libraries(${PROJECT_NAME}
 #    ${PROJECT_NAME}
 #    ${resource_retriever_LIBRARIES})
 
-  install(
-    TARGETS
-      ${PROJECT_NAME}_main
-#      ${PROJECT_NAME}_cmd_line
-    ARCHIVE DESTINATION lib/${PROJECT_NAME}
-    LIBRARY DESTINATION lib/${PROJECT_NAME}
-    RUNTIME DESTINATION bin/${PROJECT_NAME}
-  )
-endif()
-
-install(DIRECTORY launch
-  DESTINATION ${PROJECT_NAME}
+install(
+  TARGETS
+  ${PROJECT_NAME}_main
+  DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY models
-  DESTINATION ${PROJECT_NAME}
+install(DIRECTORY
+  launch models
+  DESTINATION share/${PROJECT_NAME}
 )
 
 #############
 # Bag files #
 #############
 
-# Tutorial
-if(COLCON_ENABLE_TESTING)
-  catkin_download_test_data(
-    ${PROJECT_NAME}_bag
-    https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
-    DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
-    MD5 0f80ceea2610b8400591ca7aff764dfa)
+include(ExternalProject)
+ExternalProject_Add(
+    external_bag
+    PREFIX "externals"
+    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
+    DOWNLOAD_NO_EXTRACT true
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+)
 
-  install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
-    DESTINATION ${PROJECT_NAME}
-  )
+ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
+message("Successfully download ${DOWNLOADED_FILE}")
+
+set(MAKE_CMD "rosbags-convert")
+execute_process(COMMAND ${MAKE_CMD} ${DOWNLOADED_FILE}
+                WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/externals/src"
+                RESULT_VARIABLE CMD_STATUS
+                OUTPUT_FILE CMD_OUTPUT)
+
+if(STATUS AND NOT CMD_STATUS EQUAL 0)
+    message("Failed to convert bagfile: ${CMD_STATUS}")
+else()
+    message("Successfully convert bagfile to ros2")
 endif()
-else() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG
-message("${PROJECT_NAME} build is disabled since ViSP is not built with libzbar-dev 3rd party")
-endif() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG
 
+install(DIRECTORY
+  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box
+  DESTINATION share/bag
+)
+message("Bagfile instal in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box")
+
+ament_export_dependencies(rosidl_default_runtime)
+
+ament_package()
