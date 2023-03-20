@@ -12,7 +12,7 @@
   <executable cmd="ros2 bag play install/visp_auto_tracker/share/bag/tutorial-qrcode --loop"/>
 
   <!-- Launch the tracking node -->
-  <node pkg="visp_auto_tracker" exec="visp_auto_tracker" name="visp_auto_tracker" output="screen">
+  <node pkg="visp_auto_tracker" exec="visp_auto_tracker_main" name="visp_auto_tracker" output="screen">
     <param name="model_path" value="package://visp_auto_tracker/models" />
     <param name="model_name" value="pattern" />
     <param name="debug_display" value="True" />

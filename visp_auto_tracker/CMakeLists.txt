@@ -144,10 +144,10 @@ else()
 endif()
 
 install(DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box
+  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode
   DESTINATION share/bag
 )
-message("Bagfile instal in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box")
+message("Bagfile instal in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-qrcode")
 
 ament_export_dependencies(rosidl_default_runtime)
 
