@@ -121,11 +121,6 @@ target_link_libraries(${PROJECT_NAME}_viewer
   ${VISP_LIBRARIES}
 )
 
-target_include_directories(${PROJECT_NAME}_common PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
-)
-
 install(
   TARGETS
   ${PROJECT_NAME}_viewer
