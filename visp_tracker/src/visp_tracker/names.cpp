@@ -10,7 +10,6 @@ std::string klt_points_topic( "klt_points" );
 std::string camera_velocity_topic( "camera_velocity" );
 std::string init_service( "init_tracker" );
 std::string init_viewer_service( "init_tracker_viewer" );
-std::string reconfigure_viewer_service( "reconfigure_tracker_viewer" );
 
 std::string default_model_path( "package://visp_tracker/models" );
 

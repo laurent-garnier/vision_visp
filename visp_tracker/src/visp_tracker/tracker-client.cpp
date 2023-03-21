@@ -4,11 +4,8 @@
 #include <stdexcept>
 
 #include <rclcpp/rclcpp.hpp>
-// #include <rclcpp/package.h>
-// #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.h>
 #include <visp_tracker/srv/init.hpp>
-// #include <visp_tracker/msg/model_based_settings_config.hpp>
 
 #include <visp3/core/vpPixelMeterConversion.h>
 #include <visp3/me/vpMe.h>
@@ -38,7 +35,6 @@ TrackerClient::TrackerClient()
 {
   // checks if param_name is exist the command pass the value of param in variable but if the param
   // doesn't exist then the command pass "default" to variable
-  RCLCPP_INFO( this->get_logger(), "-------1------" );
 
   modelPath_          = this->declare_parameter< std::string >( "model_path", visp_tracker::default_model_path );
   modelName_          = this->declare_parameter< std::string >( "model_name", "laas-box" );
@@ -48,7 +44,6 @@ TrackerClient::TrackerClient()
   trackerType_        = this->declare_parameter< std::string >( "tracker_type", "mtb" );
   cameraPrefix_       = this->declare_parameter< std::string >( "camera_prefix", "/wide_left/camera" );
   this->declare_parameter< std::string >( visp_tracker::model_description_param, "" );
-  RCLCPP_INFO( this->get_logger(), "-------2------" );
 
   if ( trackerType_ == "mbt" )
     tracker_.setTrackerType( vpMbGenericTracker::EDGE_TRACKER );
@@ -60,13 +55,12 @@ TrackerClient::TrackerClient()
   if ( modelName_.empty() )
     throw std::runtime_error( "Error: empty model\n"
                               "Relaunch the client while setting the model_name parameter, i.e.\n"
-                              "$ ros2 run visp_tracker visp_tracker_client model_name:=my-model" );
+                              "$ ros2 launch visp_tracker visp_tracker_client model_name:=my-model" );
 
   // Compute topic and services names.
   rclcpp::Rate rate( 1 );
   while ( cameraPrefix_.empty() )
   {
-    RCLCPP_INFO( this->get_logger(), "-------3.------" );
     if ( !this->get_parameter( "camera_prefix", cameraPrefix_ ) &&
          !this->get_parameter( "~camera_prefix", cameraPrefix_ ) )
     {
@@ -708,7 +702,7 @@ TrackerClient::init()
       } while ( rclcpp::ok() && !vpDisplay::getClick( image_, ip, button, false ) );
 
       imagePoints.push_back( ip );
-      vpDisplay::displayCross( image_, imagePoints.back(), 5, vpColor::green );
+      vpDisplay::displayCross( image_, imagePoints.back(), 10, vpColor::green );
       vpDisplay::flush( image_ );
     }
 
@@ -739,7 +733,7 @@ TrackerClient::initPoint( unsigned &i, points_t &points, imagePoints_t &imagePoi
     vpDisplay::displayText( image_, 15, 10, fmt.c_str(), vpColor::red );
 
     for ( unsigned j = 0; j < imagePoints.size(); ++j )
-      vpDisplay::displayCross( image_, imagePoints[j], 5, vpColor::green );
+      vpDisplay::displayCross( image_, imagePoints[j], 10, vpColor::green );
 
     vpDisplay::flush( image_ );
     rate.sleep();

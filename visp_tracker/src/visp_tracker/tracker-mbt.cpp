@@ -1,20 +1,3 @@
-/*#include <stdexcept>
-
-//#include <dynamic_reconfigure/server.hpp>
-#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <image_transport/image_transport.hpp>
-#include <rclcpp/param.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp/transport_hints.hpp>
-#include <sensor_msgs/Image.hpp>
-#include <std_msgs/msg/string.hpp>
-#include <tf/transform_broadcaster.hpp>
-
-#include <visp3/core/vpCameraParameters.h>
-#include <visp3/core/vpExponentialMap.h>
-#include <visp3/core/vpImage.h>
-#include <visp3/core/vpImageConvert.h>
-*/
 #include "visp_tracker/tracker-mbt.h"
 
 #include "visp_tracker/callbacks.h"
@@ -187,8 +170,6 @@ void
 TrackerMbt::declareDoubleParameter( const double min, const double max, const double step, const double deflt,
                                     const std::string descr )
 {
-  RCLCPP_INFO_STREAM( this->get_logger(), "declareDoubleParameter " << min << " => " << max << " Stp:" << step
-                                                                    << " D:" << deflt << " Txt:" << descr );
   if ( deflt > max )
     return;
   rcl_interfaces::msg::ParameterDescriptor descriptor;
@@ -205,8 +186,6 @@ TrackerMbt::declareDoubleParameter( const double min, const double max, const do
 void
 TrackerMbt::declareIntegerParameter( const int min, const int max, const int step, const int deflt, std::string descr )
 {
-  RCLCPP_INFO_STREAM( this->get_logger(), "declareIntParameter " << min << " => " << max << " Stp:" << step
-                                                                 << " D:" << deflt << " Txt:" << descr );
   if ( deflt > max )
     return;
   rcl_interfaces::msg::ParameterDescriptor descriptor;

@@ -130,7 +130,7 @@ TrackerViewer::TrackerViewer()
   if ( this->exiting() )
     return;
 
-  imageSubscriber_.subscribe( this, rectifiedImageTopic_, "raw" ); // ROS2 : FIXME raw ?
+  imageSubscriber_.subscribe( this, rectifiedImageTopic_, "raw" );
 
   cameraInfoSubscriber_.subscribe( this, cameraInfoTopic_ );
   trackingResultSubscriber_.subscribe( this, visp_tracker::object_position_covariance_topic );
@@ -221,7 +221,6 @@ TrackerViewer::spin()
         RCLCPP_DEBUG_STREAM_THROTTLE( this->get_logger(), clock, LOG_THROTTLE_PERIOD, "Failed to display cMo" );
       }
 
-      RCLCPP_DEBUG_STREAM_THROTTLE( this->get_logger(), clock, LOG_THROTTLE_PERIOD, "cMo viewer:\n" << *cMo_ );
       std::stringstream fmt;
       fmt << "tracking (x=" << ( *cMo_ )[0][3] << " y=" << ( *cMo_ )[1][3] << " z=" << ( *cMo_ )[2][3] << ")";
       vpDisplay::displayText( image_, point, fmt.str(), vpColor::red );

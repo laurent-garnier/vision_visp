@@ -208,7 +208,6 @@ convertInitRequestToVpMe( const std::shared_ptr< visp_tracker::srv::Init::Reques
   moving_edge.setSampleStep( req->moving_edge.sample_step );
   moving_edge.setStrip( req->moving_edge.strip );
 
-  // FIXME: not sure if this is needed.
   moving_edge.initMask();
   // Reset the tracker and the node state.
   tracker.setMovingEdge( moving_edge );

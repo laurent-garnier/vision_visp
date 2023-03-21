@@ -56,10 +56,6 @@ protected:
                      const std::shared_ptr< visp_tracker::srv::Init::Request > req,
                      std::shared_ptr< visp_tracker::srv::Init::Response > res );
 
-  // bool reconfigureCallback(const std::shared_ptr<rmw_request_id_t> request_header,
-  //                          const std::shared_ptr<visp_tracker::srv::Init::Request> req,
-  //                          std::shared_ptr<visp_tracker::srv::Init::Response> res);
-
   /// \brief Callback used to received synchronized data.
   void viewerCallback( const sensor_msgs::msg::Image::ConstSharedPtr &imageConst,
                        const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst,
@@ -80,9 +76,6 @@ private:
   /// \brief Queue size for all subscribers.
   unsigned queueSize_;
 
-  /// \brief Image transport used to receive images.
-  //  image_transport::ImageTransport imageTransport_;
-
   double frameSize_;
 
   /// \name Topics and services strings.
@@ -95,8 +88,6 @@ private:
   /// \brief Service called when user ends tracker_client node
   rclcpp::Service< visp_tracker::srv::Init >::SharedPtr init_viewer_service_;
 
-  /// \brief Service called when user is reconfiguring tracker node
-  rclcpp::Service< visp_tracker::srv::Init >::SharedPtr reconfigure_viewer_service_;
 
   /// \brief Name of the tracker used in this viewer node
   // std::string trackerName_;
