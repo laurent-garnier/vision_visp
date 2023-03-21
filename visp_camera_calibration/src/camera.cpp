@@ -82,7 +82,6 @@ Camera::Camera(const rclcpp::NodeOptions &options)
   reader_.setFirstFrameIndex(1);
   reader_.open(img_);
 
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "str=" << images_path);
   vpDisplay *disp = new vpDisplayX();
   disp->init(img_);
   disp->setTitle("camera");

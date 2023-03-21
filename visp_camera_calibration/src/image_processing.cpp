@@ -66,7 +66,6 @@ ImageProcessing::ImageProcessing(const rclcpp::NodeOptions &options)
   : Node("calibrator", options), queue_size_(1000), pause_image_(false), img_(480, 640, 128), cam_(600, 600, 0, 0),
     is_initialized(false)
 {
-  visp_camera_calibration::remap();
   // Setup ROS environment
 
   raw_image_subscriber_ = this->create_subscription<sensor_msgs::msg::Image>(
@@ -145,13 +144,9 @@ ImageProcessing::ImageProcessing(const rclcpp::NodeOptions &options)
     selected_points_.push_back(p);
   }
 
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "1");
   this->declare_parameter<double>(visp_camera_calibration::gray_level_precision_param, 0.7);
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "2");
   this->declare_parameter<double>(visp_camera_calibration::size_precision_param, 0.5);
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "3");
   this->declare_parameter<bool>(visp_camera_calibration::pause_at_each_frame_param, 1); // True
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "4");
   this->declare_parameter<std::string>(visp_camera_calibration::calibration_path_param, std::string(""));
 }
 
@@ -277,8 +272,6 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::msg::Image::SharedPtr 
   // compute local calibration to match the calibration grid with the image
   try {
     calib.computeCalibration(vpCalibration::CALIB_VIRTUAL_VS, cMoTmp, camTmp, false);
-    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), "cMo=" << std::endl << cMoTmp << std::endl);
-    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"), "cam=" << std::endl << camTmp << std::endl);
 
     // project all points and track their corresponding image location
     for (std::vector<vpPoint>::iterator model_point_iter = model_points_.begin();
