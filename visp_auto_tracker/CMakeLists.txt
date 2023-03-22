@@ -109,7 +109,7 @@ install(
 )
 
 install(DIRECTORY
-  launch models
+  launch models flashcode_mbt/data
   DESTINATION share/${PROJECT_NAME}
 )
 

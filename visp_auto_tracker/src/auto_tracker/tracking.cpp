@@ -48,6 +48,7 @@ namespace tracking{
       }
     }
     f_ = cmd.get_flashcode_points_3D();
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----1----");
 
     if(cmd.using_var_file()){
       varfile_.open(cmd.get_var_file().c_str(),std::ios::out);
@@ -63,6 +64,7 @@ namespace tracking{
 
       varfile_ << std::endl;
     }
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----2----");
 
     if(cmd.using_hinkley()){
       if(cmd.get_verbose())
@@ -70,6 +72,7 @@ namespace tracking{
       for(hinkley_array_t::iterator i = hink_.begin();i!=hink_.end();i++)
         i->init(cmd.get_hinkley_alpha(),cmd.get_hinkley_delta());
     }
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----3----");
 
     if(cmd.using_mbt_dynamic_range()){
       vpMbEdgeTracker *tracker_me = dynamic_cast<vpMbEdgeTracker*>(tracker_);

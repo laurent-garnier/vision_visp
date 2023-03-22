@@ -5,8 +5,16 @@
 #include <visp3/core/vpIoTools.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
 #include <getopt.h>
+#include <rclcpp/rclcpp.hpp>
+
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <filesystem>
+using std::istringstream;
 
 void CmdLine::common(){
+  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine::common()----");
 
   const char* const short_opts = "n:o:c:w:h:d:f";
   const option long_opts[] = {
@@ -231,14 +239,138 @@ void CmdLine::common(){
   }
 }
 
-void CmdLine::loadConfig(std::string& config_file){
-/*  std::ifstream in( config_file.c_str() );
-  po::store(po::parse_config_file(in,prog_args,false), vm_);
-  in.close();
-*/
-  std::cout << "Have to be implemented without boost in ROS2" << std::endl;
+void CmdLine::loadConfig(std::string& config_file_p){
+  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----loadConfig _p----" << config_file_p);
+  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----loadConfig----" << config_file);
+ config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/data/config.cfg";
 
-  return;
+  std::string line;
+  std::istringstream sin;
+
+  std::filesystem::path path( config_file );
+  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----loadConfig _p----" << path.native());
+  std::ifstream fin(path.native());
+
+  if (!fin.is_open()) {
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Could not open " << config_file);
+   return;
+  }
+  while (std::getline(fin, line)) {
+    sin.str(line.substr(line.find("=")+1));
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"li: " << line);
+
+    if (line.find("verbose") != std::string::npos) {
+      sin >> verbose_;
+    }
+    else if (line.find("show_fps") != std::string::npos)  {
+      sin >> std::boolalpha >> show_fps_;
+    }
+    else if (line.find("show_plot") != std::string::npos)  {
+      sin >> std::boolalpha >>show_plot_;
+    }
+    else if (line.find("should_exit") != std::string::npos)  {
+      sin >> std::boolalpha >>should_exit_;
+    }
+    else if (line.find("video_camera") != std::string::npos)  {
+      sin >> std::boolalpha >>video_camera_;
+    }
+    else if (line.find("log_checkpoints") != std::string::npos)  {
+      sin >> std::boolalpha >>log_checkpoints_;
+    }
+    else if (line.find("log_pose") != std::string::npos)  {
+      sin >> std::boolalpha >>log_pose_;
+    }
+    else if (line.find("dmtxonly") != std::string::npos)  {
+      sin >> std::boolalpha >>dmtxonly_;
+    }
+    else if (line.find("help") != std::string::npos)  {
+      sin >> std::boolalpha >>help_;
+    }
+    else if (line.find("video_channel") != std::string::npos)  {
+      sin >> video_channel_;
+    }
+    else if (line.find("inner_ratio") != std::string::npos)  {
+      sin >> inner_ratio_;
+    }
+    else if (line.find("outer_ratio") != std::string::npos)  {
+      sin >> outer_ratio_;
+    }
+    else if (line.find("var_limit") != std::string::npos)  {
+      sin >> var_limit_;
+    }
+    else if (line.find("adhoc_recovery") != std::string::npos)  {
+      sin >>std::boolalpha >> adhoc_recovery_;
+    }
+    else if (line.find("adhoc_recovery_display") != std::string::npos)  {
+      sin >> std::boolalpha >>adhoc_recovery_display_;
+    }
+    else if (line.find("adhoc_recovery_ratio") != std::string::npos)  {
+      sin >> adhoc_recovery_ratio_;
+    }
+    else if (line.find("adhoc_recovery_treshold") != std::string::npos)  {
+      sin >> adhoc_recovery_treshold_;
+    }
+    else if (line.find("adhoc_recovery_size") != std::string::npos)  {
+      sin >> adhoc_recovery_size_;
+    }
+    else if (line.find("hinkley_range") != std::string::npos)  {
+      double t;
+      sin >> t;
+      hinkley_range_.push_back(t);
+    }
+    else if (line.find("dmx_timeout") != std::string::npos)  {
+      sin >> dmx_timeout_;
+    }
+    else if (line.find("mbt_convergence_steps") != std::string::npos)  {
+      sin >> mbt_convergence_steps_;
+    }
+    else if (line.find("mbt_dynamic_range") != std::string::npos)  {
+      sin >> mbt_dynamic_range_;
+    }
+    else if (line.find("data_dir") != std::string::npos)  {
+      sin >> data_dir_;
+    }
+    else if (line.find("pattern_name") != std::string::npos)  {
+      sin >> pattern_name_;
+    }
+    else if (line.find("detector_type") != std::string::npos)  {
+      sin >> detector_type;
+    }
+    else if (line.find("tracker_type") != std::string::npos)  {
+      sin >> tracker_type;
+    }
+    else if (line.find("detector_subtype") != std::string::npos)  {
+      sin >> detector_subtype_;
+    }
+    else if (line.find("var_file") != std::string::npos)  {
+      sin >> var_file_;
+    }
+    else if (line.find("single_image_name") != std::string::npos)  {
+      sin >> single_image_name_;
+    }
+    else if (line.find("flashcode_coordinates") != std::string::npos)  {
+      double t;
+      sin >> t;
+      flashcode_coordinates.push_back(t);
+    }
+    else if (line.find("inner_coordinates") != std::string::npos)  {
+      double t;
+      sin >> t;
+      inner_coordinates.push_back(t);
+    }
+    else if (line.find("outer_coordinates") != std::string::npos)  {
+      double t;
+      sin >> t;
+      outer_coordinates.push_back(t);
+    }
+    else if (line.find("log_file_pattern") != std::string::npos)  {
+      sin >> log_file_pattern_;
+    }
+    else if (line.find("input_file_pattern") != std::string::npos)  {
+      sin >> log_file_pattern_;
+    }
+    sin.clear();
+  }
 
   for(unsigned int i =0;i<flashcode_coordinates.size()/3;i++){
     vpPoint p;
@@ -302,15 +434,17 @@ void CmdLine::loadConfig(std::string& config_file){
 CmdLine:: CmdLine(std::string& config_file) : should_exit_(false), code_message_index_(0) {
   this->config_file = config_file;
   common();
-  loadConfig(config_file);
+  loadConfig(this->config_file);
 }
 CmdLine:: CmdLine() : should_exit_(false), code_message_index_(0) {
 }
 void CmdLine:: init(std::string& config_file)
 {
+  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine::init----"<< config_file);
   this->config_file = config_file;
   common();
-  loadConfig(config_file);
+  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine::init----"<< config_file);
+  loadConfig(this->config_file);
 }
 
 CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false), code_message_index_(0) {
@@ -442,6 +576,8 @@ std::string CmdLine:: get_pattern_name() const{
 }
 
 std::string CmdLine:: get_mbt_cad_file() const{
+  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine:: get_mbt_cad_file()----");
+ return "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/models/pattern.cao";
   if(vpIoTools::checkFilename(get_data_dir() + get_pattern_name() + std::string(".wrl")))
     return get_data_dir() + get_pattern_name() + std::string(".wrl");
   else if (vpIoTools::checkFilename(get_data_dir() + get_pattern_name() + std::string(".cao")))
@@ -451,6 +587,7 @@ std::string CmdLine:: get_mbt_cad_file() const{
 }
 
 std::string CmdLine:: get_xml_file() const{
+ return "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/models/pattern.xml";
   return get_data_dir() + get_pattern_name() + std::string(".xml");
 }
 

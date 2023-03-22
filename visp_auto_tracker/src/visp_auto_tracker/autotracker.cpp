@@ -19,9 +19,9 @@
 #include <visp3/core/vpTime.h>
 
 //detectors
-#  include <visp3/detection/vpDetectorDataMatrixCode.h>
-#  include <visp3/detection/vpDetectorQRCode.h>
-#  include <visp3/detection/vpDetectorAprilTag.h>
+#include <visp3/detection/vpDetectorDataMatrixCode.h>
+#include <visp3/detection/vpDetectorQRCode.h>
+#include <visp3/detection/vpDetectorAprilTag.h>
 
 #include <visp_bridge/camera.h>
 #include <visp_bridge/image.h>
@@ -51,46 +51,28 @@ namespace visp_auto_tracker{
     got_image_(false),
     cam_(),
     t_(NULL) {
+
     //get the tracker configuration file
     //this file contains all of the tracker's parameters, they are not passed to ros directly.
-    if (tracker_config_path_!= "") {
-      this->declare_parameter<std::string>("tracker_config_path", tracker_config_path_);
-    } else {
-      this->declare_parameter<std::string>("tracker_config_path");
-    }
-    if (debug_display_!= NULL) {
-      this->declare_parameter<bool>("debug_display", debug_display_);
-    } else {
-      this->declare_parameter<bool>("debug_display", false);
-    }
+    tracker_config_path_ = this->declare_parameter<std::string>("tracker_config_path", "data/config.cfg");
+     debug_display_ = this->declare_parameter<bool>("debug_display", false);
     std::string model_full_path;
-    if (model_path_!= "") {
-      this->declare_parameter<std::string>("model_path", model_path_);
-    } else {
-      this->declare_parameter<std::string>("model_path", "");
-    }
-    if (model_name_!= "") {
-      this->declare_parameter<std::string>("model_name", model_name_);
-    } else {
-      this->declare_parameter<std::string>("model_name", "");
-    }
-    if (code_message_!= "") {
-      this->declare_parameter<std::string>("code_message", code_message_);
-    } else {
-      this->declare_parameter<std::string>("code_message", "");
-    }
-    if (tracker_ref_frame_!= "") {
-      this->declare_parameter<std::string>("tracker_ref_frame", tracker_ref_frame_);
-    } else {
-      this->declare_parameter<std::string>("tracker_ref_frame", "/map");
-    }
+    model_path_ = this->declare_parameter<std::string>("model_path");
+    model_name_ = this->declare_parameter<std::string>("model_name");
+    this->declare_parameter<std::string>("code_message", code_message_);
+    tracker_ref_frame_ = this->declare_parameter<std::string>("tracker_ref_frame", "/map");
+    model_description_ = this->declare_parameter< std::string >("model_description", "");
+
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----3----model_path: " << model_path_);
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----3----debug_display: " << debug_display_);
     model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
     model_full_path = model_path_+model_name_;
     tracker_config_path_ = model_full_path+".cfg";
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"model full path="<< model_full_path.c_str());
 
     //Parse command line arguments from config file (as ros param)
     cmd_.init(tracker_config_path_);
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----4----"<< tracker_config_path_);
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----5----model_path: " << model_path_);
     cmd_.set_data_directory(model_path_); //force data path
     cmd_.set_pattern_name(model_name_); //force model name
     cmd_.set_show_fps(false);
@@ -114,7 +96,7 @@ namespace visp_auto_tracker{
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"Model content=%s",model_description_.c_str());
 
-    rclcpp::Parameter str_param("/model_description", model_description_);
+    rclcpp::Parameter str_param("model_description", model_description_);
     set_parameter(str_param);
   }
 
