@@ -270,7 +270,6 @@ TrackerViewer::initializeTracker()
 {
   try
   {
-    // RCLCPP_WARN_STREAM(this->get_logger(),"Trying to load the model Viewer: " << modelPath_);
     tracker_.loadModel( modelPath_ );
     RCLCPP_INFO_STREAM( this->get_logger(), "Model " << modelPath_ << " has been successfully loaded." );
   }
