@@ -183,49 +183,49 @@ int main(int argc, char **argv)
       break;
 
     case 'x': // help
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),helper.str() );
+      std::cout << helper.str() << std::endl;
       return EXIT_SUCCESS;
 
     default:
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),helper.str() );
+      std::cout << helper.str() << std::endl;
       return EXIT_SUCCESS;
     }
   }
 
   if (opt_input.empty()) {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"ERROR\n\tMissing input file. Use --input parameter." )
-              )
-              << helper.str() );
+    std::cout << "ERROR\n\tMissing input file. Use --input parameter." << std::endl
+              << std::endl
+              << helper.str() << std::endl;
     return EXIT_FAILURE;
   }
   if (opt_camera_name.empty()) {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"ERROR\n\tMissing camera name. Use --camera parameter." << std::endl
+    std::cout << "ERROR\n\tMissing camera name. Use --camera parameter." << std::endl
               << std::endl
-              << helper.str() );
+              << helper.str() << std::endl;
     return EXIT_FAILURE;
   }
   if (!opt_width) {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"ERROR\n\tMissing image width. Use --width parameter." << std::endl
-              )
-              << helper.str() );
+    std::cout << "ERROR\n\tMissing image width. Use --width parameter." << std::endl
+              << std::endl
+              << helper.str() << std::endl;
     return EXIT_FAILURE;
   }
   if (!opt_height) {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"ERROR\n\tMissing image height. Use --height parameter." )
-              )
-              << helper.str() );
+    std::cout << "ERROR\n\tMissing image height. Use --height parameter." << std::endl
+              << std::endl
+              << helper.str() << std::endl;
     return EXIT_FAILURE;
   }
   if (!vpIoTools::checkFilename(opt_input)) {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Input file \"" << opt_input << "\" doesn't exist" );
+    std::cout << "Input file \"" << opt_input << "\" doesn't exist" << std::endl;
     return EXIT_FAILURE;
   }
 
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Input file  : " << opt_input );
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Camera name : " << opt_camera_name );
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Image width : " << opt_width );
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Image height: " << opt_height );
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Distortion  : " << (opt_distortion ? "yes" : "no") ) );
+  std::cout << "Input file  : " << opt_input << std::endl;
+  std::cout << "Camera name : " << opt_camera_name << std::endl;
+  std::cout << "Image width : " << opt_width << std::endl;
+  std::cout << "Image height: " << opt_height << std::endl;
+  std::cout << "Distortion  : " << (opt_distortion ? "yes" : "no") << std::endl << std::endl;
 
   const fs::path inPath = opt_input;
   fs::path outPath;
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
       if (opt_force_deleting) {
         fs::remove(outPath);
       } else {
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Output file " << outPath.string() << " already exists. Use -f to force deleting" );
+        std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting" << std::endl;
         return EXIT_FAILURE;
       }
     }
@@ -262,14 +262,14 @@ int main(int argc, char **argv)
 
     if (parser.parse(vispParam, inPath.string().c_str(), opt_camera_name, projModel, opt_width, opt_height) !=
         vpXmlParserCamera::SEQUENCE_OK) {
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Error parsing visp input file " << inPath.string() );
+      std::cout << "Error parsing visp input file " << inPath.string() << std::endl;
       return EXIT_FAILURE;
     }
 
     rosParam = visp_bridge::toSensorMsgsCameraInfo(vispParam, opt_width, opt_height);
 
     if (!camera_calibration_parsers::writeCalibration(outPath.string(), opt_camera_name, rosParam)) {
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Error writing ros output file " << outPath.string() );
+      std::cout << "Error writing ros output file " << outPath.string() << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -286,13 +286,13 @@ int main(int argc, char **argv)
       if (opt_force_deleting) {
         fs::remove(outPath);
       } else {
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Output file " << outPath.string() << " already exists. Use -f to force deleting" );
+        std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting" << std::endl;
         return EXIT_FAILURE;
       }
     }
 
     if (!camera_calibration_parsers::readCalibration(inPath.string(), opt_camera_name, rosParam)) {
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Error parsing ros input file " << inPath.string() );
+      std::cout << "Error parsing ros input file " << inPath.string() << std::endl;
       return EXIT_FAILURE;
     }
 
@@ -300,16 +300,16 @@ int main(int argc, char **argv)
 
     if (parser.save(vispParam, outPath.string().c_str(), opt_camera_name, opt_width, opt_height) !=
         vpXmlParserCamera::SEQUENCE_OK) {
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Error writing visp output file " << outPath.string() );
+      std::cout << "Error writing visp output file " << outPath.string() << std::endl;
       return EXIT_FAILURE;
     }
 
   } else {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Unknown input file format" );
+    std::cout << "Unknown input file format" << std::endl;
     return EXIT_FAILURE;
   }
 
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Successfully created output file: " << outPath );
+  std::cout << "Successfully created output file: " << outPath << std::endl;
 
   return EXIT_SUCCESS;
 }
