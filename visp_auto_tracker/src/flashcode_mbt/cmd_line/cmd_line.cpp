@@ -431,13 +431,40 @@ void CmdLine::loadConfig(std::string& config_file_p){
 
   }
 }
-CmdLine:: CmdLine(std::string& config_file) : should_exit_(false), code_message_index_(0) {
+CmdLine:: CmdLine(std::string& config_file) : 
+  should_exit_(false),
+  video_camera_(false),
+  dmtxonly_(false),
+  inner_ratio_(0.),
+  outer_ratio_(0.),
+  var_limit_(0.),
+  mbt_dynamic_range_(0),
+  var_file_(""),
+  single_image_name_(""),
+  log_file_pattern_(""),
+  code_message_index_(0)
+{
   this->config_file = config_file;
   common();
   loadConfig(this->config_file);
 }
-CmdLine:: CmdLine() : should_exit_(false), code_message_index_(0) {
+
+
+CmdLine:: CmdLine() : 
+  should_exit_(false),
+  video_camera_(false),
+  dmtxonly_(false),
+  inner_ratio_(0.),
+  outer_ratio_(0.),
+  var_limit_(0.),
+  mbt_dynamic_range_(0),
+  var_file_(""),
+  single_image_name_(""),
+  log_file_pattern_(""),
+  code_message_index_(0)
+{
 }
+
 void CmdLine:: init(std::string& config_file)
 {
   RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine::init----"<< config_file);
