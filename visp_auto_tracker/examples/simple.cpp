@@ -32,11 +32,11 @@ int main(int argc, char**argv)
 
   vpCameraParameters cam = cmd.get_cam_calib_params();
   if(cmd.get_verbose())
-    std::cout << "loaded camera parameters:" << cam << std::endl;
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"loaded camera parameters:" << cam );
 
   std::string filenames((cmd.get_data_dir() + cmd.get_input_file_pattern()));
   if(cmd.get_verbose())
-    std::cout << "Loading: " << filenames << std::endl;
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Loading: " << filenames );
   reader.setFileName( filenames.c_str() );
 
   reader.setFirstFrameIndex(2);

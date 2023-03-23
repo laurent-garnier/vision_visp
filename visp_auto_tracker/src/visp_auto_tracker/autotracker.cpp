@@ -308,7 +308,7 @@ namespace visp_auto_tracker{
       rclcpp::spin_some(this->get_node_base_interface());
       rate.sleep();
       if (cmd_.show_fps())
-        std::cout << "Tracking done in " << vpTime::measureTimeMs() - t << " ms" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Tracking done in " << vpTime::measureTimeMs() - t << " ms" );
     }
     t_->process_event(tracking::finished());
     if(debug_display_) {

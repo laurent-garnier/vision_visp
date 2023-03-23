@@ -231,8 +231,8 @@ void CmdLine::common(){
 	  break;
       
   default:
-	  std::cout << general_options << std::endl;
-	  std::cout << configuration_options << std::endl;
+	  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),general_options );
+	  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),configuration_options );
 	  break;
 
   }
@@ -391,42 +391,42 @@ void CmdLine::loadConfig(std::string& config_file_p){
   }
 
   if(get_verbose()){
-    std::cout << "Loaded " << flashcode_points_3D_.size() << " flashcode extremity points, " << inner_points_3D_.size() << " inner contour points and " << outer_points_3D_.size() << " outer contour points." << std::endl;
-    std::cout << "Tracker set to:";
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Loaded " << flashcode_points_3D_.size() << " flashcode extremity points, " << inner_points_3D_.size() << " inner contour points and " << outer_points_3D_.size() << " outer contour points." );
+    std::string txt;
+    
     switch(get_tracker_type()){
     case MBT:
-      std::cout << "model based tracker";
+      txt +="model based tracker";
       break;
     case KLT_MBT:
-      std::cout << "hybrid (mbt+klt)";
+       txt += "hybrid (mbt+klt)";
       break;
     case KLT:
-      std::cout << "tracker with klt points";
+       txt += "tracker with klt points";
       break;
     }
-    std::cout << std::endl;
-
-    std::cout << "Detector set to:";
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Tracker set to:" << txt);
+    txt = "";
+    
     switch(get_detector_type()){
     case ZBAR:
-      std::cout << "QR code";
+      txt += "QR code";
       break;
     case DMTX:
-      std::cout << "Datamatrix (flashcode)";
+      txt += "Datamatrix (flashcode)";
       break;
     case APRIL:
-      std::cout << "April tags";
+      txt += "April tags";
       break;
     }
-    std::cout << std::endl;
-
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Detector set to:" << txt);
   }
 
   if(using_var_file())
-    std::cout << "Using variance file:" << get_var_file() << std::endl;
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Using variance file:" << get_var_file() );
   if (help_) {
-	  std::cout << general_options << std::endl;
-	  std::cout << configuration_options << std::endl;
+	  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),general_options );
+	  RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),configuration_options );
     should_exit_ = true;
 
   }
@@ -453,7 +453,7 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false), code_message_index
   argv_ = argv;
 
   if(get_verbose())
-    std::cout << "Loading config from:" << config_file << std::endl;
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Loading config from:" << config_file );
 
   loadConfig(config_file);
 

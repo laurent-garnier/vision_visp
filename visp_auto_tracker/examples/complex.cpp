@@ -37,7 +37,7 @@ int main(int argc, char**argv)
 
   vpCameraParameters cam = cmd.get_cam_calib_params();
   if(cmd.get_verbose())
-    std::cout << "loaded camera parameters:" << cam << std::endl;
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"loaded camera parameters:" << cam );
 
 
   if(cmd.logging_video()){
@@ -47,7 +47,7 @@ int main(int argc, char**argv)
 
   if(cmd.using_single_image()){
     if(cmd.get_verbose())
-      std::cout << "Loading: " << cmd.get_single_image_path() << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Loading: " << cmd.get_single_image_path() );
     vpImageIo::read(I,cmd.get_single_image_path());
   }else if(cmd.using_video_camera()){
     video_reader.setDevice(cmd.get_video_channel().c_str());
@@ -62,7 +62,7 @@ int main(int argc, char**argv)
   }else{
     std::string filenames((cmd.get_data_dir() + cmd.get_input_file_pattern()));
     if(cmd.get_verbose())
-      std::cout << "Loading: " << filenames << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Loading: " << filenames );
     reader.setFileName( filenames.c_str() );
 
     reader.setFirstFrameIndex(2);

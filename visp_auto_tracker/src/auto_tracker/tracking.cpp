@@ -23,7 +23,7 @@ namespace tracking{
     detector_(detector),
     tracker_(tracker),
     flush_display_(flush_display){
-    std::cout << "starting tracker" << std::endl;
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"starting tracker" );
     cvTrackingBox_init_ = false;
     cvTrackingBox_.x = 0;
     cvTrackingBox_.y = 0;
@@ -68,18 +68,18 @@ namespace tracking{
 
     if(cmd.using_hinkley()){
       if(cmd.get_verbose())
-        std::cout << "Initialising hinkley with alpha=" << cmd.get_hinkley_alpha() << " and delta=" << cmd.get_hinkley_delta() << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Initialising hinkley with alpha=" << cmd.get_hinkley_alpha() << " and delta=" << cmd.get_hinkley_delta() );
       for(hinkley_array_t::iterator i = hink_.begin();i!=hink_.end();i++)
         i->init(cmd.get_hinkley_alpha(),cmd.get_hinkley_delta());
     }
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----3----");
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----3----" << cmd.get_mbt_dynamic_range());
 
     if(cmd.using_mbt_dynamic_range()){
       vpMbEdgeTracker *tracker_me = dynamic_cast<vpMbEdgeTracker*>(tracker_);
       if(tracker_me)
         tracker_me->getMovingEdge(tracker_me_config_);
       else
-        std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"error: could not init moving edges on tracker that doesn't support them." );
     }
 
     tracker_->loadConfigFile(cmd.get_xml_file() ); // Load the configuration of the tracker
@@ -246,7 +246,7 @@ namespace tracking{
       //vpDisplay::displayFrame(*I_,cMo_,cam_,0.01,vpColor::none,2);
     }
     catch(vpException& e) {
-      std::cout << "Pose computation failed: " << e.getStringMessage() << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Pose computation failed: " << e.getStringMessage() );
       return false;
     }
 
@@ -261,7 +261,7 @@ namespace tracking{
       vpMeterPixelConversion::convertPoint(cam_,points3D_inner_[i].get_x(),points3D_inner_[i].get_y(),model_inner_corner[i]);
 
       if(cmd.get_verbose()){
-        std::cout << "model inner corner: (" << model_inner_corner[i].get_i() << "," << model_inner_corner[i].get_j() << ")" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"model inner corner: (" << model_inner_corner[i].get_i() << "," << model_inner_corner[i].get_j() << ")" );
       }
     }
 
@@ -286,8 +286,8 @@ namespace tracking{
         tracker_->getPose(cMo_); // get the pose
       }
     }catch(vpException& e){
-      std::cout << "Tracking failed" << std::endl;
-      std::cout << e.getStringMessage() << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Tracking failed" );
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),e.getStringMessage() );
       return false;
     }
     return true;
@@ -318,7 +318,7 @@ namespace tracking{
           if(hink_[i].testDownUpwardJump(covariance_[i][i]) != vpHinkley::noJump){
             writer.write(covariance_[i][i]);
             if(cmd.get_verbose())
-              std::cout << "Hinkley:detected jump!" << std::endl;
+              RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Hinkley:detected jump!" );
             return false;
           }
         }
@@ -382,7 +382,7 @@ namespace tracking{
         }
       }
     }catch(vpException& e){
-      std::cout << "Tracking lost" << std::endl;
+      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Tracking lost" );
       return false;
     }
     return true;
@@ -431,7 +431,7 @@ namespace tracking{
         tracker_me_config_.setRange(range);
         tracker_me->setMovingEdge(tracker_me_config_);
       }else
-        std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"error: could not init moving edges on tracker that doesn't support them." );
     }
     cvTrackingBox_init_ = true;
     cvTrackingBox_ = cv::boundingRect(cv::Mat(points));

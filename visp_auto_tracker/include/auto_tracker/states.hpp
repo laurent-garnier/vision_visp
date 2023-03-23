@@ -18,12 +18,12 @@ namespace tracking{
     template <class Event, class Fsm>
     void on_entry(Event const&, Fsm& fsm){
       if(fsm.get_cmd().get_verbose())
-        std::cout <<"entering: WaitingForInput" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"entering: WaitingForInput" );
     }
     template <class Event, class Fsm>
     void on_exit(Event const& evt, Fsm& fsm){
       if(fsm.get_cmd().get_verbose())
-        std::cout <<"leaving: WaitingForInput" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"leaving: WaitingForInput" );
       if(fsm.get_flush_display()){
         vpDisplay::display(evt.I);
         vpDisplay::flush(evt.I);
@@ -38,8 +38,8 @@ namespace tracking{
       if(fsm.get_cmd().get_verbose())
       {
         typename Fsm::statistics_t& statistics = fsm.get_statistics();
-        std::cout << "statistics:" << std::endl;
-        std::cout << "\tglobal:" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"statistics:" );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\tglobal:" );
  /*       std::vector<int> v{5, 1, 2, 3, 4};    
 
 std::vector<int>::iterator b = statistics.var.begin();
@@ -51,39 +51,39 @@ std::advance(med, statistics.var.size() / 2);
 // This makes the 2nd position hold the median.
 std::nth_element(b, med, e);
 */
-        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var) << std::endl;
-        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var) << std::endl;
-        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var) << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmedian:" << boost::accumulators::median(statistics.var) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmean:" << boost::accumulators::mean(statistics.var) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmax:" << boost::accumulators::max(statistics.var) );
 
-        std::cout << "\tX:" << std::endl;
-        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_x) << std::endl;
-        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_x) << std::endl;
-        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_x) << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\tX:" );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmedian:" << boost::accumulators::median(statistics.var_x) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmean:" << boost::accumulators::mean(statistics.var_x) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmax:" << boost::accumulators::max(statistics.var_x) );
 
-        std::cout << "\tY:" << std::endl;
-        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_y) << std::endl;
-        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_y) << std::endl;
-        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_y) << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\tY:" );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmedian:" << boost::accumulators::median(statistics.var_y) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmean:" << boost::accumulators::mean(statistics.var_y) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmax:" << boost::accumulators::max(statistics.var_y) );
 
-        std::cout << "\tZ:" << std::endl;
-        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_z) << std::endl;
-        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_z) << std::endl;
-        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_z) << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\tZ:" );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmedian:" << boost::accumulators::median(statistics.var_z) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmean:" << boost::accumulators::mean(statistics.var_z) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmax:" << boost::accumulators::max(statistics.var_z) );
 
-        std::cout << "\tW_X:" << std::endl;
-        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wx) << std::endl;
-        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wx) << std::endl;
-        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wx) << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\tW_X:" );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmedian:" << boost::accumulators::median(statistics.var_wx) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmean:" << boost::accumulators::mean(statistics.var_wx) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmax:" << boost::accumulators::max(statistics.var_wx) );
 
-        std::cout << "\tW_Y:" << std::endl;
-        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wy) << std::endl;
-        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wy) << std::endl;
-        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wy) << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\tW_Y:" );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmedian:" << boost::accumulators::median(statistics.var_wy) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmean:" << boost::accumulators::mean(statistics.var_wy) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmax:" << boost::accumulators::max(statistics.var_wy) );
 
-        std::cout << "\tW_Z:" << std::endl;
-        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wz) << std::endl;
-        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wz) << std::endl;
-        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wz) << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\tW_Z:" );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmedian:" << boost::accumulators::median(statistics.var_wz) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmean:" << boost::accumulators::mean(statistics.var_wz) );
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"\t\tmax:" << boost::accumulators::max(statistics.var_wz) );
       }
     }
   };
@@ -105,13 +105,13 @@ std::nth_element(b, med, e);
     void on_entry(Event const&, Fsm& fsm)
     {
       if(fsm.get_cmd().get_verbose())
-        std::cout <<"entering: DetectFlashcode" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"entering: DetectFlashcode" );
     }
     template <class Event, class Fsm>
     void on_exit(Event const& evt, Fsm& fsm)
     {
       if(fsm.get_cmd().get_verbose())
-        std::cout <<"leaving: DetectFlashcode" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"leaving: DetectFlashcode" );
       if(fsm.get_flush_display()) {
         vpDisplay::display(evt.I);
       }
@@ -143,7 +143,7 @@ std::nth_element(b, med, e);
     void on_entry(Event const&, Fsm& fsm)
     {
       if(fsm.get_cmd().get_verbose())
-        std::cout <<"entering: ReDetectFlashcode" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"entering: ReDetectFlashcode" );
     }
     vpColor getColor(){ return vpColor::orange; }
   };
@@ -165,13 +165,13 @@ std::nth_element(b, med, e);
     void on_entry(Event const&, Fsm& fsm)
     {
       if(fsm.get_cmd().get_verbose())
-        std::cout <<"entering: DetectModel" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"entering: DetectModel" );
     }
     template <class Event, class Fsm>
     void on_exit(Event const& /*evt*/, Fsm& fsm)
     {
       if(fsm.get_cmd().get_verbose())
-        std::cout <<"leaving: DetectModel" << std::endl;
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"leaving: DetectModel" );
       std::vector<vpPoint>& points3D_inner = fsm.get_points3D_inner();
       std::vector<vpPoint>& points3D_outer = fsm.get_points3D_outer();
 
@@ -206,7 +206,7 @@ std::nth_element(b, med, e);
         }
         catch(vpException& e)
         {
-          std::cout << "Cannot display the model" << std::endl;
+          RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Cannot display the model" );
         }
 
         vpDisplay::flush(I);
