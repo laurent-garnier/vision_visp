@@ -15,11 +15,12 @@
   <node pkg="visp_auto_tracker" exec="visp_auto_tracker_main" name="visp_auto_tracker" output="screen">
     <param name="model_path" value="package://visp_auto_tracker/models" />
     <param name="model_name" value="pattern" />
+<!--    <param name="camera_prefix" value="/camera" /> -->
     <param name="debug_display" value="True" />
     
-<!--    <remap from="/visp_auto_tracker/camera_info" to="/camera/camera_info"/>
+    <remap from="/visp_auto_tracker/camera_info" to="/camera/camera_info"/>
     <remap from="/visp_auto_tracker/image_raw" to="/camera/image_raw"/>
--->
+
   </node>
 
 </launch>

@@ -27,7 +27,8 @@
   <url type="repository">https://github.com/lagadic/vision_visp/tree/ros2</url>
   <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <build_depend>geometry_msgs</build_depend>
   <build_depend>libdmtx-dev</build_depend>
@@ -36,9 +37,6 @@
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
-  <!-- catkin_lint produce an error arround build_depend visp. -->
-  <!-- This error shouldn't be considered. If build_depend visp is removed, -->
-  <!-- the package is not able to build on ros buildfarm. -->
   <build_depend>visp</build_depend>
   <build_depend>visp_bridge</build_depend>
   <build_depend>visp_tracker</build_depend>
