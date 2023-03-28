@@ -7,7 +7,11 @@
 #include <string>
 
 #include <message_filters/subscriber.h>
-#include <message_filters/time_synchronizer.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+
+#include <image_transport/image_transport.hpp>
+#include <image_transport/subscriber_filter.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -27,7 +31,18 @@ namespace visp_auto_tracker{
     std::string model_name_;
     std::string code_message_;
     std::string tracker_ref_frame_;
-    
+
+  /// \brief Subscriber to image topic.
+    image_transport::SubscriberFilter raw_image_subscriber;
+  /// \brief Subscriber to camera information topic.
+    message_filters::Subscriber< sensor_msgs::msg::CameraInfo > camera_info_subscriber;
+
+  using SyncPolicy = message_filters::sync_policies::ApproximateTime<
+      sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo >;
+
+  using Synchronizer = message_filters::Synchronizer< SyncPolicy >;
+  std::shared_ptr< Synchronizer > synchronizer_;
+  
     bool debug_display_;
 
     vpImage<vpRGBa> I_; // Image used for debug display

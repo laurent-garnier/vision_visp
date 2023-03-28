@@ -63,16 +63,12 @@ namespace visp_auto_tracker{
     tracker_ref_frame_ = this->declare_parameter<std::string>("tracker_ref_frame", "/map");
     model_description_ = this->declare_parameter< std::string >("model_description", "");
 
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----3----model_path: " << model_path_);
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----3----debug_display: " << debug_display_);
     model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
     model_full_path = model_path_+model_name_;
     tracker_config_path_ = model_full_path+".cfg";
 
     //Parse command line arguments from config file (as ros param)
     cmd_.init(tracker_config_path_);
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----4----"<< tracker_config_path_);
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----5----model_path: " << model_path_);
     cmd_.set_data_directory(model_path_); //force data path
     cmd_.set_pattern_name(model_name_); //force model name
     cmd_.set_show_fps(false);
@@ -181,17 +177,18 @@ namespace visp_auto_tracker{
     //subscribe to ros topics and prepare a publisher that will publish the pose
     rclcpp::QoS qos(10);
     auto rmw_qos_profile = qos.get_rmw_qos_profile();
-
-    message_filters::Subscriber<sensor_msgs::msg::Image> raw_image_subscriber;
-    message_filters::Subscriber<sensor_msgs::msg::CameraInfo> camera_info_subscriber;
+    std::string camera_prefix = this->declare_parameter< std::string >( "camera_prefix", "" );
 
 
-//    raw_image_subscriber.subscribe(this, image_topic, rmw_qos_profile);
-//    camera_info_subscriber.subscribe(this, camera_info_topic, rmw_qos_profile);
+    image_topic = camera_prefix + "/" + image_topic;
+    camera_info_topic = camera_prefix + "/" + camera_info_topic;
 
-    std::shared_ptr<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo>> image_info_sync;
-    image_info_sync = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo>>(raw_image_subscriber, camera_info_subscriber, queue_size_);
-    image_info_sync->registerCallback(std::bind(&AutoTracker::frameCallback,this, std::placeholders::_1, std::placeholders::_2));
+    raw_image_subscriber.subscribe(this, image_topic, "raw");
+    camera_info_subscriber.subscribe(this, camera_info_topic);
+
+  synchronizer_ =
+      std::make_shared< Synchronizer >( SyncPolicy( queue_size_ ), raw_image_subscriber, camera_info_subscriber);
+  synchronizer_->registerCallback( std::bind(&AutoTracker::frameCallback,this, std::placeholders::_1, std::placeholders::_2) );
 
     rclcpp::Publisher <geometry_msgs::msg::PoseStamped>::SharedPtr object_pose_publisher;
     rclcpp::Publisher <geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr object_pose_covariance_publisher;

@@ -4,8 +4,8 @@ namespace visp_auto_tracker
 {
   std::string camera_info_topic("camera_info");
   std::string image_topic("image_raw");
-  std::string moving_edge_sites_topic("moving_edge_sites");
-  std::string klt_points_topic("klt_points");
+  std::string moving_edge_sites_topic("/moving_edge_sites");
+  std::string klt_points_topic("/klt_points");
 
   std::string status_topic("status");
 
