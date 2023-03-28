@@ -14,7 +14,6 @@
 using std::istringstream;
 
 void CmdLine::common(){
-  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine::common()----");
 
   const char* const short_opts = "n:o:c:w:h:d:f";
   const option long_opts[] = {
@@ -68,7 +67,7 @@ void CmdLine::common(){
   code_message_ = "";
   mbt_convergence_steps_ = 1;
   adhoc_recovery_ = true;
-  adhoc_recovery_display_ = false;
+  adhoc_recovery_display_ = true;
   adhoc_recovery_ratio_ = 0.5;
   adhoc_recovery_size_ = 0.5;
   adhoc_recovery_treshold_ = 100;
@@ -240,15 +239,12 @@ void CmdLine::common(){
 }
 
 void CmdLine::loadConfig(std::string& config_file_p){
-  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----loadConfig _p----" << config_file_p);
-  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----loadConfig----" << config_file);
  config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/data/config.cfg";
 
   std::string line;
   std::istringstream sin;
 
   std::filesystem::path path( config_file );
-  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----loadConfig _p----" << path.native());
   std::ifstream fin(path.native());
 
   if (!fin.is_open()) {
@@ -467,10 +463,8 @@ CmdLine:: CmdLine() :
 
 void CmdLine:: init(std::string& config_file)
 {
-  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine::init----"<< config_file);
   this->config_file = config_file;
   common();
-  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine::init----"<< config_file);
   loadConfig(this->config_file);
 }
 
@@ -603,7 +597,7 @@ std::string CmdLine:: get_pattern_name() const{
 }
 
 std::string CmdLine:: get_mbt_cad_file() const{
-  RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"----CmdLine:: get_mbt_cad_file()----");
+
  return "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/models/pattern.cao";
   if(vpIoTools::checkFilename(get_data_dir() + get_pattern_name() + std::string(".wrl")))
     return get_data_dir() + get_pattern_name() + std::string(".wrl");

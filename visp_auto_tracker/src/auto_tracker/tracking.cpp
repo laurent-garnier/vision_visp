@@ -224,7 +224,6 @@ namespace tracking{
   bool Tracker_:: model_detected(msm::front::none const&){
     vpImageConvert::convert(*I_,Igray_);
     vpPose pose;
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"Tracker_:: model_detected" );
 
     for(unsigned int i=0;i<f_.size();i++)
       pose.addPoint(f_[i]);

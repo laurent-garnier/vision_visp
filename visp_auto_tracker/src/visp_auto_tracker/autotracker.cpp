@@ -100,7 +100,6 @@ namespace visp_auto_tracker{
   rclcpp::Rate loop_rate( 10 );
   RCLCPP_INFO( rclcpp::get_logger( "rclcpp" ), "Waiting for a rectified image..." );
     while ( rclcpp::ok()){
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),"AutoTracker::waitForImage....");
       if(got_image_) return;
       rclcpp::spin_some( this->get_node_base_interface() );
       loop_rate.sleep();
@@ -109,7 +108,6 @@ namespace visp_auto_tracker{
 
   //records last recieved image
   void AutoTracker::frameCallback(const sensor_msgs::msg::Image::ConstPtr& image, const sensor_msgs::msg::CameraInfo::ConstSharedPtr& cam_info){
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"AutoTracker::frameCallback");
     std::scoped_lock(lock_);
     image_header_ = image->header;
     I_ = visp_bridge::toVispImageRGBa(*image); //make sure the image isn't worked on by locking a mutex
@@ -119,7 +117,6 @@ namespace visp_auto_tracker{
   }
 
   void AutoTracker::spin(){
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"AutoTracker::spin ----1----");
 
     if(cmd_.should_exit()) return; //exit if needed
 
@@ -167,12 +164,10 @@ namespace visp_auto_tracker{
     tracker = new vpMbGenericTracker(1, trackerType);
     tracker->setCameraParameters(cam_);
     tracker->setDisplayFeatures(true);
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"AutoTracker::spin ----2----");
 
     //compile detectors and paramters into the automatic tracker.
     t_ = new tracking::Tracker(cmd_, detector, tracker, debug_display_);
     t_->start(); //start the state machine
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"AutoTracker::spin ----3----");
 
     //subscribe to ros topics and prepare a publisher that will publish the pose
     rclcpp::QoS qos(10);
@@ -204,10 +199,8 @@ namespace visp_auto_tracker{
     status_publisher = this->create_publisher<std_msgs::msg::Int8>(status_topic, queue_size_);
     code_message_publisher = this->create_publisher<std_msgs::msg::String>(code_message_topic, queue_size_);
     //wait for an image to be ready
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"AutoTracker::spin ----4----");
     waitForImage();
     {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"AutoTracker::spin ----5----");
       //when an image is ready tell the tracker to start searching for patterns
       std::scoped_lock(lock_);
       if(debug_display_) {
