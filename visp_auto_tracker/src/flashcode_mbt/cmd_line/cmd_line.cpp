@@ -262,22 +262,22 @@ void CmdLine::loadConfig(std::string& config_file_p){
     if (line.find("verbose") != std::string::npos) {
       sin >> verbose_;
     }
-    else if (line.find("show_fps") != std::string::npos)  {
+    else if (line.find("show-fps") != std::string::npos)  {
       sin >> std::boolalpha >> show_fps_;
     }
-    else if (line.find("show_plot") != std::string::npos)  {
+    else if (line.find("show-plot") != std::string::npos)  {
       sin >> std::boolalpha >>show_plot_;
     }
-    else if (line.find("should_exit") != std::string::npos)  {
+    else if (line.find("should-exit") != std::string::npos)  {
       sin >> std::boolalpha >>should_exit_;
     }
-    else if (line.find("video_camera") != std::string::npos)  {
+    else if (line.find("video-camera") != std::string::npos)  {
       sin >> std::boolalpha >>video_camera_;
     }
-    else if (line.find("log_checkpoints") != std::string::npos)  {
+    else if (line.find("log-checkpoints") != std::string::npos)  {
       sin >> std::boolalpha >>log_checkpoints_;
     }
-    else if (line.find("log_pose") != std::string::npos)  {
+    else if (line.find("log-pose") != std::string::npos)  {
       sin >> std::boolalpha >>log_pose_;
     }
     else if (line.find("dmtxonly") != std::string::npos)  {
@@ -286,87 +286,87 @@ void CmdLine::loadConfig(std::string& config_file_p){
     else if (line.find("help") != std::string::npos)  {
       sin >> std::boolalpha >>help_;
     }
-    else if (line.find("video_channel") != std::string::npos)  {
+    else if (line.find("video-channel") != std::string::npos)  {
       sin >> video_channel_;
     }
-    else if (line.find("inner_ratio") != std::string::npos)  {
+    else if (line.find("inner-ratio") != std::string::npos)  {
       sin >> inner_ratio_;
     }
-    else if (line.find("outer_ratio") != std::string::npos)  {
+    else if (line.find("outer-ratio") != std::string::npos)  {
       sin >> outer_ratio_;
     }
-    else if (line.find("var_limit") != std::string::npos)  {
+    else if (line.find("var-limit") != std::string::npos)  {
       sin >> var_limit_;
     }
-    else if (line.find("adhoc_recovery") != std::string::npos)  {
+    else if (line.find("adhoc-recovery") != std::string::npos)  {
       sin >>std::boolalpha >> adhoc_recovery_;
     }
-    else if (line.find("adhoc_recovery_display") != std::string::npos)  {
+    else if (line.find("adhoc-recovery-display") != std::string::npos)  {
       sin >> std::boolalpha >>adhoc_recovery_display_;
     }
-    else if (line.find("adhoc_recovery_ratio") != std::string::npos)  {
+    else if (line.find("adhoc-recovery-ratio") != std::string::npos)  {
       sin >> adhoc_recovery_ratio_;
     }
-    else if (line.find("adhoc_recovery_treshold") != std::string::npos)  {
+    else if (line.find("adhoc-recovery-treshold") != std::string::npos)  {
       sin >> adhoc_recovery_treshold_;
     }
-    else if (line.find("adhoc_recovery_size") != std::string::npos)  {
+    else if (line.find("adhoc-recovery-size") != std::string::npos)  {
       sin >> adhoc_recovery_size_;
     }
-    else if (line.find("hinkley_range") != std::string::npos)  {
+    else if (line.find("hinkley-range") != std::string::npos)  {
       double t;
       sin >> t;
       hinkley_range_.push_back(t);
     }
-    else if (line.find("dmx_timeout") != std::string::npos)  {
+    else if (line.find("dmx-timeout") != std::string::npos)  {
       sin >> dmx_timeout_;
     }
-    else if (line.find("mbt_convergence_steps") != std::string::npos)  {
+    else if (line.find("mbt-convergence-steps") != std::string::npos)  {
       sin >> mbt_convergence_steps_;
     }
-    else if (line.find("mbt_dynamic_range") != std::string::npos)  {
+    else if (line.find("mbt-dynamic-range") != std::string::npos)  {
       sin >> mbt_dynamic_range_;
     }
-    else if (line.find("data_dir") != std::string::npos)  {
+    else if (line.find("data-dir") != std::string::npos)  {
       sin >> data_dir_;
     }
-    else if (line.find("pattern_name") != std::string::npos)  {
+    else if (line.find("pattern-name") != std::string::npos)  {
       sin >> pattern_name_;
     }
-    else if (line.find("detector_type") != std::string::npos)  {
+    else if (line.find("detector-type") != std::string::npos)  {
       sin >> detector_type;
     }
-    else if (line.find("tracker_type") != std::string::npos)  {
+    else if (line.find("tracker-type") != std::string::npos)  {
       sin >> tracker_type;
     }
-    else if (line.find("detector_subtype") != std::string::npos)  {
+    else if (line.find("detector-subtype") != std::string::npos)  {
       sin >> detector_subtype_;
     }
-    else if (line.find("var_file") != std::string::npos)  {
+    else if (line.find("var-file") != std::string::npos)  {
       sin >> var_file_;
     }
-    else if (line.find("single_image_name") != std::string::npos)  {
+    else if (line.find("single-image-name") != std::string::npos)  {
       sin >> single_image_name_;
     }
-    else if (line.find("flashcode_coordinates") != std::string::npos)  {
+    else if (line.find("flashcode-coordinates") != std::string::npos)  {
       double t;
       sin >> t;
       flashcode_coordinates.push_back(t);
     }
-    else if (line.find("inner_coordinates") != std::string::npos)  {
+    else if (line.find("inner-coordinates") != std::string::npos)  {
       double t;
       sin >> t;
       inner_coordinates.push_back(t);
     }
-    else if (line.find("outer_coordinates") != std::string::npos)  {
+    else if (line.find("outer-coordinates") != std::string::npos)  {
       double t;
       sin >> t;
       outer_coordinates.push_back(t);
     }
-    else if (line.find("log_file_pattern") != std::string::npos)  {
+    else if (line.find("log-file-pattern") != std::string::npos)  {
       sin >> log_file_pattern_;
     }
-    else if (line.find("input_file_pattern") != std::string::npos)  {
+    else if (line.find("input-file-pattern") != std::string::npos)  {
       sin >> log_file_pattern_;
     }
     sin.clear();
