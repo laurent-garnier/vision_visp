@@ -4,6 +4,7 @@
 #include <visp3/core/vpConfig.h>
 #include <visp3/core/vpIoTools.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
+#include <resource_retriever/retriever.hpp>
 #include <getopt.h>
 #include <rclcpp/rclcpp.hpp>
 
@@ -239,11 +240,23 @@ void CmdLine::common(){
 }
 
 void CmdLine::loadConfig(std::string& config_file_p){
- config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/data/config.cfg";
+// config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/data/config.cfg";
 
   std::string line;
   std::istringstream sin;
 
+  resource_retriever::MemoryResource resource;
+  resource_retriever::Retriever r;
+  try
+    {
+      resource = r.get( get_data_dir() + "/" + config_file_p);
+    }
+  catch ( ... )
+    {
+      RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),  "Failed to load config file from: " << config_file_p );
+      return;
+    }
+...
   std::filesystem::path path( config_file );
   std::ifstream fin(path.native());
 
@@ -598,22 +611,85 @@ std::string CmdLine:: get_pattern_name() const{
 
 std::string CmdLine:: get_mbt_cad_file() const{
 
- return "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/models/pattern.cao";
-  if(vpIoTools::checkFilename(get_data_dir() + get_pattern_name() + std::string(".wrl")))
-    return get_data_dir() + get_pattern_name() + std::string(".wrl");
-  else if (vpIoTools::checkFilename(get_data_dir() + get_pattern_name() + std::string(".cao")))
-    return get_data_dir() + get_pattern_name() + std::string(".cao");
-  else
-    return get_data_dir() + get_pattern_name() + std::string(".wrl");
+ resource_retriever::MemoryResource resource;
+ resource_retriever::Retriever r;
+ std::string path = "";
+  try
+  {
+    resource = r.get( get_data_dir() + "/" + get_pattern_name() + std::string(".cao"));
+    path = get_pattern_name() + std::string(".cao");
+  }
+  catch ( ... )
+  {
+    try
+    {
+      resource = r.get( get_data_dir() + "/" + get_pattern_name() + std::string(".wrl"));
+      path =  get_pattern_name() + std::string(".wrl");
+    }
+    catch ( ... )
+    {
+    RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
+                         "Failed to get model description from: " << get_data_dir() );
+    }
+  }
+  if (path != "") {
+      // File exist: Copy into tmp dir to be able to be read by vpTracker
+      char *tmpname = strdup( "/tmp/tmpXXXXXX" );
+      if ( mkdtemp( tmpname ) == NULL )
+      {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to create the temporary directory: " << strerror( errno ) );
+      }
+      else
+      {
+        std::filesystem::path path_tmp( tmpname );
+        path_tmp /= path;
+        free( tmpname );
+
+        std::string configPath = path_tmp.native();
+
+        FILE *f = fopen( configPath.c_str(), "w" );
+        fwrite( resource.data.get(), resource.size, 1, f );
+        fclose( f );
+        return configPath.c_str();
+      }
+  }
+  return "";
 }
 
 std::string CmdLine:: get_xml_file() const{
- return "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/models/pattern.xml";
-  return get_data_dir() + get_pattern_name() + std::string(".xml");
-}
+ resource_retriever::MemoryResource resource;
+ resource_retriever::Retriever r;
+    try
+    {
+      resource = r.get( get_data_dir() + "/" + get_pattern_name() + std::string(".xml"));
 
-std::string CmdLine:: get_init_file() const{
-  return get_data_dir() + get_pattern_name() + std::string(".init");
+      char *tmpname = strdup( "/tmp/tmpXXXXXX" );
+      if ( mkdtemp( tmpname ) == NULL )
+      {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to create the temporary directory: " << strerror( errno ) );
+      }
+      else
+      {
+        std::filesystem::path path_tmp( tmpname );
+        path_tmp /=  get_pattern_name() + std::string(".xml") ;
+        free( tmpname );
+
+        std::string configPath = path_tmp.native();
+
+        FILE *f = fopen( configPath.c_str(), "w" );
+        fwrite( resource.data.get(), resource.size, 1, f );
+        fclose( f );
+        return configPath.c_str();
+      }
+
+        return get_data_dir() + "/" + get_pattern_name() + std::string(".xml");
+    }
+    catch ( ... )
+    {
+    }
+    RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
+                         "Failed to get xml file from: " << get_data_dir() );
+    return "";
 }
 
 bool CmdLine:: using_single_image() const{
