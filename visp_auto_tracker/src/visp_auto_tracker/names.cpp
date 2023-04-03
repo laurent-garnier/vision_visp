@@ -15,4 +15,5 @@ namespace visp_auto_tracker
   std::string init_service("init");
 
   std::string tracker_config_file("config.cfg");
+  std::string default_model_path( "package://visp_tracker/models" );
 }
