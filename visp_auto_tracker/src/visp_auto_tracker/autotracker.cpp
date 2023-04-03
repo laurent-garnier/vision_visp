@@ -57,15 +57,13 @@ namespace visp_auto_tracker{
     tracker_config_path_ = this->declare_parameter<std::string>("tracker_config_path", "data/config.cfg");
      debug_display_ = this->declare_parameter<bool>("debug_display", false);
     std::string model_full_path;
-    model_path_ = this->declare_parameter<std::string>("model_path");
+    model_path_ = this->declare_parameter< std::string >( "model_path", visp_auto_tracker::default_model_path );
     model_name_ = this->declare_parameter<std::string>("model_name");
     this->declare_parameter<std::string>("code_message", code_message_);
     tracker_ref_frame_ = this->declare_parameter<std::string>("tracker_ref_frame", "/map");
     model_description_ = this->declare_parameter< std::string >("model_description", "");
-
-    model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
     model_full_path = model_path_+model_name_;
-    tracker_config_path_ = model_full_path+".cfg";
+    tracker_config_path_ = model_path_+"/"+ model_full_path+".cfg";
 
     //Parse command line arguments from config file (as ros param)
     cmd_.init(tracker_config_path_);
@@ -80,10 +78,10 @@ namespace visp_auto_tracker{
     resource_retriever::Retriever r;
     resource_retriever::MemoryResource res;
     try {
-      res = r.get(std::string("file://")+cmd_.get_mbt_cad_file());
+      res = r.get(cmd_.get_mbt_cad_file());
     }
     catch(...) {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Unable to read wrl or cao model file as resource: " << std::string("file://")+cmd_.get_mbt_cad_file());
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Unable to read wrl or cao model file as resource: " << cmd_.get_mbt_cad_file());
     }
 
     model_description_.resize(res.size);
@@ -129,6 +127,18 @@ namespace visp_auto_tracker{
 
     //init detector based on user preference
     vpDetectorBase *detector = NULL;
+    /*
+    ZBAR  / DMTX. / APRIL
+
+    0 0 0 = —
+    0 0 1 = APRIL
+    0 1 0 = DMTX
+    0 1 1 = DMTX (last choice)
+    1 0 0 = QR
+    1 0 1 = QR (last choice)
+    1 1 0 = QR / DMTX
+    1 1 1 =  (last choice)
+    */
 #if defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_APRILTAG)
     detector = new vpDetectorQRCode;
 #elif defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_APRILTAG)
@@ -157,6 +167,12 @@ namespace visp_auto_tracker{
         tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
       detector = new vpDetectorAprilTag(tag_family);
     }
+#elif defined(VISP_HAVE_ZBAR)
+    if (cmd_.get_detector_type() == CmdLine::ZBAR)
+      detector = new vpDetectorQRCode;
+#elif defined(VISP_HAVE_DMTX)
+    if(cmd_.get_detector_type() == CmdLine::DMTX)
+      detector = new vpDetectorDataMatrixCode;
 #endif
 
     // Use the best tracker
