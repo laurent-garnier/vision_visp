@@ -5,6 +5,8 @@
 #include <visp3/core/vpIoTools.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
 #include <resource_retriever/retriever.hpp>
+#include <ament_index_cpp/get_package_prefix.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <getopt.h>
 #include <rclcpp/rclcpp.hpp>
 
@@ -245,23 +247,30 @@ void CmdLine::loadConfig(std::string& config_file_p){
   std::string line;
   std::istringstream sin;
 
-  resource_retriever::MemoryResource resource;
-  resource_retriever::Retriever r;
-  try
-    {
-      resource = r.get( get_data_dir() + "/" + config_file_p);
+  std::string mod_url = config_file_p;
+  if (config_file_p.find("package://") == 0) {
+    mod_url.erase(0, strlen("package://"));
+    size_t pos = mod_url.find("/");
+    if (pos == std::string::npos) {
+      RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),  "Could not parse package:// format into file:// format");
     }
-  catch ( ... )
-    {
-      RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),  "Failed to load config file from: " << config_file_p );
-      return;
+
+    std::string package = mod_url.substr(0, pos);
+
+    std::string package_path;
+    try {
+      package_path = ament_index_cpp::get_package_share_directory(package);
     }
-...
-  std::filesystem::path path( config_file );
+    catch (const ament_index_cpp::PackageNotFoundError &) {
+      RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),  "Package [" << package << "] does not exist");
+    }
+    mod_url = package_path + mod_url;
+  }
+  std::filesystem::path path( mod_url );
   std::ifstream fin(path.native());
 
   if (!fin.is_open()) {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Could not open " << config_file);
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),"Could not open " << mod_url);
    return;
   }
   while (std::getline(fin, line)) {

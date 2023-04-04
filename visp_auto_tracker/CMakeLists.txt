@@ -95,10 +95,6 @@ if(EXTRA_CXX_FLAGS)
     set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
 endif()
 
-#  target_link_libraries(${PROJECT_NAME}
-#    ${PROJECT_NAME}
-#    ${resource_retriever_LIBRARIES})
-
 install(
   TARGETS
   ${PROJECT_NAME}_main
@@ -144,7 +140,7 @@ install(DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode
   DESTINATION share/bag
 )
-message("Bagfile instal in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-qrcode")
+message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-qrcode")
 
 ament_export_dependencies(rosidl_default_runtime)
 
