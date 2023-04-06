@@ -75,7 +75,8 @@ vpImage<unsigned char> toVispImage(const sensor_msgs::msg::Image &src)
 
   if (src.encoding == sensor_msgs::image_encodings::MONO8)
     memcpy(dst.bitmap, &(src.data[0]), dst.getHeight() * src.step * sizeof(unsigned char));
-  else if (src.encoding == sensor_msgs::image_encodings::RGB8 || src.encoding == RGBA8 || src.encoding == sensor_msgs::image_encodings::BGR8 || src.encoding == sensor_msgs::image_encodings::BGRA8) {
+  else if (src.encoding == sensor_msgs::image_encodings::RGB8 || src.encoding == RGBA8 ||
+           src.encoding == sensor_msgs::image_encodings::BGR8 || src.encoding == sensor_msgs::image_encodings::BGRA8) {
     unsigned nc = sensor_msgs::image_encodings::numChannels(src.encoding);
     unsigned cEnd = (src.encoding == RGBA8 || src.encoding == sensor_msgs::image_encodings::BGRA8) ? nc - 1 : nc;
 
