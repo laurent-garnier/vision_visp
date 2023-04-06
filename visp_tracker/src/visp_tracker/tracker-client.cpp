@@ -3,8 +3,8 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.h>
+#include <rclcpp/rclcpp.hpp>
 #include <visp_tracker/srv/init.hpp>
 
 #include <visp3/core/vpPixelMeterConversion.h>

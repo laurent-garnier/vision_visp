@@ -199,7 +199,6 @@ void
 TrackerMbt::updateKltPoints( visp_tracker::msg::KltPoints &klt )
 {
 
-
   std::list< vpMbtDistanceKltPoints * > poly_lst;
   std::map< int, vpImagePoint > *map_klt;
 
@@ -219,8 +218,8 @@ TrackerMbt::updateKltPoints( visp_tracker::msg::KltPoints &klt )
           {
             visp_tracker::msg::KltPoint kltPoint;
             kltPoint.id = it->first;
-            kltPoint.i = it->second.get_i();
-            kltPoint.j = it->second.get_j();
+            kltPoint.i  = it->second.get_i();
+            kltPoint.j  = it->second.get_j();
             klt.klt_points_positions.push_back( kltPoint );
           }
         }
