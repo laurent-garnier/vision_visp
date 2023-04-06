@@ -131,7 +131,7 @@ execute_process(COMMAND ${MAKE_CMD} ${DOWNLOADED_FILE}
                 OUTPUT_FILE CMD_OUTPUT)
 
 if(STATUS AND NOT CMD_STATUS EQUAL 0)
-    message("Failed to convert bagfile: ${CMD_STATUS}")
+    message(WARNING "Failed to convert bagfile: ${CMD_STATUS}")
 else()
     message("Successfully convert bagfile to ros2")
 endif()
