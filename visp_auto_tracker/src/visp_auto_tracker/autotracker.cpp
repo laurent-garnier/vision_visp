@@ -127,30 +127,24 @@ namespace visp_auto_tracker{
 
     //init detector based on user preference
     vpDetectorBase *detector = NULL;
-    /*
-    ZBAR  / DMTX. / APRIL
-
-    0 0 0 = —
-    0 0 1 = APRIL
-    0 1 0 = DMTX
-    0 1 1 = DMTX (last choice)
-    1 0 0 = QR
-    1 0 1 = QR (last choice)
-    1 1 0 = QR / DMTX
-    1 1 1 =  (last choice)
-    */
-#if defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_APRILTAG)
-    detector = new vpDetectorQRCode;
-#elif defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_APRILTAG)
-    detector = new vpDetectorDataMatrixCode;
-#elif defined(VISP_HAVE_APRILTAG) && !defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_DMTX)
-    detector = new vpDetectorAprilTag;
-#elif defined(VISP_HAVE_ZBAR) && defined(VISP_HAVE_DMTX)
-    if (cmd_.get_detector_type() == CmdLine::ZBAR)
+    if (cmd_.get_detector_type() == CmdLine::ZBAR) {
+#if defined(VISP_HAVE_ZBAR)
       detector = new vpDetectorQRCode;
-    else if(cmd_.get_detector_type() == CmdLine::DMTX)
+#else
+      throw(vpException(vpException::fatalError, "QRCode detector not available. libzbar support is missing"));
+#endif
+    }
+    
+    else if(cmd_.get_detector_type() == CmdLine::DMTX)  {
+ #if defined(VISP_HAVE_DMTX)
       detector = new vpDetectorDataMatrixCode;
+#else
+      throw(vpException(vpException::fatalError, "DataMatrix detector not available. libdmtx support is missing"));
+#endif
+    }
+
     else if(cmd_.get_detector_type() == CmdLine::APRIL) {
+ #if defined(VISP_HAVE_APRILTAG)
       vpDetectorAprilTag::vpAprilTagFamily tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
       std::string tag_family_str = cmd_.get_detector_subtype();
       if(tag_family_str.find("16h5") != std::string::npos)
@@ -166,14 +160,10 @@ namespace visp_auto_tracker{
       else if(tag_family_str.find("36h11") != std::string::npos)
         tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
       detector = new vpDetectorAprilTag(tag_family);
-    }
-#elif defined(VISP_HAVE_ZBAR)
-    if (cmd_.get_detector_type() == CmdLine::ZBAR)
-      detector = new vpDetectorQRCode;
-#elif defined(VISP_HAVE_DMTX)
-    if(cmd_.get_detector_type() == CmdLine::DMTX)
-      detector = new vpDetectorDataMatrixCode;
+      #else
+      throw(vpException(vpException::fatalError, "AprilTag detector not available. libapriltag support is missing"));
 #endif
+    }
 
     // Use the best tracker
     int trackerType = vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER;
@@ -187,7 +177,6 @@ namespace visp_auto_tracker{
 
     //subscribe to ros topics and prepare a publisher that will publish the pose
     rclcpp::QoS qos(10);
-    auto rmw_qos_profile = qos.get_rmw_qos_profile();
     std::string camera_prefix = this->declare_parameter< std::string >( "camera_prefix", "" );
 
 
