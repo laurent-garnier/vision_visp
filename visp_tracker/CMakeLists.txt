@@ -168,7 +168,7 @@ install(DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box
   DESTINATION share/bag
 )
-message("Bagfile instal in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box")
+message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box")
 
 ament_export_dependencies(rosidl_default_runtime)
 
