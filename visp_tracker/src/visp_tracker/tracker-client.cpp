@@ -779,10 +779,12 @@ TrackerClient::makeModelFile( std::ofstream &modelStream, const std::string &res
   bool caoWorked        = true;
 
   resource_retriever::MemoryResource resource;
+  resource_retriever::Retriever r;
+  RCLCPP_ERROR_STREAM( this->get_logger(), "******* TrackerClient::makeModelFile:" << resourcePath + modelExt_ );
 
   try
   {
-    resource = resourceRetriever_.get( resourcePath + modelExt_ );
+    resource = r.get( resourcePath + modelExt_ );
   }
   catch ( ... )
   {
