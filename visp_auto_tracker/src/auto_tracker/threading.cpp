@@ -1,8 +1,8 @@
 #include "auto_tracker/threading.h"
 
-TrackerThread::TrackerThread(tracking::Tracker& tracker) : tracker_(tracker){
-}
+TrackerThread::TrackerThread(tracking::Tracker &tracker) : tracker_(tracker) {}
 
-void TrackerThread::operator()(){
-  tracker_.start(); //start state machine
+void TrackerThread::operator()()
+{
+  tracker_.start(); // start state machine
 }
