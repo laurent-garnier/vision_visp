@@ -44,7 +44,7 @@ AutoTracker::AutoTracker()
 
   // get the tracker configuration file
   // this file contains all of the tracker's parameters, they are not passed to ros directly.
-  tracker_config_path_ = this->declare_parameter<std::string>("tracker_config_path", "data/config.cfg");
+  tracker_config_path_ = this->declare_parameter<std::string>("tracker_config_path", "model/config.cfg");
   debug_display_ = this->declare_parameter<bool>("debug_display", false);
   std::string model_full_path;
   model_path_ = this->declare_parameter<std::string>("model_path", visp_auto_tracker::default_model_path);

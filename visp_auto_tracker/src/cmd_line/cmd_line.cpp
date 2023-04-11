@@ -63,7 +63,7 @@ void CmdLine::common()
   tracker_type = "klt_mbt";
   verbose_ = false;
   dmx_timeout_ = 1000;
-  config_file = "./data/config.cfg";
+  config_file = "./model/config.cfg";
   show_fps_ = false;
   show_plot_ = false;
   code_message_ = "";
@@ -239,7 +239,7 @@ void CmdLine::common()
 
 void CmdLine::loadConfig(std::string &config_file_p)
 {
-  // config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/data/config.cfg";
+  // config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/model/config.cfg";
 
   std::string line;
   std::istringstream sin;
