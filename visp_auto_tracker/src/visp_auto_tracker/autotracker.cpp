@@ -6,7 +6,6 @@
 
 // tracking
 #include "auto_tracker/events.h"
-#include "auto_tracker/threading.h"
 #include "auto_tracker/tracking.h"
 
 #include <visp_tracker/msg/klt_point.hpp>

@@ -34,7 +34,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # Library gathering libauto_tracker used by all nodes.
 add_library(${PROJECT_NAME}_common
   src/cmd_line/cmd_line.cpp
-  src/auto_tracker/threading.cpp
   src/auto_tracker/tracking.cpp
 )
 
@@ -101,7 +100,7 @@ install(
 )
 
 install(DIRECTORY
-  launch models data
+  launch models
   DESTINATION share/${PROJECT_NAME}
 )
 
