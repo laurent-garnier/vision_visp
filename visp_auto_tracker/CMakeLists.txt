@@ -117,24 +117,13 @@ ExternalProject_Add(
     URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
     DOWNLOAD_NO_EXTRACT true
     CONFIGURE_COMMAND ""
+    PATCH_COMMAND rosbags-convert ../tutorial-qrcode.bag
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
 )
 
 ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
 message("Successfully download ${DOWNLOADED_FILE}")
-
-set(MAKE_CMD "rosbags-convert")
-execute_process(COMMAND ${MAKE_CMD} ${DOWNLOADED_FILE}
-                WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/externals/src"
-                RESULT_VARIABLE CMD_STATUS
-                OUTPUT_FILE CMD_OUTPUT)
-
-if(STATUS AND NOT CMD_STATUS EQUAL 0)
-    message(WARNING "Failed to convert bagfile: ${CMD_STATUS}")
-else()
-    message("Successfully convert bagfile to ros2")
-endif()
 
 install(DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode

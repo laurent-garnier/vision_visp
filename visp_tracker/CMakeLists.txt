@@ -121,19 +121,6 @@ target_link_libraries(${PROJECT_NAME}_viewer
   ${VISP_LIBRARIES}
 )
 
-install(
-  TARGETS
-  ${PROJECT_NAME}_viewer
-  ${PROJECT_NAME}_client
-  ${PROJECT_NAME}_mbt
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-install(DIRECTORY
-  launch models
-  DESTINATION share/${PROJECT_NAME}
-)
-
 #############
 # Bag files #
 #############
@@ -146,29 +133,31 @@ ExternalProject_Add(
     DOWNLOAD_NO_EXTRACT true
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
+    PATCH_COMMAND rosbags-convert ../tutorial-static-box.bag
     INSTALL_COMMAND ""
 )
 
 ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
 message("Successfully download ${DOWNLOADED_FILE}")
 
-set(MAKE_CMD "rosbags-convert")
-execute_process(COMMAND ${MAKE_CMD} ${DOWNLOADED_FILE}
-                WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/externals/src"
-                RESULT_VARIABLE CMD_STATUS
-                OUTPUT_FILE CMD_OUTPUT)
-
-if(STATUS AND NOT CMD_STATUS EQUAL 0)
-    message("Failed to convert bagfile: ${CMD_STATUS}")
-else()
-    message("Successfully convert bagfile to ros2")
-endif()
-
 install(DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box
   DESTINATION share/bag
 )
 message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box")
+
+install(
+  TARGETS
+  ${PROJECT_NAME}_viewer
+  ${PROJECT_NAME}_client
+  ${PROJECT_NAME}_mbt
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  launch models
+  DESTINATION share/${PROJECT_NAME}
+)
 
 ament_export_dependencies(rosidl_default_runtime)
 
