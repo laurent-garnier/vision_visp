@@ -100,7 +100,7 @@ void AutoTracker::waitForImage()
 void AutoTracker::frameCallback(const sensor_msgs::msg::Image::ConstPtr &image,
                                 const sensor_msgs::msg::CameraInfo::ConstSharedPtr &cam_info)
 {
-  std::scoped_lock(lock_);
+  std::scoped_lock lock(lock_);
   image_header_ = image->header;
   I_ = visp_bridge::toVispImageRGBa(*image); // make sure the image isn't worked on by locking a mutex
   cam_ = visp_bridge::toVispCameraParameters(*cam_info);
@@ -204,7 +204,7 @@ void AutoTracker::spin()
   waitForImage();
   {
     // when an image is ready tell the tracker to start searching for patterns
-    std::scoped_lock(lock_);
+    std::scoped_lock lock(lock_);
     if (debug_display_) {
       d->init(I_); // also init display
       vpDisplay::setTitle(I_, "visp_auto_tracker debug display");
@@ -220,7 +220,7 @@ void AutoTracker::spin()
   rclcpp::Rate rate(30); // init 25fps publishing frequency
   while (rclcpp::ok()) {
     double t = vpTime::measureTimeMs();
-    std::scoped_lock(lock_);
+    std::scoped_lock lock(lock_);
     // process the new frame with the tracker
     t_->process_event(tracking::input_ready(I_, cam_, iter));
     // When the tracker is tracking, it's in the tracking::TrackModel state
