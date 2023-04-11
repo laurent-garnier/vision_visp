@@ -101,7 +101,7 @@ install(
 )
 
 install(DIRECTORY
-  launch models flashcode_mbt/data
+  launch models data
   DESTINATION share/${PROJECT_NAME}
 )
 
