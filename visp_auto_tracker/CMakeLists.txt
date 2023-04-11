@@ -11,17 +11,17 @@ ament_auto_find_build_dependencies()
 set(Boost_INCLUDE_DIR /usr/include/boost)
 set(BOOST_LIBRARYDIR /usr/lib/x86_64-linux-gnu/)
 
-#find_package(boost REQUIRED) 
-find_package(geometry_msgs REQUIRED) 
-find_package(message_filters REQUIRED )
+# find_package(boost REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(message_filters REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(image_transport REQUIRED)
-find_package(resource_retriever REQUIRED) 
+find_package(resource_retriever REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED) 
+find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(visp_bridge REQUIRED) 
-find_package(visp_tracker REQUIRED) 
+find_package(visp_bridge REQUIRED)
+find_package(visp_tracker REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 find_package(VISP REQUIRED COMPONENTS visp_core)
@@ -32,12 +32,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # Libraries #
 # ############
 # Library gathering libauto_tracker used by all nodes.
-
 add_library(${PROJECT_NAME}_common
-    src/flashcode_mbt/cmd_line/cmd_line.cpp
-    src/auto_tracker/threading.cpp
-    src/auto_tracker/tracking.cpp
-  )
+  src/cmd_line/cmd_line.cpp
+  src/auto_tracker/threading.cpp
+  src/auto_tracker/tracking.cpp
+)
 
 ament_target_dependencies(${PROJECT_NAME}_common
   geometry_msgs
@@ -57,20 +56,20 @@ target_include_directories(${PROJECT_NAME}_common PUBLIC
 
 target_link_libraries(${PROJECT_NAME}_common
   ${VISP_LIBRARIES}
-#  "${cpp_typesupport_target}"
-)
 
+  # "${cpp_typesupport_target}"
+)
 
 add_executable(${PROJECT_NAME}_main
   src/${PROJECT_NAME}/main.cpp
   src/${PROJECT_NAME}/names.cpp
   src/${PROJECT_NAME}/autotracker.cpp
-  )
+)
 target_link_libraries(${PROJECT_NAME}_main
   "${cpp_typesupport_target}"
   ${VISP_LIBRARIES}
   ${PROJECT_NAME}_common
-  )
+)
 
 ament_target_dependencies(${PROJECT_NAME}_main
   rclcpp
@@ -90,9 +89,9 @@ target_include_directories(${PROJECT_NAME}_main PUBLIC
 )
 
 if(EXTRA_CXX_FLAGS)
-    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
-    set_target_properties(${PROJECT_NAME}_cmd_line PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
-    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+  set_target_properties(${PROJECT_NAME}_cmd_line PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
 endif()
 
 install(
@@ -106,20 +105,19 @@ install(DIRECTORY
   DESTINATION share/${PROJECT_NAME}
 )
 
-#############
+# ############
 # Bag files #
-#############
-
+# ############
 include(ExternalProject)
 ExternalProject_Add(
-    external_bag
-    PREFIX "externals"
-    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
-    DOWNLOAD_NO_EXTRACT true
-    CONFIGURE_COMMAND ""
-    PATCH_COMMAND rosbags-convert ../tutorial-qrcode.bag
-    BUILD_COMMAND ""
-    INSTALL_COMMAND ""
+  external_bag
+  PREFIX "externals"
+  URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
+  DOWNLOAD_NO_EXTRACT true
+  CONFIGURE_COMMAND ""
+  PATCH_COMMAND rosbags-convert ../tutorial-qrcode.bag
+  BUILD_COMMAND ""
+  INSTALL_COMMAND ""
 )
 
 ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
