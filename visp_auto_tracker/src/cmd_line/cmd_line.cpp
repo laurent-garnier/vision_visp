@@ -9,12 +9,12 @@
 #include <visp3/core/vpConfig.h>
 #include <visp3/core/vpIoTools.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
+#include <visp_bridge/path_retriever.h>
 
 #include <filesystem>
 #include <sstream>
 #include <string>
 #include <unordered_map>
-using std::istringstream;
 
 void CmdLine::common()
 {
@@ -55,7 +55,7 @@ void CmdLine::common()
                               {nullptr, no_argument, nullptr, 0}};
 
   video_channel_ = "/dev/video1";
-  data_dir_ = "./data/";
+  data_dir_ = "/data/";
   input_file_pattern_ = "/images/%08d.jpg";
   pattern_name_ = "pattern";
   detector_type = "zbar";
@@ -63,7 +63,7 @@ void CmdLine::common()
   tracker_type = "klt_mbt";
   verbose_ = false;
   dmx_timeout_ = 1000;
-  config_file = "./model/config.cfg";
+  config_file = "package://visp_auto_tracker/models/config.cfg";
   show_fps_ = false;
   show_plot_ = false;
   code_message_ = "";
@@ -239,29 +239,13 @@ void CmdLine::common()
 
 void CmdLine::loadConfig(std::string &config_file_p)
 {
-  // config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/model/config.cfg";
-
+  // config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/models/config.cfg";
+RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Parse package:   " << config_file_p << " => " << visp_bridge::path_retriever(config_file_p));
   std::string line;
   std::istringstream sin;
 
-  std::string mod_url = config_file_p;
-  if (config_file_p.find("package://") == 0) {
-    mod_url.erase(0, strlen("package://"));
-    size_t pos = mod_url.find("/");
-    if (pos == std::string::npos) {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Could not parse package:// format into file:// format");
-    }
+  std::string mod_url = visp_bridge::path_retriever(config_file_p);
 
-    std::string package = mod_url.substr(0, pos);
-
-    std::string package_path;
-    try {
-      package_path = ament_index_cpp::get_package_share_directory(package);
-    } catch (const ament_index_cpp::PackageNotFoundError &) {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Package [" << package << "] does not exist");
-    }
-    mod_url = package_path + mod_url;
-  }
   std::filesystem::path path(mod_url);
   std::ifstream fin(path.native());
 
@@ -522,71 +506,31 @@ std::string CmdLine::get_pattern_name() const { return pattern_name_; }
 
 std::string CmdLine::get_mbt_cad_file() const
 {
+  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "******get model description from: " << get_data_dir() + "/" + get_pattern_name());
 
-  resource_retriever::MemoryResource resource;
-  resource_retriever::Retriever r;
-  std::string path = "";
-  try {
-    resource = r.get(get_data_dir() + "/" + get_pattern_name() + std::string(".cao"));
-    path = get_pattern_name() + std::string(".cao");
-  } catch (...) {
-    try {
-      resource = r.get(get_data_dir() + "/" + get_pattern_name() + std::string(".wrl"));
-      path = get_pattern_name() + std::string(".wrl");
-    } catch (...) {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get model description from: " << get_data_dir());
-    }
+  std::string path =  visp_bridge::path_retriever(get_data_dir() + "/" + get_pattern_name());
+  std::ifstream file_cao(path + std::string(".cao"));
+  if(file_cao.is_open()){
+     return path + std::string(".cao");
   }
-  if (path != "") {
-    // File exist: Copy into tmp dir to be able to be read by vpTracker
-    char *tmpname = strdup("/tmp/tmpXXXXXX");
-    if (mkdtemp(tmpname) == NULL) {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),
-                          "Failed to create the temporary directory: " << strerror(errno));
-    } else {
-      std::filesystem::path path_tmp(tmpname);
-      path_tmp /= path;
-      free(tmpname);
-
-      std::string configPath = path_tmp.native();
-
-      FILE *f = fopen(configPath.c_str(), "w");
-      fwrite(resource.data.get(), resource.size, 1, f);
-      fclose(f);
-      return configPath.c_str();
-    }
+  std::ifstream file_wrl(path + std::string(".wrl"));
+  if(file_wrl.is_open()){
+     return path + std::string(".wrl");
   }
+  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get model description from: " << path+".cao/.wrl");
   return "";
 }
 
 std::string CmdLine::get_xml_file() const
 {
-  resource_retriever::MemoryResource resource;
-  resource_retriever::Retriever r;
-  try {
-    resource = r.get(get_data_dir() + "/" + get_pattern_name() + std::string(".xml"));
+  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "******get model description from: " << get_data_dir() + "/" + get_pattern_name());
 
-    char *tmpname = strdup("/tmp/tmpXXXXXX");
-    if (mkdtemp(tmpname) == NULL) {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),
-                          "Failed to create the temporary directory: " << strerror(errno));
-    } else {
-      std::filesystem::path path_tmp(tmpname);
-      path_tmp /= get_pattern_name() + std::string(".xml");
-      free(tmpname);
-
-      std::string configPath = path_tmp.native();
-
-      FILE *f = fopen(configPath.c_str(), "w");
-      fwrite(resource.data.get(), resource.size, 1, f);
-      fclose(f);
-      return configPath.c_str();
-    }
-
-    return get_data_dir() + "/" + get_pattern_name() + std::string(".xml");
-  } catch (...) {
+  std::string path =  visp_bridge::path_retriever(get_data_dir() + "/" + get_pattern_name());
+  std::ifstream file_xml(path + std::string(".xml"));
+  if(file_xml.is_open()){
+     return path + std::string(".xml");
   }
-  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get xml file from: " << get_data_dir());
+  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get xml file from: " << path+".xml");
   return "";
 }
 
