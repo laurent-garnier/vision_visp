@@ -392,7 +392,7 @@ void Tracker_::track_model(input_ready const &evt)
   }
 
   if (cmd.using_mbt_dynamic_range()) {
-    int range = (const unsigned int)(boost::accumulators::mean(acc) * cmd.get_mbt_dynamic_range());
+    int range = (int)(boost::accumulators::mean(acc) * cmd.get_mbt_dynamic_range());
 
     vpMbEdgeTracker *tracker_me = dynamic_cast<vpMbEdgeTracker *>(tracker_);
     if (tracker_me) {
