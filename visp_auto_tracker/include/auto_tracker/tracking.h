@@ -28,7 +28,7 @@
 #include <visp_tracker/msg/moving_edge_sites.hpp>
 
 #include "cmd_line/cmd_line.h"
-#  include <visp/vpDetectorBase.h>
+#include <visp/vpDetectorBase.h>
 
 #include <visp/vpMbEdgeTracker.h>
 #include "auto_tracker/states.hpp"
