@@ -48,9 +48,9 @@ namespace visp_bridge
 /*!
   \brief Converts a ROS packages:// file:// and native filepath
   \param[in] path ROS filepath format
-  \return native filepath format
+  \return native filepath format OR "" if could no parse filepath
 */
-std::string path_retriever_(const std::string path)
+  std::string path_retriever(const std::string path);
 
 } // namespace visp_bridge
 

@@ -41,13 +41,43 @@
   \brief conversions between ROS packages:// file:// and native filepath
 */
 #include <string>
+#include <sstream>
+#include <cstring>
+
+#include <ament_index_cpp/get_package_prefix.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+
+using std::istringstream;
 
 namespace visp_bridge
 {
 std::string path_retriever(const std::string path)
 {
   std::string retrieve_path;
-  return retrieve_path;
-}
+
+  std::string line;
+  std::istringstream sin;
+
+  std::string mod_url = path;
+  if (path.find("package://") == 0) {
+    mod_url.erase(0, strlen("package://"));
+    size_t pos = mod_url.find("/");
+    if (pos == std::string::npos) {
+      return "";
+    }
+
+    std::string package = mod_url.substr(0, pos);
+    // delete package name
+    mod_url.erase(0, pos);
+    std::string package_path;
+    try {
+      package_path = ament_index_cpp::get_package_share_directory(package);
+    } catch (const ament_index_cpp::PackageNotFoundError &) {
+      return "";
+    }
+    mod_url = package_path + mod_url;
+  }
+  return mod_url;
+ }
 
 } // namespace visp_bridge
