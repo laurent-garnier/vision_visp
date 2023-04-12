@@ -11,7 +11,10 @@ ament_auto_find_build_dependencies()
 set(Boost_INCLUDE_DIR /usr/include/boost)
 set(BOOST_LIBRARYDIR /usr/lib/x86_64-linux-gnu/)
 
-# find_package(boost REQUIRED)
+# ignore BOOST deprecated headers
+add_definitions("-DBOOST_ALLOW_DEPRECATED_HEADERS")
+add_definitions("-DBOOST_BIND_GLOBAL_PLACEHOLDERS")
+
 find_package(geometry_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -42,9 +45,9 @@ ament_target_dependencies(${PROJECT_NAME}_common
   rclcpp
   sensor_msgs
   std_msgs
-  rclcpp
   resource_retriever
   visp_tracker
+  visp_bridge
   VISP
 )
 
