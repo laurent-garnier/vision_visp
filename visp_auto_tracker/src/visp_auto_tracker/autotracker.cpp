@@ -43,7 +43,7 @@ AutoTracker::AutoTracker()
 
   // get the tracker configuration file
   // this file contains all of the tracker's parameters, they are not passed to ros directly.
-  tracker_config_path_ = this->declare_parameter<std::string>("tracker_config_path", "model/config.cfg");
+  tracker_config_path_ = this->declare_parameter<std::string>("tracker_config_path", "package://models/config.cfg");
   debug_display_ = this->declare_parameter<bool>("debug_display", false);
   std::string model_full_path;
   model_path_ = this->declare_parameter<std::string>("model_path", visp_auto_tracker::default_model_path);
@@ -67,12 +67,18 @@ AutoTracker::AutoTracker()
   resource_retriever::Retriever r;
   resource_retriever::MemoryResource res;
   try {
-    res = r.get(cmd_.get_mbt_cad_file());
-  } catch (...) {
+    res = r.get(std::string("file://") + cmd_.get_mbt_cad_file());
+  } catch (resource_retriever::Exception& e)
+     {
+       RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Failed to retrieve file:" << e.what());
+  //     return 1;
+     }
+   
+/*    } catch (...) {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),
                         "Unable to read wrl or cao model file as resource: " << cmd_.get_mbt_cad_file());
   }
-
+*/
   model_description_.resize(res.size);
   for (unsigned int i = 0; i < res.size; ++i)
     model_description_[i] = res.data.get()[i];
@@ -122,7 +128,10 @@ void AutoTracker::spin()
 
   // init detector based on user preference
   vpDetectorBase *detector = NULL;
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN....");
   if (cmd_.get_detector_type() == CmdLine::ZBAR) {
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN....ZBA ?");
+
 #if defined(VISP_HAVE_ZBAR)
     detector = new vpDetectorQRCode;
 #else
@@ -131,6 +140,8 @@ void AutoTracker::spin()
   }
 
   else if (cmd_.get_detector_type() == CmdLine::DMTX) {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN....DMTX ?");
+
 #if defined(VISP_HAVE_DMTX)
     detector = new vpDetectorDataMatrixCode;
 #else
@@ -139,6 +150,8 @@ void AutoTracker::spin()
   }
 
   else if (cmd_.get_detector_type() == CmdLine::APRIL) {
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN....APIL ?");
+
 #if defined(VISP_HAVE_APRILTAG)
     vpDetectorAprilTag::vpAprilTagFamily tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
     std::string tag_family_str = cmd_.get_detector_subtype();
@@ -159,6 +172,7 @@ void AutoTracker::spin()
     throw(vpException(vpException::fatalError, "AprilTag detector not available. libapriltag support is missing"));
 #endif
   }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN...ND");
 
   // Use the best tracker
   int trackerType = vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER;
