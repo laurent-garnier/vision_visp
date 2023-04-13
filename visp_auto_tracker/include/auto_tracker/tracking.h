@@ -31,7 +31,7 @@
 #include <visp/vpDetectorBase.h>
 
 #include <visp/vpMbEdgeTracker.h>
-#include "auto_tracker/states.hpp"
+#include "auto_tracker/states.h"
 #include "auto_tracker/events.h"
 
 using namespace boost::accumulators;

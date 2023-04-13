@@ -11,7 +11,7 @@
 #include <visp3/mbt/vpMbGenericTracker.h>
 #include <visp3/vision/vpPose.h>
 
-#include "auto_tracker/logfilewriter.hpp"
+#include "auto_tracker/logfilewriter.h"
 
 namespace tracking
 {
