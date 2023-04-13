@@ -1,4 +1,4 @@
-#include "visp_auto_tracker/autotracker.h"
+#include "autotracker.h"
 
 int main(int argc, char **argv)
 {

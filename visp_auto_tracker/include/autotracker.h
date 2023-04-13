@@ -3,7 +3,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <visp3/core/vpConfig.h>
-#include "auto_tracker/tracking.h"
+#include "tracking.h"
 #include <string>
 
 #include <message_filters/subscriber.h>

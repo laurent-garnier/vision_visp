@@ -36,8 +36,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # ############
 # Library gathering libauto_tracker used by all nodes.
 add_library(${PROJECT_NAME}_common
-  src/cmd_line/cmd_line.cpp
-  src/auto_tracker/tracking.cpp
+  src/cmd_line.cpp
+  src/tracking.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME}_common
@@ -63,9 +63,9 @@ target_link_libraries(${PROJECT_NAME}_common
 )
 
 add_executable(${PROJECT_NAME}_main
-  src/${PROJECT_NAME}/main.cpp
-  src/${PROJECT_NAME}/names.cpp
-  src/${PROJECT_NAME}/autotracker.cpp
+  src/main.cpp
+  src/names.cpp
+  src/autotracker.cpp
 )
 target_link_libraries(${PROJECT_NAME}_main
   "${cpp_typesupport_target}"
