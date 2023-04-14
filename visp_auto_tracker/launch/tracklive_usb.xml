@@ -21,7 +21,7 @@
   </node>
 
   <!-- Launch the usb camera acquisition node -->
-  <node pkg="usb_cam" type="usb_cam" name="usb_cam" output="screen">      
+  <node pkg="usb_cam" exec="usb_cam_node_exe" name="usb_cam" output="screen">
     <param name="image_width" value="640" />
     <param name="image_height" value="480" />
     <param name="video_device" value="/dev/video0" />      
