@@ -68,9 +68,8 @@ AutoTracker::AutoTracker()
   resource_retriever::MemoryResource res;
   try {
     res = r.get(std::string("file://") + cmd_.get_mbt_cad_file());
-  } catch (resource_retriever::Exception& e)
-  {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Failed to retrieve file:" << e.what());
+  } catch (resource_retriever::Exception &e) {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to retrieve file:" << e.what());
   }
   model_description_.resize(res.size);
   for (unsigned int i = 0; i < res.size; ++i)
@@ -161,7 +160,7 @@ void AutoTracker::spin()
     throw(vpException(vpException::fatalError, "AprilTag detector not available. libapriltag support is missing"));
 #endif
   }
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN...ND");
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN...ND");
 
   // Use the best tracker
   int trackerType = vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER;

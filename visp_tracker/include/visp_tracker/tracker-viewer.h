@@ -88,7 +88,6 @@ private:
   /// \brief Service called when user ends tracker_client node
   rclcpp::Service< visp_tracker::srv::Init >::SharedPtr init_viewer_service_;
 
-
   /// \brief Name of the tracker used in this viewer node
   // std::string trackerName_;
 

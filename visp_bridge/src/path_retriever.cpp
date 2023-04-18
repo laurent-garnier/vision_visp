@@ -40,9 +40,9 @@
   \file path_retriever
   \brief conversions between ROS packages:// file:// and native filepath
 */
-#include <string>
-#include <sstream>
 #include <cstring>
+#include <sstream>
+#include <string>
 
 #include <ament_index_cpp/get_package_prefix.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -78,6 +78,6 @@ std::string path_retriever(const std::string path)
     mod_url = package_path + mod_url;
   }
   return mod_url;
- }
+}
 
 } // namespace visp_bridge

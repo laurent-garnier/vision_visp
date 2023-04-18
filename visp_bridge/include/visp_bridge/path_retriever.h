@@ -50,7 +50,7 @@ namespace visp_bridge
   \param[in] path ROS filepath format
   \return native filepath format OR "" if could no parse filepath
 */
-  std::string path_retriever(const std::string path);
+std::string path_retriever(const std::string path);
 
 } // namespace visp_bridge
 

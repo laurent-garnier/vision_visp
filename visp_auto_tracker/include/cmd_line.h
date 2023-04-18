@@ -12,7 +12,7 @@ private:
   std::string general_options;
   std::string configuration_options;
   int argc_;
-  char**argv_;
+  char **argv_;
   bool verbose_;
   bool show_fps_;
   bool show_plot_;
@@ -43,27 +43,24 @@ private:
   std::string var_file_;
   std::string single_image_name_;
   std::vector<vpPoint> flashcode_points_3D_;
-  std::vector<vpPoint> inner_points_3D_,outer_points_3D_;
+  std::vector<vpPoint> inner_points_3D_, outer_points_3D_;
 
-  std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
-  std::string log_file_pattern_,input_file_pattern_;
+  std::vector<double> flashcode_coordinates, inner_coordinates, outer_coordinates;
+  std::string log_file_pattern_, input_file_pattern_;
   std::string config_file;
   std::string code_message_; // Code message used to specify which target to track
-  int code_message_index_; // Index in the vector of code messages that were found
-  void loadConfig(std::string& config_file);
+  int code_message_index_;   // Index in the vector of code messages that were found
+  void loadConfig(std::string &config_file);
   void common();
+
 public:
-  enum DETECTOR_TYPE{
-    DMTX, ZBAR, APRIL
-  };
-  enum TRACKER_TYPE{
-    KLT, MBT, KLT_MBT
-  };
+  enum DETECTOR_TYPE { DMTX, ZBAR, APRIL };
+  enum TRACKER_TYPE { KLT, MBT, KLT_MBT };
 
   CmdLine();
-  CmdLine(int argc,char**argv);
-  CmdLine(std::string& config_file);
-  void init(std::string& config_file);
+  CmdLine(int argc, char **argv);
+  CmdLine(std::string &config_file);
+  void init(std::string &config_file);
   bool show_plot() const;
 
   bool using_hinkley() const;
@@ -144,9 +141,9 @@ public:
 
   std::string get_single_image_path() const;
 
-  std::vector<vpPoint>& get_flashcode_points_3D();
-  std::vector<vpPoint>& get_inner_points_3D();
-  std::vector<vpPoint>& get_outer_points_3D();
+  std::vector<vpPoint> &get_flashcode_points_3D();
+  std::vector<vpPoint> &get_inner_points_3D();
+  std::vector<vpPoint> &get_outer_points_3D();
 
   DETECTOR_TYPE get_detector_type() const;
 

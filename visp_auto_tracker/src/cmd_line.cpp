@@ -505,28 +505,28 @@ std::string CmdLine::get_pattern_name() const { return pattern_name_; }
 std::string CmdLine::get_mbt_cad_file() const
 {
 
-  std::string path =  visp_bridge::path_retriever(get_data_dir() + "/" + get_pattern_name());
+  std::string path = visp_bridge::path_retriever(get_data_dir() + "/" + get_pattern_name());
   std::ifstream file_cao(path + std::string(".cao"));
-  if(file_cao.is_open()){
-     return path + std::string(".cao");
+  if (file_cao.is_open()) {
+    return path + std::string(".cao");
   }
   std::ifstream file_wrl(path + std::string(".wrl"));
-  if(file_wrl.is_open()){
-     return path + std::string(".wrl");
+  if (file_wrl.is_open()) {
+    return path + std::string(".wrl");
   }
-  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get model description from: " << path+".cao/.wrl");
+  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get model description from: " << path + ".cao/.wrl");
   return "";
 }
 
 std::string CmdLine::get_xml_file() const
 {
 
-  std::string path =  visp_bridge::path_retriever(get_data_dir() + "/" + get_pattern_name());
+  std::string path = visp_bridge::path_retriever(get_data_dir() + "/" + get_pattern_name());
   std::ifstream file_xml(path + std::string(".xml"));
-  if(file_xml.is_open()){
-     return path + std::string(".xml");
+  if (file_xml.is_open()) {
+    return path + std::string(".xml");
   }
-  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get xml file from: " << path+".xml");
+  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to get xml file from: " << path + ".xml");
   return "";
 }
 
