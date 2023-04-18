@@ -199,7 +199,6 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::msg::Image::SharedPtr 
   double size_precision;
   bool pause_at_each_frame = false; // Wait for user input each time a new frame is recieved.
 
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "ImageProcessing::rawImageCallback");
   gray_level_precision = this->get_parameter(visp_camera_calibration::gray_level_precision_param).as_double();
   size_precision = this->get_parameter(visp_camera_calibration::size_precision_param).as_double();
   pause_at_each_frame = this->get_parameter(visp_camera_calibration::pause_at_each_frame_param).as_bool();

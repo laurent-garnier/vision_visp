@@ -356,7 +356,6 @@ TrackerClient::loadModel()
       std::list< vpMbtDistanceLine * > linesList;
       tracker_.getLline( linesList );
       RCLCPP_DEBUG_STREAM( this->get_logger(), " Nb line: " << linesList.size() );
-      // RCLCPP_DEBUG_STREAM(this->get_logger()," nline: " << tracker_.nline);
     }
     else if ( trackerType_ == "klt" )
     {
@@ -373,7 +372,6 @@ TrackerClient::loadModel()
       std::list< vpMbtDistanceLine * > linesList;
       tracker_.getLline( linesList );
       RCLCPP_DEBUG_STREAM( this->get_logger(), " Nb line: " << linesList.size() );
-      // RCLCPP_DEBUG_STREAM(this->get_logger()," nline: " << tracker_.nline);
     }
   }
   catch ( ... )
@@ -780,7 +778,6 @@ TrackerClient::makeModelFile( std::ofstream &modelStream, const std::string &res
 
   resource_retriever::MemoryResource resource;
   resource_retriever::Retriever r;
-  RCLCPP_ERROR_STREAM( this->get_logger(), "******* TrackerClient::makeModelFile:" << resourcePath + modelExt_ );
 
   try
   {
@@ -828,8 +825,6 @@ TrackerClient::makeModelFile( std::ofstream &modelStream, const std::string &res
   free( tmpname );
 
   fullModelPath = path.native();
-
-  // RCLCPP_WARN_STREAM(this->get_logger(),"Model file Make Client Full path tmp: " << fullModelPath );
 
   modelStream.open( path );
   if ( !modelStream.good() )

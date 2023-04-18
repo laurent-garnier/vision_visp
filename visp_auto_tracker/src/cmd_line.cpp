@@ -239,8 +239,6 @@ void CmdLine::common()
 
 void CmdLine::loadConfig(std::string &config_file_p)
 {
-  // config_file = "/home/vagrant/ros2_ws/install/visp_auto_tracker/share/visp_auto_tracker/models/config.cfg";
-RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Parse package:   " << config_file_p << " => " << visp_bridge::path_retriever(config_file_p));
   std::string line;
   std::istringstream sin;
 
@@ -506,7 +504,6 @@ std::string CmdLine::get_pattern_name() const { return pattern_name_; }
 
 std::string CmdLine::get_mbt_cad_file() const
 {
-  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "******get model description from: " << get_data_dir() + "/" + get_pattern_name());
 
   std::string path =  visp_bridge::path_retriever(get_data_dir() + "/" + get_pattern_name());
   std::ifstream file_cao(path + std::string(".cao"));
@@ -523,7 +520,6 @@ std::string CmdLine::get_mbt_cad_file() const
 
 std::string CmdLine::get_xml_file() const
 {
-  RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "******get model description from: " << get_data_dir() + "/" + get_pattern_name());
 
   std::string path =  visp_bridge::path_retriever(get_data_dir() + "/" + get_pattern_name());
   std::ifstream file_xml(path + std::string(".xml"));

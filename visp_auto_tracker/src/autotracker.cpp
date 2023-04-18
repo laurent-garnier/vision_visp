@@ -69,16 +69,9 @@ AutoTracker::AutoTracker()
   try {
     res = r.get(std::string("file://") + cmd_.get_mbt_cad_file());
   } catch (resource_retriever::Exception& e)
-     {
-       RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Failed to retrieve file:" << e.what());
-  //     return 1;
-     }
-   
-/*    } catch (...) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),
-                        "Unable to read wrl or cao model file as resource: " << cmd_.get_mbt_cad_file());
+  {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),"Failed to retrieve file:" << e.what());
   }
-*/
   model_description_.resize(res.size);
   for (unsigned int i = 0; i < res.size; ++i)
     model_description_[i] = res.data.get()[i];
@@ -128,9 +121,7 @@ void AutoTracker::spin()
 
   // init detector based on user preference
   vpDetectorBase *detector = NULL;
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN....");
   if (cmd_.get_detector_type() == CmdLine::ZBAR) {
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN....ZBA ?");
 
 #if defined(VISP_HAVE_ZBAR)
     detector = new vpDetectorQRCode;
@@ -140,7 +131,6 @@ void AutoTracker::spin()
   }
 
   else if (cmd_.get_detector_type() == CmdLine::DMTX) {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN....DMTX ?");
 
 #if defined(VISP_HAVE_DMTX)
     detector = new vpDetectorDataMatrixCode;
@@ -150,7 +140,6 @@ void AutoTracker::spin()
   }
 
   else if (cmd_.get_detector_type() == CmdLine::APRIL) {
-      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "SPIN....APIL ?");
 
 #if defined(VISP_HAVE_APRILTAG)
     vpDetectorAprilTag::vpAprilTagFamily tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
