@@ -45,12 +45,14 @@ bool
 makeModelFile( std::string modelDescription, std::ofstream &modelStream, std::string &fullModelPath )
 {
   RCLCPP_DEBUG_STREAM( rclcpp::get_logger( "rclcpp" ), " Trying to load the model from the parameter server." );
-  std::string tmpname ;
-  try  {
-    tmpname = vpIoTools::makeTempDirectory(vpIoTools::getTempPath());
-  } catch (...) {
-    RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
-                         "Failed to create the temporary directory: ");
+  std::string tmpname;
+  try
+  {
+    tmpname = vpIoTools::makeTempDirectory( vpIoTools::getTempPath() );
+  }
+  catch ( ... )
+  {
+    RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ), "Failed to create the temporary directory: " );
     return false;
   }
   // From the content of the model description check if the model is in vrml or in cao format
