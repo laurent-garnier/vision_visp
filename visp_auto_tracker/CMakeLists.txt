@@ -123,7 +123,9 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
-message("Successfully download ${DOWNLOADED_FILE}")
+if(EXISTS ${DOWNLOADED_FILE})
+  message("Successfully download ${DOWNLOADED_FILE}")
+endif()
 
 install(DIRECTORY
   ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode

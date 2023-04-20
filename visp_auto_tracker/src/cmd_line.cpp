@@ -200,7 +200,8 @@ void CmdLine::common()
   	  mbt_convergence_steps_ = std::stoi(optarg);
       break;
     case 'H':
-  	  hinkley_range_ = optarg;
+      // TODO : Port ROS2
+  	  // hinkley_range_ = optarg;
       break;
     case 'R':
       mbt_dynamic_range_ = std::stod(optarg);
