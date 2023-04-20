@@ -9,6 +9,7 @@
 
 #include "visp_tracker/file.h"
 #include "visp_tracker/names.h"
+#include <visp3/core/vpIoTools.h>
 
 std::string
 getInitFileFromModelName( const std::string &modelName, const std::string &defaultPath )
@@ -44,12 +45,12 @@ bool
 makeModelFile( std::string modelDescription, std::ofstream &modelStream, std::string &fullModelPath )
 {
   RCLCPP_DEBUG_STREAM( rclcpp::get_logger( "rclcpp" ), " Trying to load the model from the parameter server." );
-
-  char *tmpname = strdup( "/tmp/tmpXXXXXX" ); // TODO use visp vpIoTools::makeTempDirectory()
-  if ( mkdtemp( tmpname ) == NULL )
-  {
+  std::string tmpname ;
+  try  {
+    tmpname = vpIoTools::makeTempDirectory(vpIoTools::getTempPath());
+  } catch (...) {
     RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
-                         "Failed to create the temporary directory: " << strerror( errno ) );
+                         "Failed to create the temporary directory: ");
     return false;
   }
   // From the content of the model description check if the model is in vrml or in cao format
@@ -73,10 +74,8 @@ makeModelFile( std::string modelDescription, std::ofstream &modelStream, std::st
     RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
                          "Failed to get model description from: " << path << " Given model description is -"
                                                                   << modelDescription << "-" );
-    free( tmpname );
     return false;
   }
-  free( tmpname );
 
   fullModelPath = path.native();
 

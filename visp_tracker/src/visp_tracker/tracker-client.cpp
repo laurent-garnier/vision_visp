@@ -426,11 +426,14 @@ TrackerClient::loadInitialPose()
     vpIoTools::getUserName( username );
 
     std::string filename;
-#if defined( _WIN32 )
-    filename = "C:/temp/" + username;
-#else
-    filename   = "/tmp/" + username;
-#endif
+    try  {
+      filename = vpIoTools::getTempPath();
+    } catch (...) {
+      RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
+                         "Failed to get the temporary directory");
+    }
+
+    filename   += username;
     filename += "/" + modelName_ + ".0.pos";
     RCLCPP_INFO_STREAM( this->get_logger(), "Try to read init pose from: " << filename );
     if ( vpIoTools::checkFilename( filename ) )
@@ -463,11 +466,13 @@ TrackerClient::saveInitialPose( const vpHomogeneousMatrix &cMo )
 
     // Create a log filename to save velocities...
     std::string logdirname;
-#if defined( _WIN32 )
-    logdirname = "C:/temp/" + username;
-#else
-    logdirname = "/tmp/" + username;
-#endif
+    try  {
+      logdirname = vpIoTools::getTempPath();
+    } catch (...) {
+      RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
+                         "Failed to get the temporary directory");
+    }
+    logdirname += username;
     // Test if the output path exist. If no try to create it
     if ( vpIoTools::checkDirectory( logdirname ) == false )
     {
@@ -613,20 +618,18 @@ TrackerClient::init()
   {
 
     resource_retriever::MemoryResource resource;
-
+    std::string tmpname;
     try
     {
-      resource      = resourceRetriever_.get( getHelpImageFileFromModelName( modelName_, modelPath_ ) );
-      char *tmpname = strdup( "/tmp/tmpXXXXXX" );
-      if ( mkdtemp( tmpname ) == NULL )
-      {
-        RCLCPP_ERROR_STREAM( this->get_logger(), "Failed to create the temporary directory: " << strerror( errno ) );
+      resource = resourceRetriever_.get( getHelpImageFileFromModelName( modelName_, modelPath_ ) );
+      try  {
+        tmpname = vpIoTools::makeTempDirectory(vpIoTools::getTempPath());
+      } catch (...) {
+        RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
+                         "Failed to create the temporary directory");
       }
-      else
-      {
         std::filesystem::path path( tmpname );
         path /= ( "help.ppm" );
-        free( tmpname );
 
         helpImagePath = path.native();
         RCLCPP_INFO( this->get_logger(), "Copy help image from %s to %s",
@@ -635,7 +638,6 @@ TrackerClient::init()
         FILE *f = fopen( helpImagePath.c_str(), "w" );
         fwrite( resource.data.get(), resource.size, 1, f );
         fclose( f );
-      }
     }
     catch ( vpException &e )
     {
@@ -813,17 +815,17 @@ TrackerClient::makeModelFile( std::ofstream &modelStream, const std::string &res
   for ( ; i < resource.size; ++i )
     result[i] = resource.data.get()[i];
   result[resource.size];
-
-  char *tmpname = strdup( "/tmp/tmpXXXXXX" );
-  if ( mkdtemp( tmpname ) == NULL )
-  {
-    RCLCPP_ERROR_STREAM( this->get_logger(), "Failed to create the temporary directory: " << strerror( errno ) );
+  std::string tmpname;
+  try {
+      tmpname = vpIoTools::makeTempDirectory(vpIoTools::getTempPath());
+  } catch (...) {
+      RCLCPP_ERROR_STREAM( rclcpp::get_logger( "rclcpp" ),
+                         "Failed to create the temporary directory");
     return false;
   }
   std::filesystem::path path( tmpname );
   path /= ( "model" + modelExt_ );
-  free( tmpname );
-
+ 
   fullModelPath = path.native();
 
   modelStream.open( path );
