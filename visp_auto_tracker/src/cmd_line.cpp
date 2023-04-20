@@ -197,12 +197,10 @@ void CmdLine::common()
       var_limit_ = std::stod(optarg);
       break;
     case 'S':
-      // TODO : Port ROS2
-      //	  mbt_convergence_steps_ = std::stoi(optarg);
+  	  mbt_convergence_steps_ = std::stoi(optarg);
       break;
     case 'H':
-      // TODO : Port ROS2
-      //	  hinkley_range_ = optarg;
+  	  hinkley_range_ = optarg;
       break;
     case 'R':
       mbt_dynamic_range_ = std::stod(optarg);
