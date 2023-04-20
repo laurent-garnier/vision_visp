@@ -14,7 +14,18 @@
 #include <filesystem>
 #include <sstream>
 #include <string>
+#include <cctype>
 #include <unordered_map>
+#include <algorithm>
+
+namespace {
+std::string str_tolower(const std::string &s) {
+  std::string str = s;
+  for ( auto &c : str )
+    c = std::tolower( static_cast<unsigned char>( c ) );
+  return str;
+}
+}
 
 void CmdLine::common()
 {
@@ -381,7 +392,7 @@ void CmdLine::loadConfig(std::string &config_file_p)
     case DMTX:
       txt += "Datamatrix (flashcode)";
       break;
-    case APRIL:
+    case APRILTAG: 
       txt += "April tags";
       break;
     }
@@ -541,10 +552,10 @@ std::vector<vpPoint> &CmdLine::get_outer_points_3D() { return outer_points_3D_; 
 
 CmdLine::DETECTOR_TYPE CmdLine::get_detector_type() const
 {
-  if (detector_type == "zbar")
+  if (str_tolower(detector_type) == "zbar")
     return CmdLine::ZBAR;
-  else if (detector_type == "april")
-    return CmdLine::APRIL;
+  else if ((str_tolower(detector_type) == "april") || (str_tolower(detector_type) == "apriltag"))
+    return CmdLine::APRILTAG;
   else
     return CmdLine::DMTX;
 }
@@ -553,9 +564,9 @@ std::string CmdLine::get_detector_subtype() const { return detector_subtype_; }
 
 CmdLine::TRACKER_TYPE CmdLine::get_tracker_type() const
 {
-  if (tracker_type == "mbt")
+  if (str_tolower(tracker_type) == "mbt")
     return CmdLine::MBT;
-  else if (tracker_type == "klt")
+  else if (str_tolower(tracker_type) == "klt")
     return CmdLine::KLT;
   else
     return CmdLine::KLT_MBT;

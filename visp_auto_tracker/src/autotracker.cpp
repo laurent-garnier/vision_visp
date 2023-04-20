@@ -137,7 +137,7 @@ void AutoTracker::spin()
 #endif
   }
 
-  else if (cmd_.get_detector_type() == CmdLine::APRIL) {
+  else if ((cmd_.get_detector_type() == CmdLine::APRIL) || (cmd_.get_detector_type() == CmdLine::APRILTAG)){
 
 #if defined(VISP_HAVE_APRILTAG)
     vpDetectorAprilTag::vpAprilTagFamily tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
