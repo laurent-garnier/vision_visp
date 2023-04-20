@@ -24,7 +24,6 @@ namespace visp_auto_tracker
 class AutoTracker : public rclcpp::Node
 {
 private:
-  std::mutex lock_;
   unsigned long queue_size_;
   std::string tracker_config_path_;
   std::string model_description_;
@@ -56,7 +55,7 @@ private:
 
   void waitForImage();
 
-  void frameCallback(const sensor_msgs::msg::Image::ConstPtr &image,
+  void frameCallback(const sensor_msgs::msg::Image::ConstSharedPtr &image,
                      const sensor_msgs::msg::CameraInfo::ConstSharedPtr &cam_info);
 
 public:
