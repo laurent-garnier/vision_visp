@@ -18,6 +18,8 @@
     <param name="model_name" value="pattern" />
     <param name="camera_prefix" value="camera" />
     <param name="debug_display" value="True" />
+    <remap from="/camera/camera_info" to="/camera_info"/>
+    <remap from="/camera/image_raw" to="/image_raw"/>
   </node>
 
   <!-- Launch the usb camera acquisition node -->
