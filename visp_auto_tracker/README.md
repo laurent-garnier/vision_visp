@@ -27,7 +27,7 @@ tracking result.
 
 ## Setup
 
-This package contains submodules. It can be compiled like any other ROS package using `catkin_make`. 
+This package contains submodules. It can be compiled like any other ROS package using `colcon build`. 
 
 ### Prerequisities
 
@@ -39,12 +39,12 @@ visp_auto_tracker depends also on libdmtx-dev and libzbar-dev system dependencie
 
 ### How to get and build visp_tracker 
 
-Supposed you have a catkin work space just run:
+Supposed you have a colcon work space just run:
 
-	$ cd ~/catkin_ws/src 
+	$ cd ~/colcon_ws/src 
 	$ git clone -b indigo-devel https://github.com/lagadic/vision_visp.git
 	$ cd ..
-	$ catkin_make --pkg visp_auto_tracker
+	$ colcon build --packages-up-to visp_auto_tracker
 
 ## Documentation
 
