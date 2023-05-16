@@ -45,7 +45,7 @@ Then to use this version you have to setup `VISP_DIR` environment variable to th
 Supposed you have a colcon work space just run:
 
 	$ cd ~/colcon_ws/src 
-	$ git clone -b indigo-devel https://github.com/lagadic/vision_visp.git
+	$ git clone -b master https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ colcon build --packages-up-to visp_tracker
 

@@ -8,14 +8,14 @@ This package can be compiled like any other colcon package using `colcon build`.
 
 ### Prerequisities
 
-visp_camera_calibration depends on visp_bridge package available from <https://github.com/lagadic/vision_visp> (indigo-devel branch). 
+visp_camera_calibration depends on visp_bridge package available from <https://github.com/lagadic/vision_visp> (master branch). 
 
 ### How to get and build visp_camera_calibration
 
 Supposed you have a colcon work space just run:
 
 	$ cd ~/colcon_ws/src 
-	$ git clone -b indigo-devel https://github.com/lagadic/vision_visp.git
+	$ git clone -b master https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ colcon build --packages-up-to visp_camera_calibration
 

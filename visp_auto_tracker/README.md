@@ -31,7 +31,7 @@ This package contains submodules. It can be compiled like any other ROS package 
 
 ### Prerequisities
 
-visp_auto_tracker depends on visp_bridge and visp_tracker packages available from <https://github.com/lagadic/vision_visp> (indigo-devel branches).
+visp_auto_tracker depends on visp_bridge and visp_tracker packages available from <https://github.com/lagadic/vision_visp> (master branches).
 
 visp_auto_tracker depends also on libdmtx-dev and libzbar-dev system dependencies. To install them run:
 
@@ -42,7 +42,7 @@ visp_auto_tracker depends also on libdmtx-dev and libzbar-dev system dependencie
 Supposed you have a colcon work space just run:
 
 	$ cd ~/colcon_ws/src 
-	$ git clone -b indigo-devel https://github.com/lagadic/vision_visp.git
+	$ git clone -b master https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ colcon build --packages-up-to visp_auto_tracker
 
